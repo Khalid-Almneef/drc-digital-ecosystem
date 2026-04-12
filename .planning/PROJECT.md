@@ -38,11 +38,11 @@ A stunning, non-generic ("not AI slop") frontend that perfectly utilizes the clu
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Frontend-First Approach | Perfecting the public image and identity is the highest priority right now before tackling complex internal management logic. | — Pending |
-| Design Reference: ftcksu.com | Provides a baseline for structure and quality expectations, though the visual design must remain distinct and unique. | — Pending |
+| Design Motivation | Do not use ftcksu.com as reference; they are a competitor. Provide a demonstrably vastly superior and fully custom digital experience. | — Pending |
 
 ## References
 - **Brand Identity Assets**: `~/Downloads/الهوية البصرية لنادي الدرونز والروبوت/`
-- **Inspiration**: `ftcksu.com` (use as reference, but do not copy layout directly)
+- **Note on competitors**: Do not use or copy competitor sites like ftcksu.com. Focus purely on a new, vastly superior experience.
 
 ---
 *Last updated: 2026-04-12 after initialization*
