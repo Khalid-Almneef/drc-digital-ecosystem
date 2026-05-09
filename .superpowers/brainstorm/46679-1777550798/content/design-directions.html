@@ -1,0 +1,175 @@
+<h2>Design Enhancement Directions</h2>
+<p class="subtitle">Three ways to elevate the DRC Digital Ecosystem — pick the one that feels right</p>
+
+<style>
+  .directions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px; }
+  .direction-card { border-radius: 16px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.25s ease; }
+  .direction-card:hover { transform: translateY(-4px); }
+  .direction-card.selected { border-color: #00d9ac; box-shadow: 0 0 0 1px #00d9ac40, 0 20px 40px #00d9ac20; }
+
+  /* Mock UI previews */
+  .preview { height: 200px; position: relative; overflow: hidden; }
+
+  /* Option A – Polished Dark */
+  .preview-a { background: #020a18; }
+  .preview-a .mock-nav { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid rgba(0,217,172,0.12); }
+  .preview-a .nav-logo { width: 22px; height: 22px; background: linear-gradient(135deg, #00d9ac, #00249c); border-radius: 4px; }
+  .preview-a .nav-links { display: flex; gap: 10px; margin-left: auto; }
+  .preview-a .nav-link { width: 32px; height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px; }
+  .preview-a .nav-link.active { background: #00d9ac; }
+  .preview-a .hero { padding: 14px; }
+  .preview-a .hero-tag { display: inline-block; padding: 2px 8px; background: rgba(0,217,172,0.1); border: 1px solid rgba(0,217,172,0.25); border-radius: 20px; font-size: 9px; color: #00d9ac; font-family: monospace; letter-spacing: 1px; text-transform: uppercase; }
+  .preview-a .hero-title { margin-top: 6px; }
+  .preview-a .hero-line { height: 10px; background: linear-gradient(90deg, #e8ecf4, rgba(232,236,244,0.4)); border-radius: 5px; margin: 4px 0; }
+  .preview-a .hero-line.short { width: 60%; height: 7px; background: rgba(0,217,172,0.5); }
+  .preview-a .cards-row { display: flex; gap: 6px; padding: 0 14px; margin-top: 10px; }
+  .preview-a .mini-card { flex: 1; height: 42px; background: rgba(6,16,31,0.9); border: 1px solid rgba(0,217,172,0.1); border-radius: 8px; position: relative; overflow: hidden; }
+  .preview-a .mini-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #00d9ac40, transparent); }
+  .preview-a .card-dot { width: 18px; height: 4px; background: rgba(0,217,172,0.4); border-radius: 2px; margin: 8px 8px 4px; }
+  .preview-a .card-line { width: 28px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 0 8px; }
+
+  /* Option B – Saudi-Tech Bold */
+  .preview-b { background: #010c1a; }
+  .preview-b .geo-bg { position: absolute; inset: 0; opacity: 0.07; background-image: repeating-linear-gradient(0deg, transparent, transparent 18px, rgba(0,217,172,0.5) 18px, rgba(0,217,172,0.5) 19px), repeating-linear-gradient(90deg, transparent, transparent 18px, rgba(0,217,172,0.5) 18px, rgba(0,217,172,0.5) 19px); }
+  .preview-b .mock-nav { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(0,36,156,0.15); border-bottom: 1px solid rgba(0,36,156,0.3); position: relative; z-index: 1; }
+  .preview-b .nav-logo { width: 26px; height: 26px; background: linear-gradient(135deg, #00d9ac 0%, #00249c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .preview-b .hero { padding: 14px; position: relative; z-index: 1; }
+  .preview-b .arabic-accent { font-family: 'Arial', sans-serif; font-size: 22px; font-weight: 900; background: linear-gradient(90deg, #00d9ac, #00249c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+  .preview-b .hero-sub { height: 5px; width: 70%; background: rgba(255,255,255,0.12); border-radius: 3px; margin-top: 8px; }
+  .preview-b .accent-bar { height: 3px; width: 40px; background: linear-gradient(90deg, #00d9ac, #00249c); border-radius: 2px; margin: 8px 0; }
+  .preview-b .pattern-strip { position: absolute; right: 0; top: 0; bottom: 0; width: 70px; background: linear-gradient(135deg, rgba(0,36,156,0.2), rgba(0,217,172,0.08)); border-left: 1px solid rgba(0,217,172,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
+  .preview-b .pattern-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,217,172,0.5); }
+  .preview-b .pattern-dot.large { width: 10px; height: 10px; border: 2px solid rgba(0,217,172,0.5); background: transparent; }
+
+  /* Option C – Modern Editorial */
+  .preview-c { background: #f8faff; }
+  .preview-c .mock-nav { display: flex; align-items: center; padding: 10px 14px; border-bottom: 1px solid rgba(0,36,156,0.08); background: rgba(255,255,255,0.95); }
+  .preview-c .nav-logo { width: 28px; height: 12px; background: #00249c; border-radius: 2px; margin-right: 8px; }
+  .preview-c .nav-pill { padding: 2px 8px; background: #00249c; border-radius: 20px; }
+  .preview-c .nav-pill-txt { width: 20px; height: 4px; background: white; border-radius: 2px; }
+  .preview-c .hero { padding: 14px; }
+  .preview-c .hero-eyebrow { width: 60px; height: 4px; background: #00d9ac; border-radius: 2px; margin-bottom: 8px; }
+  .preview-c .hero-big { font-size: 18px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 6px; }
+  .preview-c .hero-big span { color: #00249c; }
+  .preview-c .hero-desc { height: 4px; background: rgba(15,23,42,0.15); border-radius: 2px; margin: 3px 0; width: 85%; }
+  .preview-c .hero-desc.short { width: 55%; }
+  .preview-c .cta-row { display: flex; gap: 6px; margin-top: 10px; }
+  .preview-c .cta-btn { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: 700; }
+  .preview-c .cta-primary { background: #00249c; color: white; }
+  .preview-c .cta-secondary { border: 1.5px solid #00249c; color: #00249c; }
+
+  .card-label { padding: 14px 16px; background: #0c1a30; }
+  .card-name { font-size: 14px; font-weight: 700; color: #e8ecf4; margin-bottom: 4px; }
+  .card-desc { font-size: 12px; color: #7b8ba5; line-height: 1.5; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .tag { padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 600; background: rgba(0,217,172,0.1); border: 1px solid rgba(0,217,172,0.2); color: #00d9ac; }
+  .tag.blue { background: rgba(0,36,156,0.15); border-color: rgba(0,36,156,0.3); color: #6080e0; }
+  .tag.gray { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #7b8ba5; }
+</style>
+
+<div class="directions">
+  <div class="direction-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="preview preview-a">
+      <div class="mock-nav">
+        <div class="nav-logo"></div>
+        <div class="nav-links">
+          <div class="nav-link active"></div>
+          <div class="nav-link"></div>
+          <div class="nav-link"></div>
+          <div class="nav-link"></div>
+        </div>
+      </div>
+      <div class="hero">
+        <div class="hero-tag">Drones &amp; Robotics Club</div>
+        <div class="hero-title">
+          <div class="hero-line" style="width:85%"></div>
+          <div class="hero-line short"></div>
+        </div>
+      </div>
+      <div class="cards-row">
+        <div class="mini-card"><div class="card-dot"></div><div class="card-line"></div></div>
+        <div class="mini-card"><div class="card-dot"></div><div class="card-line"></div></div>
+        <div class="mini-card"><div class="card-dot"></div><div class="card-line"></div></div>
+      </div>
+    </div>
+    <div class="card-label">
+      <div class="card-name">A — Polish &amp; Refine</div>
+      <div class="card-desc">Keep the dark tech aesthetic. Tighten spacing, typography scale, and component consistency across every page. Higher perceived quality through better details.</div>
+      <div class="card-tags">
+        <span class="tag">Low disruption</span>
+        <span class="tag gray">Same brand</span>
+        <span class="tag gray">Dashboard focus</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="direction-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="preview preview-b">
+      <div class="geo-bg"></div>
+      <div class="mock-nav">
+        <div class="nav-logo">🌴</div>
+        <div style="margin-left:6px;display:flex;gap:8px;">
+          <div style="width:25px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;"></div>
+          <div style="width:25px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;"></div>
+        </div>
+        <div style="margin-left:auto;width:45px;height:16px;background:linear-gradient(90deg,#00d9ac,#00249c);border-radius:4px;"></div>
+      </div>
+      <div class="hero">
+        <div class="arabic-accent">نادي الدرونز</div>
+        <div class="accent-bar"></div>
+        <div class="hero-sub"></div>
+        <div class="hero-sub" style="width:45%;margin-top:4px;"></div>
+      </div>
+      <div class="pattern-strip">
+        <div class="pattern-dot large"></div>
+        <div class="pattern-dot"></div>
+        <div class="pattern-dot large"></div>
+        <div class="pattern-dot"></div>
+      </div>
+    </div>
+    <div class="card-label">
+      <div class="card-name">B — Saudi-Tech Identity</div>
+      <div class="card-desc">Lean into the palm-drone logo identity. Arabic typography as a design element, geometric patterns, gradient treatments. Unmistakably Saudi + cutting-edge.</div>
+      <div class="card-tags">
+        <span class="tag">Most distinctive</span>
+        <span class="tag blue">Cultural identity</span>
+        <span class="tag gray">Public site focus</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="direction-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="preview preview-c">
+      <div class="mock-nav">
+        <div class="nav-logo"></div>
+        <div style="flex:1;display:flex;gap:8px;align-items:center;">
+          <div style="width:20px;height:4px;background:rgba(0,36,156,0.15);border-radius:2px;"></div>
+          <div style="width:20px;height:4px;background:rgba(0,36,156,0.15);border-radius:2px;"></div>
+          <div style="width:20px;height:4px;background:rgba(0,36,156,0.15);border-radius:2px;"></div>
+        </div>
+        <div class="nav-pill"><div class="nav-pill-txt"></div></div>
+      </div>
+      <div class="hero">
+        <div class="hero-eyebrow"></div>
+        <div class="hero-big">Build.<br/><span>Compete.</span> Belong.</div>
+        <div class="hero-desc"></div>
+        <div class="hero-desc short"></div>
+        <div class="cta-row">
+          <div class="cta-btn cta-primary">Join Now</div>
+          <div class="cta-btn cta-secondary">Projects →</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-label">
+      <div class="card-name">C — Light Mode Editorial</div>
+      <div class="card-desc">Clean white public site with deep navy as the primary color and turquoise as a pure accent. Modern, confident, accessible. Dashboard stays dark.</div>
+      <div class="card-tags">
+        <span class="tag">Best accessibility</span>
+        <span class="tag blue">Broader appeal</span>
+        <span class="tag gray">Split light/dark</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:20px;text-align:center;">You can also pick multiple — we can blend ideas. Click what resonates and tell me what you think in the terminal.</p>

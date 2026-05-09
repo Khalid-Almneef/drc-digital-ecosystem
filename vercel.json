@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install --include=optional sharp",
+  "functions": {
+    "src/app/api/upload/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "regions": ["fra1"]
+}

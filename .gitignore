@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# uploaded media (keep directory, not files)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Playwright X scraper artefacts
+/scripts/data/.x-profile
+/scripts/data/x-images
+/scripts/data/drcksu-tweets.json
+
+# Local scratch / smoke-test output
+/tmp

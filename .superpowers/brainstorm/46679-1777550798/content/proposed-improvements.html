@@ -1,0 +1,325 @@
+<h2>Proposed Improvements — Polish & Refine</h2>
+<p class="subtitle">Six concrete areas we're upgrading. Review each and let me know if anything should change.</p>
+
+<style>
+* { box-sizing: border-box; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px; }
+.improvement { border: 1px solid rgba(0,217,172,0.12); border-radius: 14px; overflow: hidden; }
+.imp-header { padding: 12px 14px 8px; background: rgba(0,217,172,0.06); border-bottom: 1px solid rgba(0,217,172,0.1); }
+.imp-title { font-size: 13px; font-weight: 700; color: #e8ecf4; }
+.imp-subtitle { font-size: 11px; color: #7b8ba5; margin-top: 2px; }
+.imp-body { display: grid; grid-template-columns: 1fr 1fr; }
+.side { padding: 12px; }
+.side-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.before { color: #f04060; }
+.after { color: #00d9ac; }
+.divider-v { width: 1px; background: rgba(255,255,255,0.06); }
+
+/* ── 1. Font & Typography ── */
+.typo-before .t1 { font-size: 18px; font-weight: 700; color: #e8ecf4; font-family: ui-sans-serif; line-height: 1.3; }
+.typo-before .t2 { font-size: 12px; color: #7b8ba5; margin-top: 4px; font-family: ui-sans-serif; }
+.typo-before .t3 { font-size: 11px; color: #7b8ba5; margin-top: 2px; }
+
+.typo-after .t1 { font-size: 20px; font-weight: 800; color: #e8ecf4; font-family: 'Space Grotesk', 'Inter', ui-sans-serif; line-height: 1.15; letter-spacing: -0.5px; }
+.typo-after .t1 span { color: #00d9ac; }
+.typo-after .t2 { font-size: 12px; color: #7b8ba5; margin-top: 5px; font-family: 'Space Grotesk', 'Inter', ui-sans-serif; font-weight: 500; }
+.typo-after .t3 { font-size: 10px; color: #00d9ac; margin-top: 4px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+
+/* ── 2. Card depth ── */
+.card-before { background: rgba(6,16,31,0.88); border: 1px solid rgba(0,217,172,0.08); border-radius: 10px; padding: 10px; }
+.card-after { background: linear-gradient(160deg, rgba(15,32,56,0.95) 0%, rgba(6,16,31,0.92) 100%); border: 1px solid rgba(0,217,172,0.14); border-radius: 12px; padding: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 32px rgba(2,10,24,0.3); position: relative; overflow: hidden; }
+.card-after::before { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,217,172,0.4), transparent); }
+.card-line { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; margin: 5px 0; }
+.card-line.accent { background: rgba(0,217,172,0.35); width: 40%; }
+.card-line.short { width: 60%; }
+.card-stat { font-size: 20px; font-weight: 800; color: #00d9ac; margin-bottom: 2px; font-family: 'Space Grotesk', ui-sans-serif; }
+.card-icon-b { width: 28px; height: 28px; background: rgba(0,217,172,0.1); border: 1px solid rgba(0,217,172,0.15); border-radius: 7px; }
+.card-icon-a { width: 32px; height: 32px; background: linear-gradient(135deg, rgba(0,217,172,0.18), rgba(0,36,156,0.15)); border: 1px solid rgba(0,217,172,0.25); border-radius: 9px; box-shadow: 0 0 16px rgba(0,217,172,0.12); }
+.card-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+
+/* ── 3. Sidebar ── */
+.sidebar { background: #06101f; border-radius: 10px; overflow: hidden; padding: 8px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 7px; margin-bottom: 2px; }
+.nav-icon { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.nav-text { height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; flex: 1; }
+
+.sidebar-before .nav-item.active { background: rgba(0,217,172,0.1); }
+.sidebar-before .nav-item.active .nav-text { background: #00d9ac; }
+.sidebar-before .nav-item.active .nav-icon { background: #00d9ac; }
+
+.sidebar-after .nav-item { position: relative; }
+.sidebar-after .nav-item.active { background: linear-gradient(90deg, rgba(0,217,172,0.12), rgba(0,217,172,0.04)); }
+.sidebar-after .nav-item.active::before { content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); width: 3px; height: 18px; background: #00d9ac; border-radius: 0 3px 3px 0; box-shadow: 0 0 8px #00d9ac; }
+.sidebar-after .nav-item.active .nav-text { background: #e8ecf4; width: 70%; }
+.sidebar-after .nav-item.active .nav-icon { background: linear-gradient(135deg, #00d9ac, #00249c); }
+.sidebar-after .nav-item:not(.active):hover .nav-text { background: rgba(255,255,255,0.25); }
+
+/* ── 4. Color palette panel ── */
+.palette-before { }
+.swatch-row { display: flex; gap: 6px; margin-bottom: 8px; }
+.swatch-input { display: flex; align-items: center; gap: 5px; background: rgba(12,26,48,0.9); border: 1px solid rgba(0,217,172,0.15); border-radius: 6px; padding: 4px 7px; }
+.swatch-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.swatch-val { font-size: 9px; color: #7b8ba5; font-family: monospace; }
+
+.palette-after .preset-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #7b8ba5; margin-bottom: 6px; font-weight: 600; }
+.preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
+.preset-swatch { height: 28px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.06); cursor: pointer; position: relative; overflow: hidden; }
+.preset-swatch.active::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; background: rgba(0,0,0,0.2); }
+.preset-1 { background: linear-gradient(90deg, #00d9ac 50%, #00249c 50%); }
+.preset-2 { background: linear-gradient(90deg, #7c3aed 50%, #1e1b4b 50%); }
+.preset-3 { background: linear-gradient(90deg, #f59e0b 50%, #92400e 50%); }
+.preset-4 { background: linear-gradient(90deg, #ef4444 50%, #7f1d1d 50%); }
+.custom-dots { display: flex; gap: 5px; align-items: center; }
+.custom-dot { width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid rgba(255,255,255,0.1); cursor: pointer; }
+
+/* ── 5. Public hero ── */
+.hero-before { background: #020a18; border-radius: 10px; padding: 14px; }
+.hero-after { background: #020a18; border-radius: 10px; padding: 14px; position: relative; overflow: hidden; }
+.hero-after::before { content: ''; position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(0,36,156,0.35), transparent 70%); }
+.hero-after::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(0,217,172,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,217,172,0.04) 1px, transparent 1px); background-size: 20px 20px; mask-image: linear-gradient(180deg, rgba(0,0,0,0.6), transparent); }
+.hb-tag { display: inline-block; background: rgba(0,217,172,0.08); border: 1px solid rgba(0,217,172,0.2); border-radius: 20px; padding: 2px 8px; font-size: 9px; color: #00d9ac; margin-bottom: 6px; }
+.hb-h1 { font-size: 18px; font-weight: 800; color: #e8ecf4; line-height: 1.2; margin-bottom: 6px; }
+.hb-h1.refined { letter-spacing: -0.5px; }
+.hb-h1 .accent { color: #00d9ac; }
+.hb-sub { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 3px 0; }
+.hb-sub.short { width: 65%; }
+.hb-cta { display: flex; gap: 6px; margin-top: 8px; }
+.hb-btn { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: 700; }
+.hb-primary { background: linear-gradient(135deg, #00d9ac, #009d7c); color: #000; }
+.hb-secondary { border: 1px solid rgba(0,217,172,0.25); color: #00d9ac; }
+.hb-stat-row { display: flex; gap: 8px; margin-top: 10px; }
+.hb-stat { background: rgba(6,16,31,0.7); border: 1px solid rgba(0,217,172,0.08); border-radius: 7px; padding: 5px 8px; flex: 1; }
+.hb-stat.refined { background: rgba(12,26,48,0.85); border-color: rgba(0,217,172,0.15); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+.hb-num { font-size: 13px; font-weight: 800; color: #00d9ac; }
+.hb-lbl { font-size: 8px; color: #7b8ba5; margin-top: 1px; }
+
+/* ── 6. Nav bar ── */
+.nav-before, .nav-after { border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+.nav-before { background: rgba(6,16,31,0.9); border-bottom: 1px solid rgba(0,217,172,0.08); }
+.nav-after { background: rgba(2,10,24,0.95); border-bottom: 1px solid rgba(0,217,172,0.12); backdrop-filter: blur(20px); box-shadow: 0 1px 0 rgba(255,255,255,0.03); }
+.logo-b { width: 24px; height: 24px; background: rgba(0,217,172,0.15); border-radius: 4px; }
+.logo-a { display: flex; align-items: center; gap: 6px; }
+.logo-a-mark { width: 28px; height: 28px; background: linear-gradient(135deg, rgba(0,217,172,0.25), rgba(0,36,156,0.2)); border: 1px solid rgba(0,217,172,0.3); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 0 12px rgba(0,217,172,0.15); }
+.logo-a-text { height: 8px; width: 60px; background: linear-gradient(90deg, #e8ecf4, rgba(232,236,244,0.6)); border-radius: 2px; }
+.nav-items-b { display: flex; gap: 8px; }
+.nav-item-b { width: 28px; height: 5px; background: rgba(255,255,255,0.1); border-radius: 2px; }
+.nav-item-b.act { background: rgba(0,217,172,0.5); }
+.nav-items-a { display: flex; gap: 8px; align-items: center; }
+.nav-item-a { font-size: 9px; color: #7b8ba5; font-weight: 600; padding: 3px 6px; border-radius: 4px; background: transparent; }
+.nav-item-a.act { color: #e8ecf4; background: rgba(0,217,172,0.08); }
+.nav-end { margin-left: auto; display: flex; gap: 5px; }
+.nav-btn-b { width: 40px; height: 16px; background: linear-gradient(90deg, #00d9ac, #009d7c); border-radius: 4px; }
+.nav-btn-a { width: 40px; height: 18px; background: linear-gradient(135deg, #00d9ac, #009d7c); border-radius: 5px; box-shadow: 0 0 12px rgba(0,217,172,0.25); }
+</style>
+
+<!-- Row 1: Typography + Cards -->
+<div class="grid-2">
+  <div class="improvement">
+    <div class="imp-header">
+      <div class="imp-title">1 — Typography & Font</div>
+      <div class="imp-subtitle">Space Grotesk (free, close to AKTIV) · tighter tracking on headings · stronger weight contrast</div>
+    </div>
+    <div class="imp-body">
+      <div class="side">
+        <div class="side-label before">Before</div>
+        <div class="typo-before">
+          <div class="t1">Build. Compete. Belong.</div>
+          <div class="t2">Join the Drones & Robotics Club at KSU</div>
+          <div class="t3">9 departments · 200+ members</div>
+        </div>
+      </div>
+      <div class="divider-v"></div>
+      <div class="side">
+        <div class="side-label after">After</div>
+        <div class="typo-after">
+          <div class="t1">Build. <span>Compete.</span><br/>Belong.</div>
+          <div class="t2">Join the Drones & Robotics Club at KSU</div>
+          <div class="t3">◆ 9 departments · 200+ members</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="improvement">
+    <div class="imp-header">
+      <div class="imp-title">2 — Card Depth & Surfaces</div>
+      <div class="imp-subtitle">Gradient glass, top light edge, stronger shadows, glowing icons, tighter stat treatment</div>
+    </div>
+    <div class="imp-body">
+      <div class="side">
+        <div class="side-label before">Before</div>
+        <div class="card-before">
+          <div class="card-row">
+            <div class="card-icon-b"></div>
+            <div style="flex:1"><div class="card-line" style="width:50%;margin-bottom:4px;"></div><div class="card-line" style="width:35%;"></div></div>
+          </div>
+          <div style="font-size:18px;font-weight:700;color:#00d9ac;margin:4px 0;">142</div>
+          <div class="card-line short"></div>
+        </div>
+      </div>
+      <div class="divider-v"></div>
+      <div class="side">
+        <div class="side-label after">After</div>
+        <div class="card-after">
+          <div class="card-row">
+            <div class="card-icon-a"></div>
+            <div style="flex:1"><div class="card-line" style="width:55%;margin-bottom:4px;background:rgba(255,255,255,0.2);"></div><div class="card-line" style="width:38%;"></div></div>
+          </div>
+          <div class="card-stat">142</div>
+          <div class="card-line accent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 2: Sidebar + Color palette -->
+<div class="grid-2" style="margin-top:16px;">
+  <div class="improvement">
+    <div class="imp-header">
+      <div class="imp-title">3 — Dashboard Sidebar</div>
+      <div class="imp-subtitle">Left-edge glow accent for active state · subtler inactive items · better icon treatment</div>
+    </div>
+    <div class="imp-body">
+      <div class="side">
+        <div class="side-label before">Before</div>
+        <div class="sidebar sidebar-before">
+          <div class="nav-item active"><div class="nav-icon"></div><div class="nav-text"></div></div>
+          <div class="nav-item"><div class="nav-icon" style="background:rgba(255,255,255,0.1);"></div><div class="nav-text"></div></div>
+          <div class="nav-item"><div class="nav-icon" style="background:rgba(255,255,255,0.1);"></div><div class="nav-text" style="width:60%;"></div></div>
+          <div class="nav-item"><div class="nav-icon" style="background:rgba(255,255,255,0.1);"></div><div class="nav-text" style="width:75%;"></div></div>
+        </div>
+      </div>
+      <div class="divider-v"></div>
+      <div class="side">
+        <div class="side-label after">After</div>
+        <div class="sidebar sidebar-after">
+          <div class="nav-item active"><div class="nav-icon"></div><div class="nav-text"></div></div>
+          <div class="nav-item"><div class="nav-icon" style="background:rgba(255,255,255,0.08);"></div><div class="nav-text" style="background:rgba(255,255,255,0.1);"></div></div>
+          <div class="nav-item"><div class="nav-icon" style="background:rgba(255,255,255,0.08);"></div><div class="nav-text" style="background:rgba(255,255,255,0.1);width:60%;"></div></div>
+          <div class="nav-item"><div class="nav-icon" style="background:rgba(255,255,255,0.08);"></div><div class="nav-text" style="background:rgba(255,255,255,0.1);width:75%;"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="improvement">
+    <div class="imp-header">
+      <div class="imp-title">4 — Color Palette Picker</div>
+      <div class="imp-subtitle">Preset swatches + custom picker · replaces bare hex inputs · lives in sidebar quick-access</div>
+    </div>
+    <div class="imp-body">
+      <div class="side">
+        <div class="side-label before">Before</div>
+        <div class="palette-before">
+          <div class="swatch-row" style="flex-direction:column;gap:5px;">
+            <div class="swatch-input"><div class="swatch-dot" style="background:#00d9ac;"></div><div class="swatch-val">#00d9ac</div></div>
+            <div class="swatch-input"><div class="swatch-dot" style="background:#00249c;"></div><div class="swatch-val">#00249c</div></div>
+            <div class="swatch-input"><div class="swatch-dot" style="background:#00d9ac;"></div><div class="swatch-val">#00d9ac</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="divider-v"></div>
+      <div class="side">
+        <div class="side-label after">After</div>
+        <div class="palette-after">
+          <div class="preset-label">Presets</div>
+          <div class="preset-grid">
+            <div class="preset-swatch preset-1 active"></div>
+            <div class="preset-swatch preset-2"></div>
+            <div class="preset-swatch preset-3"></div>
+            <div class="preset-swatch preset-4"></div>
+          </div>
+          <div class="preset-label">Custom</div>
+          <div class="custom-dots">
+            <div class="custom-dot" style="background:#00d9ac;border-color:#00d9ac;"></div>
+            <div class="custom-dot" style="background:#00249c;border-color:#3b6fd4;"></div>
+            <div class="custom-dot" style="background:#00d9ac;border-color:#00d9ac;"></div>
+            <div style="font-size:9px;color:#7b8ba5;margin-left:3px;">tap to change</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 3: Hero + Nav -->
+<div class="grid-2" style="margin-top:16px;">
+  <div class="improvement">
+    <div class="imp-header">
+      <div class="imp-title">5 — Public Hero Sections</div>
+      <div class="imp-subtitle">Grid overlay, radial glow depth, tighter stat cards, better CTA button contrast</div>
+    </div>
+    <div class="imp-body">
+      <div class="side">
+        <div class="side-label before">Before</div>
+        <div class="hero-before">
+          <div class="hb-tag">Drones & Robotics Club</div>
+          <div class="hb-h1">Build. Compete. Belong.</div>
+          <div class="hb-sub"></div><div class="hb-sub short"></div>
+          <div class="hb-cta"><div class="hb-btn hb-primary">Join</div><div class="hb-btn hb-secondary">Projects</div></div>
+          <div class="hb-stat-row">
+            <div class="hb-stat"><div class="hb-num">9</div><div class="hb-lbl">Depts</div></div>
+            <div class="hb-stat"><div class="hb-num">200+</div><div class="hb-lbl">Members</div></div>
+            <div class="hb-stat"><div class="hb-num">50+</div><div class="hb-lbl">Projects</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="divider-v"></div>
+      <div class="side">
+        <div class="side-label after">After</div>
+        <div class="hero-after">
+          <div class="hb-tag" style="position:relative;z-index:1;">◈ Drones &amp; Robotics Club — KSU</div>
+          <div class="hb-h1 refined" style="position:relative;z-index:1;">Build.<br/><span class="accent">Compete.</span> Belong.</div>
+          <div class="hb-sub" style="position:relative;z-index:1;"></div><div class="hb-sub short" style="position:relative;z-index:1;"></div>
+          <div class="hb-cta" style="position:relative;z-index:1;"><div class="hb-btn hb-primary" style="box-shadow:0 0 16px rgba(0,217,172,0.3);">Join Now →</div><div class="hb-btn hb-secondary">View Projects</div></div>
+          <div class="hb-stat-row" style="position:relative;z-index:1;">
+            <div class="hb-stat refined"><div class="hb-num">9</div><div class="hb-lbl">Depts</div></div>
+            <div class="hb-stat refined"><div class="hb-num">200+</div><div class="hb-lbl">Members</div></div>
+            <div class="hb-stat refined"><div class="hb-num">50+</div><div class="hb-lbl">Projects</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="improvement">
+    <div class="imp-header">
+      <div class="imp-title">6 — Navigation Bar</div>
+      <div class="imp-subtitle">Logo mark more prominent · branded nav links · glowing CTA button · frosted glass blur</div>
+    </div>
+    <div class="imp-body">
+      <div class="side">
+        <div class="side-label before">Before</div>
+        <div class="nav-before">
+          <div class="logo-b"></div>
+          <div class="nav-items-b">
+            <div class="nav-item-b act"></div>
+            <div class="nav-item-b"></div>
+            <div class="nav-item-b"></div>
+          </div>
+          <div class="nav-end"><div class="nav-btn-b"></div></div>
+        </div>
+      </div>
+      <div class="divider-v"></div>
+      <div class="side">
+        <div class="side-label after">After</div>
+        <div class="nav-after">
+          <div class="logo-a">
+            <div class="logo-a-mark">🌴</div>
+            <div class="logo-a-text"></div>
+          </div>
+          <div class="nav-items-a">
+            <div class="nav-item-a act">Home</div>
+            <div class="nav-item-a">Team</div>
+            <div class="nav-item-a">Projects</div>
+          </div>
+          <div class="nav-end"><div class="nav-btn-a"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:20px;text-align:center;">These 6 areas cover the whole app — globals.css, shared components, and pages. Does this match what you have in mind? Let me know in the terminal.</p>

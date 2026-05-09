@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npx next build
+        env:
+          # Build runs in mock-mode (no DATABASE_URL) — sufficient for compile/output check.
+          # Vercel handles the real production build with full env vars.
+          JWT_SECRET: ci-build-only-not-a-real-secret-32bytes
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000

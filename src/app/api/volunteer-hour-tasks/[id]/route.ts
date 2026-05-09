@@ -1,0 +1,74 @@
+import { z } from "zod";
+import { err, handle, ok, parseBody } from "@/lib/api";
+import { query } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
+import { getMockStore, isMockMode } from "@/lib/mock-store";
+
+const Patch = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  hours: z.number().positive().optional(),
+  participationDate: z.string().min(1).optional(),
+  isActive: z.boolean().optional(),
+}).refine((value) => Object.values(value).some((entry) => entry !== undefined), {
+  message: "At least one field is required.",
+});
+
+function canManage(session: Awaited<ReturnType<typeof requireSession>>) {
+  const isAdmin = session.position === "president" || session.position === "vice_president";
+  const isHr = (session.position === "dept_leader" || session.position === "dept_vice_leader") && session.departmentSlug === "hr";
+  return isAdmin || isHr;
+}
+
+export const PATCH = handle(async (req, ctx) => {
+  const session = await requireSession();
+  if (!canManage(session)) return err(403, "Forbidden");
+
+  const { id } = await ctx.params;
+  const opportunityId = Number(id);
+  const body = await parseBody(req, Patch);
+
+  if (isMockMode()) {
+    const task = getMockStore().volunteerHourTasks.find((entry) => entry.opportunityId === opportunityId);
+    if (!task) return err(404, "Volunteer hour task not found");
+    if (body.title !== undefined) task.title = body.title;
+    if (body.description !== undefined) task.description = body.description ?? null;
+    if (body.hours !== undefined) task.hours = body.hours;
+    if (body.participationDate !== undefined) task.participationDate = body.participationDate;
+    if (body.isActive !== undefined) task.isActive = body.isActive;
+    task.updatedAt = new Date().toISOString();
+    return ok({ success: true });
+  }
+
+  const sets: string[] = [];
+  const params: unknown[] = [];
+  if (body.title !== undefined) {
+    params.push(body.title);
+    sets.push(`title = $${params.length}`);
+  }
+  if (body.description !== undefined) {
+    params.push(body.description ?? null);
+    sets.push(`description = $${params.length}`);
+  }
+  if (body.hours !== undefined) {
+    params.push(body.hours);
+    sets.push(`hours = $${params.length}`);
+  }
+  if (body.participationDate !== undefined) {
+    params.push(body.participationDate);
+    sets.push(`participation_date = $${params.length}`);
+  }
+  if (body.isActive !== undefined) {
+    params.push(body.isActive);
+    sets.push(`is_active = $${params.length}`);
+  }
+  params.push(opportunityId);
+  const result = await query(
+    `UPDATE volunteer_hour_tasks
+        SET ${sets.join(", ")}, updated_at = NOW()
+      WHERE opportunity_id = $${params.length}`,
+    params,
+  );
+  if (result.rowCount === 0) return err(404, "Volunteer hour task not found");
+  return ok({ success: true });
+});
