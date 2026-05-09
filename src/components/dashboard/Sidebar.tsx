@@ -52,6 +52,7 @@ const navItems: NavItem[] = [
   { label: "Finance", labelAr: "المالية", href: "/dashboard/finance", icon: DollarSign, dept: "finance" },
   { label: "Madarat", labelAr: "مدارات", href: "/dashboard/madarat", icon: GraduationCap, dept: "madarat" },
   { label: "Admin Panel", labelAr: "لوحة الإدارة", href: "/dashboard/leaders", icon: Shield, clubLeaderOnly: true },
+  { label: "Roster Manager", labelAr: "إدارة الفريق", href: "/dashboard/roster", icon: Users, clubLeaderOnly: true },
   { label: "Requests", labelAr: "الطلبات", href: "/dashboard/requests", icon: Inbox, anyLeader: true },
   { label: "Content", labelAr: "المحتوى", href: "/dashboard/content", icon: FileText, anyLeader: true },
   { label: "My Profile", labelAr: "ملفي", href: "/dashboard/profile", icon: UserCircle },

@@ -36,6 +36,8 @@ export const GET = handle(async (req) => {
         githubUrl: m.githubUrl,
         gender: m.gender,
         profileStatus: m.profileStatus,
+        customRole: m.customRole ?? null,
+        customRoleAr: m.customRoleAr ?? null,
         isPublicOnTeam: m.isPublicOnTeam,
       }));
     return ok(rows);
@@ -54,6 +56,8 @@ export const GET = handle(async (req) => {
             p.avatar_url AS "avatarUrl", p.bio, p.major,
             p.linkedin_url AS "linkedinUrl", p.github_url AS "githubUrl",
             p.gender,
+            p.custom_role    AS "customRole",
+            p.custom_role_ar AS "customRoleAr",
             p.status AS "profileStatus", p.is_public_on_team AS "isPublicOnTeam"
        FROM users u
        LEFT JOIN departments d ON d.department_id = u.department_id

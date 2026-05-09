@@ -16,6 +16,7 @@ export const GET = handle(async (_req, ctx) => {
       position: member.position,
       isActive: member.isActive,
       departmentSlug: member.departmentSlug,
+      departmentId: member.departmentId,
       fullName: member.fullName,
       fullNameAr: member.fullNameAr,
       avatarUrl: member.avatarUrl,
@@ -27,6 +28,8 @@ export const GET = handle(async (_req, ctx) => {
       graduationYear: member.graduationYear,
       gender: member.gender,
       profileStatus: member.profileStatus,
+      customRole: member.customRole ?? null,
+      customRoleAr: member.customRoleAr ?? null,
       isPublicOnTeam: member.isPublicOnTeam,
       isEmailPublic: member.isEmailPublic ?? false,
       isLinkedinPublic: member.isLinkedinPublic ?? true,
@@ -37,11 +40,14 @@ export const GET = handle(async (_req, ctx) => {
   const row = await queryOne(
     `SELECT u.member_id AS "memberId", u.email, u.position::text AS position,
             u.is_active AS "isActive", d.slug::text AS "departmentSlug",
+            u.department_id AS "departmentId",
             p.full_name AS "fullName", p.full_name_ar AS "fullNameAr",
             p.avatar_url AS "avatarUrl", p.bio, p.major, p.phone_number AS "phoneNumber",
             p.linkedin_url AS "linkedinUrl", p.github_url AS "githubUrl",
             p.graduation_year AS "graduationYear", p.gender,
             p.status AS "profileStatus",
+            p.custom_role    AS "customRole",
+            p.custom_role_ar AS "customRoleAr",
             p.is_public_on_team AS "isPublicOnTeam",
             COALESCE(p.is_email_public,    FALSE) AS "isEmailPublic",
             COALESCE(p.is_linkedin_public, TRUE)  AS "isLinkedinPublic",
@@ -71,6 +77,11 @@ const Patch = z.object({
   status: z.enum(["active", "inactive", "alumni", "suspended"]).optional(),
   isActive: z.boolean().optional(),
   departmentId: z.number().int().nullable().optional(),
+  // Admin-set role label shown on the public team page (e.g. "Quality &
+  // Assurance Lead", "Media Advisor"). Falls back to the position-derived
+  // label when blank.
+  customRole: z.string().optional().or(z.literal("")),
+  customRoleAr: z.string().optional().or(z.literal("")),
   // Per-field privacy toggles
   isPublicOnTeam: z.boolean().optional(),
   isEmailPublic: z.boolean().optional(),
@@ -102,6 +113,8 @@ export const PATCH = handle(async (req, ctx) => {
     if (body.graduationYear !== undefined) target.graduationYear = body.graduationYear;
     if (body.gender !== undefined) target.gender = body.gender;
     if (body.status !== undefined) target.profileStatus = body.status;
+    if (body.customRole !== undefined) target.customRole = body.customRole || null;
+    if (body.customRoleAr !== undefined) target.customRoleAr = body.customRoleAr || null;
     if (body.isPublicOnTeam !== undefined) target.isPublicOnTeam = body.isPublicOnTeam;
     if (body.isEmailPublic !== undefined) target.isEmailPublic = body.isEmailPublic;
     if (body.isLinkedinPublic !== undefined) target.isLinkedinPublic = body.isLinkedinPublic;
@@ -124,6 +137,7 @@ export const PATCH = handle(async (req, ctx) => {
   for (const k of [
     "fullName", "fullNameAr", "bio", "major", "phoneNumber",
     "linkedinUrl", "githubUrl", "avatarUrl", "graduationYear", "gender", "status",
+    "customRole", "customRoleAr",
     "isPublicOnTeam", "isEmailPublic", "isLinkedinPublic", "isPhonePublic", "isGithubPublic",
   ] as const) {
     if (body[k] !== undefined) profileFields[k] = body[k] === "" ? null : body[k];
@@ -132,6 +146,8 @@ export const PATCH = handle(async (req, ctx) => {
     fullName: "full_name", fullNameAr: "full_name_ar", bio: "bio", major: "major",
     phoneNumber: "phone_number", linkedinUrl: "linkedin_url", githubUrl: "github_url",
     avatarUrl: "avatar_url", graduationYear: "graduation_year", gender: "gender", status: "status",
+    customRole: "custom_role",
+    customRoleAr: "custom_role_ar",
     isPublicOnTeam: "is_public_on_team",
     isEmailPublic: "is_email_public",
     isLinkedinPublic: "is_linkedin_public",
