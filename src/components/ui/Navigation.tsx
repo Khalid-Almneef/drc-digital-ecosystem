@@ -19,7 +19,6 @@ const navLinks = [
   { labelKey: "nav.workshops", href: "/workshops" },
   { labelKey: "nav.events", href: "/events" },
   { labelKey: "nav.team", href: "/team" },
-  { labelKey: "nav.alumni", href: "/alumni" },
   { labelKey: "nav.joinus", href: "/join" },
 ];
 

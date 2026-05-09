@@ -59,16 +59,13 @@ export default function TeamMemberProfilePage() {
   useEffect(() => {
     api.get<MemberInfo>(`/api/members/${id}/public`)
       .then((row) => {
-        if (row?.profileStatus === "alumni") {
-          // Alumni have their own dedicated page; redirect for canonical URL.
-          router.replace(`/alumni/${id}`);
-          return;
-        }
+        // Alumni open in the same /team/[id] page now that the standalone
+        // /alumni route is gone; the homepage slider opens its own modal.
         setData(row);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
-  }, [id, router]);
+  }, [id]);
 
   if (loading) {
     return (
