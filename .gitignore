@@ -51,3 +51,4 @@ next-env.d.ts
 
 # Local scratch / smoke-test output
 /tmp
+.env*.local

@@ -381,160 +381,21 @@ export const DEFAULT_JOIN_FAQS: JoinFaqItem[] = [
   },
 ];
 
-export const DEFAULT_EVENT_ACHIEVEMENTS: EventAchievementItem[] = [
-  {
-    icon: "trophy",
-    nameEn: "National Robotics Championship 2025",
-    nameAr: "بطولة الروبوتات الوطنية 2025",
-    resultEn: "1st Place — Autonomous Category",
-    resultAr: "المركز الأول — فئة الأنظمة المستقلة",
-    locationEn: "Riyadh",
-    locationAr: "الرياض",
-  },
-  {
-    icon: "trophy",
-    nameEn: "RoboCup Arabia 2024",
-    nameAr: "روبوكب العربية 2024",
-    resultEn: "2nd Place — Soccer Division",
-    resultAr: "المركز الثاني — قسم كرة القدم",
-    locationEn: "Dubai",
-    locationAr: "دبي",
-  },
-  {
-    icon: "award",
-    nameEn: "Hackathon KSA 2024",
-    nameAr: "هاكاثون السعودية 2024",
-    resultEn: "Best Innovation Award",
-    resultAr: "جائزة أفضل ابتكار",
-    locationEn: "Jeddah",
-    locationAr: "جدة",
-  },
-  {
-    icon: "users",
-    nameEn: "DRC Internal Drone Race 2023",
-    nameAr: "سباق DRC الداخلي 2023",
-    resultEn: "Community Event — 60 Participants",
-    resultAr: "فعالية مجتمعية — 60 مشاركًا",
-    locationEn: "Campus",
-    locationAr: "الحرم الجامعي",
-  },
-];
+// Empty by default — leadership fills these in via the Content dashboard
+// once real achievements / stats are confirmed. Avoids shipping invented
+// competition wins on day one.
+export const DEFAULT_EVENT_ACHIEVEMENTS: EventAchievementItem[] = [];
 
-export const DEFAULT_TEAM_STATS: TeamStatItem[] = [
-  { value: "200+", labelEn: "Active Members", labelAr: "أعضاء نشطون" },
-  { value: "9", labelEn: "Departments", labelAr: "لجان" },
-  { value: "20+", labelEn: "Officers", labelAr: "قيادات" },
-];
+export const DEFAULT_TEAM_STATS: TeamStatItem[] = [];
 
-export const DEFAULT_HOME_ANNOUNCEMENT_CARDS: HomeAnnouncementCardItem[] = [
-  {
-    badgeEn: "Open Recruitment",
-    badgeAr: "العضوية مفتوحة",
-    titleEn: "Join DRC this semester",
-    titleAr: "انضم إلى DRC هذا الفصل",
-    bodyEn: "Applications are open now for builders, organizers, designers, and media contributors.",
-    bodyAr: "التقديم مفتوح الآن للبنّائين والمنظمين والمصممين والمساهمين في الإعلام.",
-    imageUrl: "/logo-full.png",
-    href: "/join",
-    ctaEn: "Apply Now",
-    ctaAr: "قدّم الآن",
-    pinned: "true",
-  },
-  {
-    badgeEn: "Project Spotlight",
-    badgeAr: "تسليط على مشروع",
-    titleEn: "See what our teams are building",
-    titleAr: "شاهد ما تبنيه فرقنا",
-    bodyEn: "Explore drones, robotics, and software projects that members are shipping right now.",
-    bodyAr: "استعرض مشاريع الدرونز والروبوتات والبرمجيات التي ينجزها الأعضاء الآن.",
-    imageUrl: "/logo-white.png",
-    href: "/projects",
-    ctaEn: "View Projects",
-    ctaAr: "استعرض المشاريع",
-    pinned: "false",
-  },
-];
+// Empty by default — leadership populates these via the Content dashboard
+// when there's actual content to showcase. Public site renders clean
+// empty states until then.
+export const DEFAULT_HOME_ANNOUNCEMENT_CARDS: HomeAnnouncementCardItem[] = [];
 
-export const DEFAULT_HOME_HERO_BANNERS: HomeHeroBannerItem[] = [
-  {
-    eyebrowEn: "Competition Field",
-    eyebrowAr: "ساحة المنافسة",
-    titleEn: "Autonomous systems that leave the lab and perform under pressure.",
-    titleAr: "أنظمة مستقلة تخرج من المختبر وتثبت نفسها تحت الضغط.",
-    descriptionEn: "From drone systems to robotics controls, our teams build work meant to be tested, refined, and shown in public.",
-    descriptionAr: "من هندسة الدرونز إلى تحكم الروبوتات، تبني فرقنا أنظمة مصممة للاختبار والتحسين والعرض أمام الجميع.",
-    imageUrl: "/logo-full.png",
-    href: "/projects",
-    ctaEn: "Explore Projects",
-    ctaAr: "استكشف المشاريع",
-    metric: "12 competition appearances",
-  },
-  {
-    eyebrowEn: "Workshop Floor",
-    eyebrowAr: "أرضية الورش",
-    titleEn: "Hands-on learning is part of the operating model.",
-    titleAr: "التعلّم العملي جزء من طريقة عملنا.",
-    descriptionEn: "Members learn through build sessions, live reviews, and recorded workshops that stay useful after the event ends.",
-    descriptionAr: "يتعلم الأعضاء عبر جلسات البناء والمراجعات الحية وورش مسجلة تبقى مفيدة حتى بعد انتهاء الحدث.",
-    imageUrl: "/logo-white.png",
-    href: "/workshops",
-    ctaEn: "See Workshops",
-    ctaAr: "شاهد الورش",
-    metric: "30+ recorded sessions",
-  },
-  {
-    eyebrowEn: "Club Culture",
-    eyebrowAr: "ثقافة النادي",
-    titleEn: "Technical depth supported by media, events, and member operations.",
-    titleAr: "عمق تقني تدعمه فرق الإعلام والفعاليات وتشغيل الأعضاء.",
-    descriptionEn: "The club works because engineering, storytelling, logistics, and people operations move together.",
-    descriptionAr: "ينجح النادي لأن الهندسة والسرد والإدارة اللوجستية وتشغيل الأعضاء تتحرك معًا.",
-    imageUrl: "/logo-full.png",
-    href: "/team",
-    ctaEn: "Meet the Team",
-    ctaAr: "تعرّف على الفريق",
-    metric: "9 departments, one system",
-  },
-];
+export const DEFAULT_HOME_HERO_BANNERS: HomeHeroBannerItem[] = [];
 
-export const DEFAULT_HOME_FEATURE_SPOTLIGHTS: HomeFeatureSpotlightItem[] = [
-  {
-    labelEn: "Build",
-    labelAr: "البناء",
-    titleEn: "Project teams ship real deliverables, not club busywork.",
-    titleAr: "فرق المشاريع تنجز مخرجات حقيقية وليست مجرد مهام شكلية.",
-    descriptionEn: "Every project is structured around milestones, tasks, and visible outcomes that members can point to with confidence.",
-    descriptionAr: "كل مشروع منظم حول مراحل ومهام ومخرجات واضحة يمكن للأعضاء الإشارة إليها بثقة.",
-    imageUrl: "/logo-full.png",
-    href: "/projects",
-    ctaEn: "View live work",
-    ctaAr: "عرض الأعمال",
-  },
-  {
-    labelEn: "Train",
-    labelAr: "التدريب",
-    titleEn: "Workshops turn curiosity into useful technical skill.",
-    titleAr: "الورش تحول الفضول إلى مهارة تقنية مفيدة.",
-    descriptionEn: "Recorded and live sessions give new members a path from interest to contribution without needing prior experience.",
-    descriptionAr: "الجلسات المباشرة والمسجلة تمنح الأعضاء الجدد طريقًا من الاهتمام إلى المساهمة دون حاجة لخبرة مسبقة.",
-    imageUrl: "/logo-white.png",
-    href: "/workshops",
-    ctaEn: "Open the library",
-    ctaAr: "افتح المكتبة",
-  },
-  {
-    labelEn: "Show",
-    labelAr: "الإظهار",
-    titleEn: "Media and announcements make the work visible to campus and partners.",
-    titleAr: "الإعلام والإعلانات يجعلان العمل مرئيًا داخل الجامعة ولدى الشركاء.",
-    descriptionEn: "The public site, social publishing, and visual storytelling now share one editing workflow so the club always looks active.",
-    descriptionAr: "الموقع العام والنشر الاجتماعي والسرد البصري تشترك الآن في مسار تحرير واحد ليبدو النادي دائمًا نشطًا.",
-    imageUrl: "/logo-full.png",
-    href: "/events",
-    ctaEn: "See what is live",
-    ctaAr: "شاهد ما هو منشور",
-  },
-];
+export const DEFAULT_HOME_FEATURE_SPOTLIGHTS: HomeFeatureSpotlightItem[] = [];
 
 export const DEFAULT_CUSTOM_PAGE_SEGMENTS: CustomPageSegmentItem[] = [];
 

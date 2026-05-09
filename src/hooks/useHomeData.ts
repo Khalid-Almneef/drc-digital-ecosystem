@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { api } from "@/lib/client";
-import { workshops as staticWorkshops, Workshop } from "@/data/workshops";
+import type { Workshop } from "@/data/workshops";
 import {
   DEFAULT_HOME_ANNOUNCEMENT_CARDS,
   DEFAULT_HOME_HERO_BANNERS,
@@ -140,15 +140,14 @@ export type PulseItem = {
   tone: string;
 };
 
-// Sane defaults for first paint. Real values come from /api/stats/overview
-// (members and departments come from the seeded roster of 128 active + 12 alumni
-// across 8 departments). We use a dash for unknown counts so we never ship
-// inflated round numbers like "200+" or "50+" to first-time visitors.
+// First-paint defaults are placeholders only — every value gets replaced by
+// real numbers from /api/stats/overview before the user sees them. Using
+// "—" everywhere ensures we never flash an invented number like "200+".
 const DEFAULT_STATS: HomeStats = {
   projects: "—",
   competitions: "—",
-  members: "128",
-  departments: "8",
+  members: "—",
+  departments: "—",
 };
 
 const DEFAULT_VISIBILITY: SectionVisibility = {
@@ -159,29 +158,9 @@ const DEFAULT_VISIBILITY: SectionVisibility = {
   projects: true,
 };
 
-const fallbackProjects: FeaturedProject[] = [
-  {
-    projectId: 1,
-    title: "Autonomous Survey Drone",
-    category: "Aerial Systems",
-    description: "GPS-guided drone for terrain mapping and agricultural survey with real-time data transmission.",
-    status: "completed",
-  },
-  {
-    projectId: 2,
-    title: "RoboCup Soccer Bot",
-    category: "Competitive Robotics",
-    description: "Autonomous soccer-playing robot with computer vision and strategic decision-making AI.",
-    status: "in_progress",
-  },
-  {
-    projectId: 3,
-    title: "FPV Racing Quad",
-    category: "Racing",
-    description: "Custom 5-inch freestyle and racing quadcopter with sub-250g build for competition.",
-    status: "completed",
-  },
-];
+// No baked-in projects — real ones come from /api/projects/featured (empty
+// array until committee leads publish work).
+const fallbackProjects: FeaturedProject[] = [];
 
 export function formatShortDate(iso: string, lang: string) {
   const locale = lang === "ar" ? "ar-SA" : "en-US";
@@ -210,7 +189,7 @@ export function pulseLevelValue(level: PulseLevel) {
 export function useHomeData() {
   const { lang } = useLang();
 
-  const [displayWorkshops, setDisplayWorkshops] = useState<Workshop[]>(staticWorkshops.slice(0, 3));
+  const [displayWorkshops, setDisplayWorkshops] = useState<Workshop[]>([]);
   const [projects, setProjects] = useState<FeaturedProject[]>(fallbackProjects);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [motm, setMotm] = useState<MonthMember[]>([]);

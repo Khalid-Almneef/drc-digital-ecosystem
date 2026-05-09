@@ -188,8 +188,8 @@ export default function AboutPage() {
 
           <p className="mt-4 text-center text-sm leading-7 text-muted">
             {lang === "ar"
-              ? "من تدشين النادي عام 2022 باسم DAAS، إلى نادي الدرونز والروبوت اليوم بتسع لجان متخصصة وأكثر من 100 عضو نشط — هذه أبرز محطاتنا."
-              : "From the 2022 inauguration as DAAS to today's nine-committee Drones & Robotics Club with 100+ active members — the milestones in brief."}
+              ? "من تدشين النادي عام 2022 باسم DAAS إلى نادي الدرونز والروبوت اليوم بتسع لجان متخصصة — هذه أبرز محطاتنا."
+              : "From the 2022 inauguration as DAAS to today's nine-committee Drones & Robotics Club — the milestones in brief."}
           </p>
 
           <div className="mt-10 relative">

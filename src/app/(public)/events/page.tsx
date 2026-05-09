@@ -73,60 +73,10 @@ function eventMonthShort(iso: string, lang: "en" | "ar"): string {
   });
 }
 
-// ── Fallback seed data ─────────────────────────────────────────────────────
-// Displayed when the API is unavailable or returns an empty array.
-// Polished placeholders — replace with real data once DB is seeded.
-
-const seedUpcoming: UpcomingEvent[] = [
-  {
-    eventId: "seed-1",
-    title: "DRC Drone Racing Championship",
-    description: "Annual FPV drone racing competition open to all skill levels. Prizes for top 3 finishers.",
-    type: "competition",
-    category: null,
-    startTime: "2026-05-15T07:00:00Z",
-    endTime: "2026-05-15T15:00:00Z",
-    location: "Main Campus Arena",
-    seatsAvailable: null,
-    imageUrl: null,
-  },
-  {
-    eventId: "seed-2",
-    title: "Introduction to Arduino Workshop",
-    description: "Beginner-friendly workshop covering microcontroller basics, sensor integration, and motor control.",
-    type: "workshop",
-    category: null,
-    startTime: "2026-04-22T11:00:00Z",
-    endTime: "2026-04-22T14:00:00Z",
-    location: "Engineering Lab B2",
-    seatsAvailable: 30,
-    imageUrl: null,
-  },
-  {
-    eventId: "seed-3",
-    title: "ROS2 & Autonomous Navigation",
-    description: "Advanced workshop on Robot Operating System 2 for autonomous drone navigation and SLAM.",
-    type: "workshop",
-    category: null,
-    startTime: "2026-05-03T12:00:00Z",
-    endTime: "2026-05-03T15:00:00Z",
-    location: "CS Building, Room 401",
-    seatsAvailable: null,
-    imageUrl: null,
-  },
-  {
-    eventId: "seed-4",
-    title: "Inter-University Robotics Battle",
-    description: "Two-day robotics competition featuring sumo bots, line followers, and freestyle categories.",
-    type: "competition",
-    category: null,
-    startTime: "2026-06-08T07:00:00Z",
-    endTime: null,
-    location: "Convention Center Hall A",
-    seatsAvailable: null,
-    imageUrl: null,
-  },
-];
+// Empty by default — events come from /api/events/public, which the
+// Logistics committee populates from their dashboard. The empty state
+// renders cleanly when the DB has no upcoming events yet.
+const seedUpcoming: UpcomingEvent[] = [];
 
 // ── Curated achievements ───────────────────────────────────────────────────
 // Replace with real competition history when available.

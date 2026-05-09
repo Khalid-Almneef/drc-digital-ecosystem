@@ -247,11 +247,13 @@ const inputCls =
 const textareaCls = `${inputCls} min-h-[110px] resize-y`;
 const labelCls = "mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted";
 
+// Empty by default — content leadership types in real numbers from the
+// editor. Empty strings render as hidden stats on the public site.
 const DEFAULT_STATS: HomeStats = {
-  projects: "18",
-  competitions: "9",
-  members: "120+",
-  departments: "9",
+  projects: "",
+  competitions: "",
+  members: "",
+  departments: "",
 };
 
 const DEFAULT_VISIBILITY: SectionVisibility = {

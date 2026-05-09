@@ -98,11 +98,9 @@ const tierColors: Record<SponsorTier, string> = {
   bronze: "text-orange-300 bg-orange-400/10 border-orange-400/20",
 };
 
-const eventPromotions = [
-  { event: "Drone Racing Championship", date: "May 15", reach: "2,500", registrations: 45, status: "promoting" },
-  { event: "Arduino Workshop", date: "Apr 22", reach: "800", registrations: 28, status: "promoting" },
-  { event: "Inter-University Robotics Battle", date: "Jun 8-9", reach: "-", registrations: 0, status: "upcoming" },
-];
+// Empty until the PR committee tracks real promotions. The "Promotions"
+// tab renders an empty state instead of fake numbers.
+const eventPromotions: { event: string; date: string; reach: string; registrations: number; status: string }[] = [];
 
 function statusMeta(status: SponsorStatus) {
   return statusOptions.find((option) => option.value === status) ?? statusOptions[0];

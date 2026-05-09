@@ -69,95 +69,11 @@ interface ArchiveCardItem {
 
 type ArchiveFilter = "all" | ArchiveSectionKey;
 
-const fallbackProjects: ProjectItem[] = [
-  {
-    projectId: 1,
-    title: "Autonomous Survey Drone",
-    description: "GPS-guided drone for terrain mapping and agricultural survey.",
-    imageUrl: null,
-    githubUrl: null,
-    category: "Drones",
-    status: "completed",
-    techStack: ["ArduPilot", "ROS2", "Python"],
-    isFeatured: true,
-    contributors: [],
-  },
-  {
-    projectId: 2,
-    title: "RoboCup Soccer Bot",
-    description: "Autonomous soccer-playing robot with computer vision and motion planning.",
-    imageUrl: null,
-    githubUrl: null,
-    category: "Robotics",
-    status: "in_progress",
-    techStack: ["OpenCV", "STM32", "C++"],
-    isFeatured: false,
-    contributors: [],
-  },
-  {
-    projectId: 3,
-    title: "Computer Vision Pipeline",
-    description: "Object detection and tracking for autonomous drone navigation.",
-    imageUrl: null,
-    githubUrl: null,
-    category: "AI & Software",
-    status: "planning",
-    techStack: ["YOLO", "Jetson", "TensorRT"],
-    isFeatured: false,
-    contributors: [],
-  },
-];
-
-const fallbackEvents: EventItem[] = [
-  {
-    eventId: 201,
-    title: "Introduction to Arduino Workshop",
-    description: "Beginner-friendly workshop for sensors, motor control, and embedded systems.",
-    type: "workshop",
-    category: "Workshop",
-    startTime: "2026-05-02T15:00:00Z",
-    endTime: "2026-05-02T18:00:00Z",
-    location: "Engineering Lab B2",
-    seatsAvailable: 30,
-    imageUrl: null,
-  },
-  {
-    eventId: 202,
-    title: "ROS2 Navigation Intensive",
-    description: "A technical event for autonomy, simulation, and navigation workflows.",
-    type: "general",
-    category: "Technical Session",
-    startTime: "2026-05-14T16:00:00Z",
-    endTime: "2026-05-14T19:00:00Z",
-    location: "Innovation Studio",
-    seatsAvailable: null,
-    imageUrl: null,
-  },
-  {
-    eventId: 301,
-    title: "DRC Drone Racing Championship",
-    description: "Annual FPV racing showcase with qualifying heats and finals.",
-    type: "competition",
-    category: "Drone Racing",
-    startTime: "2026-06-01T08:00:00Z",
-    endTime: "2026-06-01T17:00:00Z",
-    location: "Main Arena",
-    seatsAvailable: null,
-    imageUrl: null,
-  },
-  {
-    eventId: 302,
-    title: "Inter-University Robotics Battle",
-    description: "A multi-category robotics competition for autonomous and manual systems.",
-    type: "competition",
-    category: "Robotics",
-    startTime: "2026-03-18T08:00:00Z",
-    endTime: "2026-03-18T17:00:00Z",
-    location: "Convention Center",
-    seatsAvailable: null,
-    imageUrl: null,
-  },
-];
+// All public content comes from the API. No baked-in projects or events —
+// when the database is empty, the page shows clean empty states until
+// committee leads publish real work via their dashboards.
+const fallbackProjects: ProjectItem[] = [];
+const fallbackEvents: EventItem[] = [];
 
 function sectionNaturalSort(a: ArchiveCardItem, b: ArchiveCardItem) {
   return b.sortStamp.localeCompare(a.sortStamp);
