@@ -70,9 +70,15 @@ type DeptConfig = {
 
 const DEPT_CONFIGS: DeptConfig[] = [
   // Innovation is the engineering core of the club — pinned first.
-  { dept: "innovation",  leaderRole: "team.role.leader",    viceRole: "team.role.vice", qa: true, promoteSubs: true },
+  // qa: true labels Innovation's sub-leaders as "Quality & Assurance Lead"
+  // when no customRole is set. promoteSubs is intentionally OFF for both
+  // Innovation and Media — sub-leaders render in the Sub-leads panel
+  // below the dept leader/vice so the structure is explicit. Dashboard
+  // access for those sub-leaders is still elevated to dept_vice_leader
+  // by applyPermissionOverrides() in src/lib/auth.ts.
+  { dept: "innovation",  leaderRole: "team.role.leader",    viceRole: "team.role.vice", qa: true },
   { dept: "development", leaderRole: "team.role.leader",    viceRole: "team.role.vice"      },
-  { dept: "media",       leaderRole: "team.role.leader",    viceRole: "team.role.vice", promoteSubs: true },
+  { dept: "media",       leaderRole: "team.role.leader",    viceRole: "team.role.vice"      },
   { dept: "pr",          leaderRole: "team.role.leader",    viceRole: "team.role.vice"      },
   { dept: "hr",          leaderRole: "team.role.leader",    viceRole: "team.role.vice"      },
   { dept: "finance",     leaderRole: "team.role.leader",    viceRole: null                  },
@@ -402,18 +408,18 @@ export default function TeamPage() {
                   </div>
 
                   {(() => {
-                    // promoteSubs: lift sub-leaders into the same row as
-                    // the dept leader/vice so the public hierarchy reads
-                    // flat. Their display role uses customRole when set
-                    // (e.g. "Quality & Assurance Lead", "Media Advisor").
-                    // qa-flagged depts use the QA role key as a fallback.
-                    // Other departments keep the separate Sub-leads panel.
-                    const shouldPromote = cfg.promoteSubs || cfg.qa;
-                    const fallbackSubRole = cfg.qa ? "team.role.qa_leader" : "team.role.sub_leader";
+                    // promoteSubs (when set): lift sub-leaders into the same
+                    // row as the dept leader/vice. qa (Innovation) only drives
+                    // the *label* of sub-leaders in the Sub-leads panel —
+                    // they show as "Quality & Assurance Lead" instead of the
+                    // generic "Sub-lead" — but they stay in the panel so the
+                    // hierarchy is visually explicit. Sub-leaders' dashboard
+                    // access is still elevated by the auth-layer override.
+                    const shouldPromote = Boolean(cfg.promoteSubs);
                     const promotedHeads = shouldPromote
                       ? [
                           ...headEntries,
-                          ...subs.map((m) => ({ member: m as PublicMember | null, role: fallbackSubRole })),
+                          ...subs.map((m) => ({ member: m as PublicMember | null, role: "team.role.sub_leader" })),
                         ]
                       : headEntries;
                     const remainingSubs = shouldPromote ? [] : subs;
@@ -440,14 +446,16 @@ export default function TeamPage() {
                         {remainingSubs.length > 0 && (
                           <div className="mt-5 rounded-2xl border border-border bg-surface/45 p-4">
                             <p className="text-xs font-semibold text-muted uppercase tracking-widest mb-3">
-                              {(lang as string) === "ar" ? "قادة فرعيون" : "Sub-leads"}
+                              {cfg.qa
+                                ? t("team.qa.title")
+                                : ((lang as string) === "ar" ? "قادة فرعيون" : "Sub-leads")}
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                               {remainingSubs.map((m, qi) => (
                                 <MemberCard
                                   key={m.memberId}
                                   member={m}
-                                  roleKey="team.role.sub_leader"
+                                  roleKey={cfg.qa ? "team.role.qa_leader" : "team.role.sub_leader"}
                                   deptSlug={cfg.dept}
                                   delay={di * 0.04 + qi * 0.06}
                                   t={t}
