@@ -21,14 +21,27 @@ export const POST = handle(async (req) => {
        VALUES ($1, $2, 'password_reset', NOW() + INTERVAL '1 hour')`,
       [row.member_id, sha256(plain)],
     );
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    await sendEmail({
-      to: email,
-      subject: "Reset your DRC password",
-      html: `<p>Click to reset your password (expires in 1 hour):</p>
-             <p><a href="${appUrl}/reset-password?token=${plain}">Reset password</a></p>`,
-      text: `${appUrl}/reset-password?token=${plain}`,
-    });
+    // Prefer NEXT_PUBLIC_SITE_URL (set by deploy), then NEXT_PUBLIC_APP_URL
+    // for back-compat, then VERCEL_URL on preview deploys, and finally
+    // localhost so dev still works.
+    const appUrl =
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+      "http://localhost:3000";
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Reset your DRC password",
+        html: `<p>Click to reset your password (expires in 1 hour):</p>
+               <p><a href="${appUrl}/reset-password?token=${plain}">Reset password</a></p>`,
+        text: `${appUrl}/reset-password?token=${plain}`,
+      });
+    } catch (err) {
+      // Surface email-send failures in Vercel logs without leaking that
+      // the address is registered.
+      console.error("[forgot-password] sendEmail failed:", err);
+    }
   }
   return ok({ success: true });
 });
