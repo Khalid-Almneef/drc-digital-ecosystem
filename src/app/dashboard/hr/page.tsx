@@ -861,6 +861,14 @@ export default function HRDashboard() {
                 <Download size={14} />
                 {tr("Download template (.csv)", "تحميل القالب (.csv)")}
               </button>
+              <a
+                href="/api/volunteer-hours/export"
+                download
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-elevated px-4 py-2 text-xs font-medium text-foreground hover:border-primary/30 transition-colors"
+              >
+                <Download size={14} />
+                {tr("Export all hours (.csv)", "تصدير كل الساعات (.csv)")}
+              </a>
               <label className={`inline-flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/15 ${bulkUploading ? "opacity-60 cursor-wait" : "cursor-pointer"}`}>
                 {bulkUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 {bulkUploading
