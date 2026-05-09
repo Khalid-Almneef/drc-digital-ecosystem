@@ -70,7 +70,10 @@ export default function JoinPage() {
   const { t, lang } = useLang();
 
   // ── Membership gate ───────────────────────────────────────────────────────
-  const [accepting, setAccepting] = useState(true);
+  // Default to closed: applications only open when leadership flips
+  // join.accepting=true via the dashboard. Avoids accidentally taking
+  // applications during off-cycle.
+  const [accepting, setAccepting] = useState(false);
   const [closedMsg, setClosedMsg] = useState("");
   const [social, setSocial] = useState<{ instagram?: string; twitter?: string; youtube_channel_id?: string }>({});
   const [benefits, setBenefits] = useState<JoinBenefitItem[]>(DEFAULT_JOIN_BENEFITS);
@@ -78,7 +81,7 @@ export default function JoinPage() {
   const [faqs, setFaqs] = useState<JoinFaqItem[]>(DEFAULT_JOIN_FAQS);
   useEffect(() => {
     api.get<{ json: { accepting: boolean } }>("/api/site-content/join.accepting")
-      .then(d => setAccepting(d?.json?.accepting ?? true)).catch(() => {});
+      .then(d => setAccepting(d?.json?.accepting ?? false)).catch(() => {});
     api.get<{ en: string; ar: string }>("/api/site-content/join.closed.message")
       .then(d => setClosedMsg(lang === "ar" ? (d?.ar ?? d?.en ?? "") : (d?.en ?? ""))).catch(() => {});
     api.get<{ json: typeof social }>("/api/site-content/social.handles")

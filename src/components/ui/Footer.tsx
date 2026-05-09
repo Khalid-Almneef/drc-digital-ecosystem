@@ -40,7 +40,7 @@ const InstagramLogo = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export function Footer() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [social, setSocial] = useState<SocialHandles>({});
   const [contactEmail, setContactEmail] = useState("partnerships@drc.club");
 
@@ -99,9 +99,11 @@ export function Footer() {
             <p className="text-sm text-muted leading-relaxed max-w-sm">
               {t("footer.brand.description")}
             </p>
-            <p className="text-sm text-muted mt-2 font-medium" dir="rtl">
-              {t("footer.brand.arabic")}
-            </p>
+            {lang === "ar" && (
+              <p className="text-sm text-muted mt-2 font-medium" dir="rtl">
+                {t("footer.brand.arabic")}
+              </p>
+            )}
           </div>
 
           {/* Club Links */}
@@ -141,7 +143,6 @@ export function Footer() {
                 ))}
               </ul>
             )}
-            <p className="mt-4 text-xs text-muted/70">@drcksu · @drc_ksu</p>
           </div>
         </div>
 

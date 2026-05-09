@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowUpRight, BriefcaseBusiness, Cpu, RadioTower, Trophy, Users, Zap } from "lucide-react";
+import { ArrowUpRight, Cpu, RadioTower, Trophy, Users, Zap } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { PixelDrone } from "@/components/ui/PixelDrone";
 import { AnnouncementDeck } from "@/components/sections/AnnouncementDeck";
@@ -12,7 +11,6 @@ import { AlumniSection } from "@/components/sections/AlumniSection";
 import { PublicCustomSegments } from "@/components/ui/PublicCustomSegments";
 import { useHomeData } from "@/hooks/useHomeData";
 import type { HomeStats } from "@/hooks/useHomeData";
-import { api } from "@/lib/client";
 
 export default function Home() {
   const { lang, t } = useLang();
@@ -23,24 +21,15 @@ export default function Home() {
     homeHighlights,
     announcementCards,
   } = useHomeData();
-  const [contactEmail, setContactEmail] = useState("partnerships@drc.club");
 
   const adminManage = t("home.admin.manage");
-
-  useEffect(() => {
-    api.get<{ en: string | null }>("/api/site-content/contact.email")
-      .then((row) => {
-        if (row?.en?.trim()) setContactEmail(row.en.trim());
-      })
-      .catch(() => {});
-  }, []);
 
   return (
     <div className="relative overflow-x-hidden">
       <PixelDrone />
 
       {/* 1. HERO SECTION */}
-      <Hero lang={lang} t={t} contactEmail={contactEmail} stats={homeStats} />
+      <Hero lang={lang} t={t} />
 
       {/* 2. STATS ROW */}
       <StatsRow stats={homeStats} t={t} />
@@ -73,7 +62,7 @@ export default function Home() {
   );
 }
 
-function Hero({ lang, t, contactEmail }: { lang: string; t: (k: string) => string; contactEmail: string; stats: HomeStats }) {
+function Hero({ lang, t }: { lang: string; t: (k: string) => string }) {
   return (
     <section className="relative overflow-hidden px-6 pb-24 pt-28 sm:pt-36">
       <div className="absolute inset-x-6 top-24 bottom-8 -z-10 rounded-[2rem] border border-border/70 bg-[linear-gradient(135deg,color-mix(in_srgb,var(--surface)_74%,transparent),color-mix(in_srgb,var(--surface-elevated)_38%,transparent))] shadow-[0_28px_100px_rgba(2,10,24,0.24)]" />
@@ -135,10 +124,6 @@ function Hero({ lang, t, contactEmail }: { lang: string; t: (k: string) => strin
           <Link href="/workshops" className="btn-secondary inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm font-semibold">
             {t("home.cta.workshops")}
           </Link>
-          <a href={`mailto:${contactEmail}`} className="btn-secondary inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm font-semibold">
-            <BriefcaseBusiness size={16} />
-            {t("home.cta.partner")}
-          </a>
         </motion.div>
       </div>
 

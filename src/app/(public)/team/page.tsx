@@ -393,40 +393,62 @@ export default function TeamPage() {
                     </span>
                   </div>
 
-                  <div className={`grid gap-4 ${headEntries.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 max-w-xl"}`}>
-                    {headEntries.map((entry, idx) => (
-                      <MemberCard
-                        key={entry.member?.memberId ?? `placeholder-${cfg.dept}-${idx}`}
-                        member={entry.member}
-                        roleKey={entry.role}
-                        deptSlug={cfg.dept}
-                        delay={di * 0.04 + idx * 0.04}
-                        t={t}
-                        lang={lang}
-                      />
-                    ))}
-                  </div>
+                  {(() => {
+                    // For QA-flagged departments (Innovation), promote sub-leaders
+                    // into the same row as the dept leader / vice — they're
+                    // "Quality & Assurance leaders" with the same dashboard
+                    // access. Other departments keep sub-leaders in a separate
+                    // panel below.
+                    const promotedHeads = cfg.qa
+                      ? [
+                          ...headEntries,
+                          ...subs.map((m) => ({ member: m as PublicMember | null, role: "team.role.qa_leader" })),
+                        ]
+                      : headEntries;
+                    const remainingSubs = cfg.qa ? [] : subs;
+                    const cols =
+                      promotedHeads.length === 1 ? "grid-cols-1 max-w-xl" :
+                      promotedHeads.length === 2 ? "grid-cols-1 sm:grid-cols-2" :
+                      "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+                    return (
+                      <>
+                        <div className={`grid gap-4 ${cols}`}>
+                          {promotedHeads.map((entry, idx) => (
+                            <MemberCard
+                              key={entry.member?.memberId ?? `placeholder-${cfg.dept}-${idx}`}
+                              member={entry.member}
+                              roleKey={entry.role}
+                              deptSlug={cfg.dept}
+                              delay={di * 0.04 + idx * 0.04}
+                              t={t}
+                              lang={lang}
+                            />
+                          ))}
+                        </div>
 
-                  {subs.length > 0 && (
-                    <div className="mt-5 rounded-2xl border border-border bg-surface/45 p-4">
-                      <p className="text-xs font-semibold text-muted uppercase tracking-widest mb-3">
-                        {cfg.qa ? t("team.qa.title") : ((lang as string) === "ar" ? "قادة فرعيون" : "Sub-leads")}
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {subs.map((m, qi) => (
-                          <MemberCard
-                            key={m.memberId}
-                            member={m}
-                            roleKey={cfg.qa ? "team.role.qa_leader" : "team.role.sub_leader"}
-                            deptSlug={cfg.dept}
-                            delay={di * 0.04 + qi * 0.06}
-                            t={t}
-                            lang={lang}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                        {remainingSubs.length > 0 && (
+                          <div className="mt-5 rounded-2xl border border-border bg-surface/45 p-4">
+                            <p className="text-xs font-semibold text-muted uppercase tracking-widest mb-3">
+                              {(lang as string) === "ar" ? "قادة فرعيون" : "Sub-leads"}
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                              {remainingSubs.map((m, qi) => (
+                                <MemberCard
+                                  key={m.memberId}
+                                  member={m}
+                                  roleKey="team.role.sub_leader"
+                                  deptSlug={cfg.dept}
+                                  delay={di * 0.04 + qi * 0.06}
+                                  t={t}
+                                  lang={lang}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               );
             })}
