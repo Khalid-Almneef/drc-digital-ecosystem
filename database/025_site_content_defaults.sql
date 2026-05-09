@@ -15,6 +15,6 @@ INSERT INTO site_content (content_key, value_en, value_ar, value_json) VALUES
     'التسجيل مغلق حالياً. تابعوا حساباتنا لمعرفة موعد الفتح القادم.',
     NULL),
   ('social.handles', NULL, NULL,
-    '{"x": "https://x.com/drcksu", "linkedin": "https://www.linkedin.com/company/drones-and-robotics-club", "tiktok": "https://www.tiktok.com/@drc_ksu", "instagram": null, "youtube_channel_id": null}'::jsonb),
+    '{"x": "https://x.com/drcksu", "linkedin": "https://www.linkedin.com/company/drones-and-robotics-club", "tiktok": "https://www.tiktok.com/@drc_ksu"}'::jsonb),
   ('contact.email', 'partnerships@drc.club', 'partnerships@drc.club', NULL)
 ON CONFLICT (content_key) DO NOTHING;

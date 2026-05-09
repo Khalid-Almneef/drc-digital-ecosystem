@@ -30,29 +30,24 @@ const EXCLUDED_SLUGS = ["executive", "madarat"];
 const INPUT_CLASS =
   "w-full px-4 py-3 rounded-xl bg-surface-elevated border border-border text-foreground text-sm placeholder:text-muted/40 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all";
 
-function SocialIcon({ kind }: { kind: "instagram" | "twitter" | "youtube" }) {
-  if (kind === "instagram") {
+function SocialIcon({ kind }: { kind: "x" | "linkedin" | "tiktok" }) {
+  if (kind === "x") {
     return (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none" />
+      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="currentColor">
+        <path d="M18.244 2H21.5L14.05 10.516 22.78 22h-6.94l-5.43-7.06L4.21 22H.949l7.96-9.1L.5 2h7.094l4.91 6.49L18.244 2zm-1.22 18h1.928L7.05 4H5.02l12.004 16z" />
       </svg>
     );
   }
-
-  if (kind === "twitter") {
+  if (kind === "linkedin") {
     return (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 5.9c-.7.3-1.5.5-2.3.6a4 4 0 0 0 1.8-2.2 8.1 8.1 0 0 1-2.6 1 4 4 0 0 0-6.8 3.6A11.4 11.4 0 0 1 3.8 4.8a4 4 0 0 0 1.2 5.3 4 4 0 0 1-1.8-.5v.1a4 4 0 0 0 3.2 3.9 4 4 0 0 1-1.8.1 4 4 0 0 0 3.7 2.8A8.1 8.1 0 0 1 2 18.4a11.4 11.4 0 0 0 6.2 1.8c7.4 0 11.5-6.3 11.5-11.7v-.5A8 8 0 0 0 22 5.9Z" />
+      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="currentColor">
+        <path d="M20.45 20.45h-3.555v-5.57c0-1.328-.024-3.037-1.85-3.037-1.852 0-2.135 1.446-2.135 2.94v5.667H9.355V9h3.414v1.561h.046c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.265 2.37 4.265 5.455v6.284zM5.339 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM7.118 20.45H3.557V9h3.561v11.45zM22.227 0H1.77C.792 0 0 .774 0 1.728v20.544C0 23.226.792 24 1.77 24h20.452c.978 0 1.778-.774 1.778-1.728V1.728C24 .774 23.2 0 22.227 0z" />
       </svg>
     );
   }
-
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 7.5a2.5 2.5 0 0 0-1.8-1.8C17.6 5.2 12 5.2 12 5.2s-5.6 0-7.2.5A2.5 2.5 0 0 0 3 7.5 26.3 26.3 0 0 0 2.5 12c0 1.5.1 3 .5 4.5a2.5 2.5 0 0 0 1.8 1.8c1.6.5 7.2.5 7.2.5s5.6 0 7.2-.5a2.5 2.5 0 0 0 1.8-1.8c.4-1.5.5-3 .5-4.5s-.1-3-.5-4.5Z" />
-      <path d="m10 15.5 5-3.5-5-3.5v7Z" fill="currentColor" stroke="none" />
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="currentColor">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.74a8.16 8.16 0 0 0 4.77 1.52V6.81a4.85 4.85 0 0 1-1.84-.12z" />
     </svg>
   );
 }
@@ -75,7 +70,7 @@ export default function JoinPage() {
   // applications during off-cycle.
   const [accepting, setAccepting] = useState(false);
   const [closedMsg, setClosedMsg] = useState("");
-  const [social, setSocial] = useState<{ instagram?: string; twitter?: string; youtube_channel_id?: string }>({});
+  const [social, setSocial] = useState<{ x?: string; linkedin?: string; tiktok?: string }>({});
   const [benefits, setBenefits] = useState<JoinBenefitItem[]>(DEFAULT_JOIN_BENEFITS);
   const [steps, setSteps] = useState<JoinStepItem[]>(DEFAULT_JOIN_STEPS);
   const [faqs, setFaqs] = useState<JoinFaqItem[]>(DEFAULT_JOIN_FAQS);
@@ -202,24 +197,24 @@ export default function JoinPage() {
           <p className="text-sm text-muted leading-relaxed">
             {closedMsg || "Membership applications are currently closed. Follow our social media to stay updated."}
           </p>
-          {(social.instagram || social.twitter || social.youtube_channel_id) && (
+          {(social.x || social.linkedin || social.tiktok) && (
             <div className="flex justify-center gap-4 pt-2">
-              {social.instagram && (
-                <a href={`https://instagram.com/${social.instagram}`} target="_blank" rel="noopener noreferrer"
-                  className="text-muted hover:text-primary transition-colors">
-                  <SocialIcon kind="instagram" />
+              {social.x && (
+                <a href={social.x} target="_blank" rel="noopener noreferrer"
+                  className="text-muted hover:text-primary transition-colors" aria-label="X">
+                  <SocialIcon kind="x" />
                 </a>
               )}
-              {social.twitter && (
-                <a href={`https://twitter.com/${social.twitter}`} target="_blank" rel="noopener noreferrer"
-                  className="text-muted hover:text-primary transition-colors">
-                  <SocialIcon kind="twitter" />
+              {social.linkedin && (
+                <a href={social.linkedin} target="_blank" rel="noopener noreferrer"
+                  className="text-muted hover:text-primary transition-colors" aria-label="LinkedIn">
+                  <SocialIcon kind="linkedin" />
                 </a>
               )}
-              {social.youtube_channel_id && (
-                <a href={`https://youtube.com/channel/${social.youtube_channel_id}`} target="_blank" rel="noopener noreferrer"
-                  className="text-muted hover:text-primary transition-colors">
-                  <SocialIcon kind="youtube" />
+              {social.tiktok && (
+                <a href={social.tiktok} target="_blank" rel="noopener noreferrer"
+                  className="text-muted hover:text-primary transition-colors" aria-label="TikTok">
+                  <SocialIcon kind="tiktok" />
                 </a>
               )}
             </div>

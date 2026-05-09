@@ -1520,7 +1520,7 @@ function seedStore(): MockStore {
   const siteContent: MockSiteContentRow[] = [
     { key: "join.accepting", en: null, ar: null, json: { accepting: false }, updatedAt: NOW },
     { key: "join.closed.message", en: "Closed for this semester. Follow our pages to know more.", ar: "التسجيل مغلق لهذا الفصل. تابعوا صفحاتنا لمعرفة المزيد.", json: null, updatedAt: NOW },
-    { key: "social.handles", en: null, ar: null, json: { x: "https://x.com/drcksu", linkedin: "https://www.linkedin.com/company/drones-and-robotics-club", tiktok: "https://www.tiktok.com/@drc_ksu", instagram: null, youtube_channel_id: null }, updatedAt: NOW },
+    { key: "social.handles", en: null, ar: null, json: { x: "https://x.com/drcksu", linkedin: "https://www.linkedin.com/company/drones-and-robotics-club", tiktok: "https://www.tiktok.com/@drc_ksu" }, updatedAt: NOW },
     { key: "contact.email", en: "partnerships@drc.club", ar: "partnerships@drc.club", json: null, updatedAt: NOW },
     { key: "home.stats", en: null, ar: null, json: { projects: "", competitions: "", members: "", departments: "" }, updatedAt: NOW },
     { key: "home.sections", en: null, ar: null, json: { announcements: true, motm: true, whatwedo: true, workshops: true, projects: true }, updatedAt: NOW },

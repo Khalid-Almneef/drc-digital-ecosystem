@@ -65,9 +65,9 @@ interface Member {
 }
 
 interface SocialHandles {
-  instagram: string;
-  twitter: string;
-  youtube_channel_id: string;
+  x: string;
+  linkedin: string;
+  tiktok: string;
 }
 
 interface SocialPost {
@@ -100,9 +100,9 @@ interface AnnouncementRequest {
 }
 
 const DEFAULT_SOCIAL_HANDLES: SocialHandles = {
-  instagram: "",
-  twitter: "",
-  youtube_channel_id: "",
+  x: "",
+  linkedin: "",
+  tiktok: "",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -1068,9 +1068,9 @@ export default function MediaDashboard() {
             </div>
             <div className="glass-card p-4 space-y-4">
               {[
-                { key: "instagram" as const, label: "Instagram handle", placeholder: "drc_club" },
-                { key: "twitter"   as const, label: "X (Twitter) handle", placeholder: "drc_club" },
-                { key: "youtube_channel_id" as const, label: "YouTube Channel ID", placeholder: "UCxxxxxxxxxxxxxxxx" },
+                { key: "x" as const,        label: "X (Twitter) URL", placeholder: "https://x.com/drcksu" },
+                { key: "linkedin" as const, label: "LinkedIn URL",    placeholder: "https://www.linkedin.com/company/..." },
+                { key: "tiktok" as const,   label: "TikTok URL",      placeholder: "https://www.tiktok.com/@drc_ksu" },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>
                   <label className="block text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">{label}</label>
