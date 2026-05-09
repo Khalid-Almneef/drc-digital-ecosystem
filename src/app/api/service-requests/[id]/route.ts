@@ -3,7 +3,7 @@ import { err, handle, ok, parseBody } from "@/lib/api";
 import { requireSession } from "@/lib/auth";
 import { query, queryOne } from "@/lib/db";
 import { findMockMember, getMockStore, isMockMode } from "@/lib/mock-store";
-import { toFinanceDepartmentSlug } from "@/lib/finance";
+import { toServiceRequestSlug } from "@/lib/service-requests";
 import { emitNotification } from "@/lib/notifications";
 import { submitChangeRequest, resolveDepartmentId } from "@/lib/change-requests";
 
@@ -41,7 +41,7 @@ export const PATCH = handle(async (req, ctx) => {
   const { id } = await ctx.params;
   const requestId = Number(id);
   const body = await parseBody(req, PatchBody);
-  const ownDepartment = toFinanceDepartmentSlug(session.departmentSlug);
+  const ownDepartment = toServiceRequestSlug(session.departmentSlug);
   const isAdmin = session.position === "president" || session.position === "vice_president";
 
   // Non-leader members of the target department can propose a decision; it

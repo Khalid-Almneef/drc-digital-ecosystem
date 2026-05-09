@@ -3,18 +3,27 @@ import { err, handle, ok, parseBody, parseQuery } from "@/lib/api";
 import { requireSession } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { type MockDepartmentSlug, type MockServiceRequest, findMockMember, getMockStore, isMockMode, nextMockId } from "@/lib/mock-store";
-import { canCreateServiceRequest, type ServiceRequestRow, type ServiceRequestTarget, type ServiceRequestType } from "@/lib/service-requests";
-import { toFinanceDepartmentSlug, type FinanceDepartmentSlug } from "@/lib/finance";
+import { canCreateServiceRequest, toServiceRequestSlug, type ServiceRequestRow, type ServiceRequestTarget, type ServiceRequestType } from "@/lib/service-requests";
+
+const REQUEST_TYPES = [
+  "design", "workshop", "project_media", "company_visit",
+  "event_creation", "media_request", "content_modification", "other",
+] as const;
+
+const TARGET_DEPARTMENTS = [
+  "executive", "hr", "development", "innovation",
+  "media", "pr", "finance", "logistics", "madarat",
+] as const;
 
 const GetQuery = z.object({
   scope: z.enum(["inbox", "outbox", "related", "all"]).optional(),
-  requestType: z.enum(["design", "workshop", "project_media", "company_visit"]).optional(),
-  targetDepartment: z.enum(["media", "development", "pr"]).optional(),
+  requestType: z.enum(REQUEST_TYPES).optional(),
+  targetDepartment: z.enum(TARGET_DEPARTMENTS).optional(),
 });
 
 const PostBody = z.object({
-  requestType: z.enum(["design", "workshop", "project_media", "company_visit"]),
-  targetDepartmentSlug: z.enum(["media", "development", "pr"]),
+  requestType: z.enum(REQUEST_TYPES),
+  targetDepartmentSlug: z.enum(TARGET_DEPARTMENTS),
   title: z.string().min(1),
   description: z.string().optional(),
   priority: z.enum(["low", "medium", "high"]).default("medium"),
@@ -44,7 +53,7 @@ function resolveMockRow(row: MockServiceRequest): ServiceRequestRow {
 
 function filterRows(
   rows: ServiceRequestRow[],
-  departmentSlug: FinanceDepartmentSlug | null,
+  departmentSlug: ServiceRequestTarget | null,
   scope: "inbox" | "outbox" | "related" | "all",
   requestType?: ServiceRequestType,
   targetDepartment?: ServiceRequestTarget,
@@ -68,7 +77,7 @@ export const GET = handle(async (req) => {
 
   const q = parseQuery(new URL(req.url), GetQuery);
   const scope = q.scope ?? "related";
-  const ownDepartment = toFinanceDepartmentSlug(session.departmentSlug);
+  const ownDepartment = toServiceRequestSlug(session.departmentSlug);
   const isAdmin = session.position === "president" || session.position === "vice_president";
 
   if (scope === "all" && !isAdmin) return err(403, "Forbidden");
@@ -138,7 +147,7 @@ export const POST = handle(async (req) => {
   if (!isLeader(session.position)) return err(403, "Forbidden");
   const body = await parseBody(req, PostBody);
 
-  const sourceDepartmentSlug = toFinanceDepartmentSlug(session.departmentSlug);
+  const sourceDepartmentSlug = toServiceRequestSlug(session.departmentSlug);
   if (!sourceDepartmentSlug) return err(403, "Department context required");
   if (!canCreateServiceRequest(sourceDepartmentSlug, body.requestType, body.targetDepartmentSlug)) {
     return err(400, "This department cannot create that request.");

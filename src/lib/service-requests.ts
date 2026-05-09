@@ -1,9 +1,51 @@
 import type { FinanceDepartmentSlug } from "@/lib/finance";
 
-export type ServiceRequestType = "design" | "workshop" | "project_media" | "company_visit";
+export type ServiceRequestType =
+  | "design"
+  | "workshop"
+  | "project_media"
+  | "company_visit"
+  | "event_creation"
+  | "media_request"
+  | "content_modification"
+  | "other";
+
 export type ServiceRequestStatus = "pending" | "assigned" | "in_progress" | "completed" | "rejected";
 export type ServiceRequestPriority = "low" | "medium" | "high";
-export type ServiceRequestTarget = "media" | "development" | "pr";
+
+export type ServiceRequestTarget =
+  | "executive"
+  | "hr"
+  | "development"
+  | "innovation"
+  | "media"
+  | "pr"
+  | "finance"
+  | "logistics"
+  | "madarat";
+
+export const ALL_TARGETS: ServiceRequestTarget[] = [
+  "executive", "hr", "development", "innovation", "media", "pr", "finance", "logistics", "madarat",
+];
+
+export function toServiceRequestSlug(value: string | null | undefined): ServiceRequestTarget | null {
+  if (!value) return null;
+  return ALL_TARGETS.includes(value as ServiceRequestTarget) ? (value as ServiceRequestTarget) : null;
+}
+
+// Which target departments are valid for each request type. The "other"
+// type is the universal fallback — any source can pick any target. The
+// cascade dropdown in the UI reads from this map.
+export const VALID_TARGETS_BY_TYPE: Record<ServiceRequestType, ServiceRequestTarget[]> = {
+  design: ["media"],
+  workshop: ["development", "madarat"],
+  project_media: ["media"],
+  company_visit: ["pr"],
+  event_creation: ["logistics", "pr"],
+  media_request: ["media"],
+  content_modification: ["executive", "media"],
+  other: [...ALL_TARGETS],
+};
 
 export interface ServiceRequestRow {
   requestId: number;
@@ -12,7 +54,7 @@ export interface ServiceRequestRow {
   description: string | null;
   priority: ServiceRequestPriority;
   status: ServiceRequestStatus;
-  sourceDepartmentSlug: FinanceDepartmentSlug;
+  sourceDepartmentSlug: ServiceRequestTarget;
   sourceDepartmentName: string | null;
   targetDepartmentSlug: ServiceRequestTarget;
   targetDepartmentName: string | null;
@@ -32,6 +74,21 @@ export const SERVICE_REQUEST_TYPE_LABEL: Record<ServiceRequestType, string> = {
   workshop: "Workshop Request",
   project_media: "Project Media Request",
   company_visit: "Company Visit Request",
+  event_creation: "Event Creation",
+  media_request: "Media Request",
+  content_modification: "Content Modification",
+  other: "Other",
+};
+
+export const SERVICE_REQUEST_TYPE_LABEL_AR: Record<ServiceRequestType, string> = {
+  design: "طلب تصميم",
+  workshop: "طلب ورشة",
+  project_media: "تغطية مشروع",
+  company_visit: "زيارة شركة",
+  event_creation: "إنشاء فعالية",
+  media_request: "طلب إعلامي",
+  content_modification: "تعديل محتوى",
+  other: "طلب آخر",
 };
 
 export const SERVICE_REQUEST_STATUS_TONE: Record<ServiceRequestStatus, string> = {
@@ -49,12 +106,14 @@ export const SERVICE_REQUEST_PRIORITY_TONE: Record<ServiceRequestPriority, strin
 };
 
 export function canCreateServiceRequest(
-  sourceDepartmentSlug: FinanceDepartmentSlug,
+  sourceDepartmentSlug: ServiceRequestTarget | FinanceDepartmentSlug,
   requestType: ServiceRequestType,
   targetDepartmentSlug: ServiceRequestTarget,
 ) {
-  if (requestType === "design") return sourceDepartmentSlug !== "media" && targetDepartmentSlug === "media";
-  if (requestType === "project_media") return sourceDepartmentSlug !== "media" && targetDepartmentSlug === "media";
-  if (requestType === "company_visit") return sourceDepartmentSlug === "development" && targetDepartmentSlug === "pr";
-  return sourceDepartmentSlug === "innovation" && targetDepartmentSlug === "development";
+  // No self-targeting (asking your own department for a service is not a
+  // cross-department request — that belongs in the dept's own task system).
+  if (sourceDepartmentSlug === targetDepartmentSlug) return false;
+  const valid = VALID_TARGETS_BY_TYPE[requestType];
+  if (!valid?.includes(targetDepartmentSlug)) return false;
+  return true;
 }

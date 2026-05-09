@@ -372,13 +372,21 @@ export interface MockMadaratRegistration {
 
 export interface MockServiceRequest {
   requestId: number;
-  requestType: "design" | "workshop" | "project_media" | "company_visit";
+  requestType:
+    | "design"
+    | "workshop"
+    | "project_media"
+    | "company_visit"
+    | "event_creation"
+    | "media_request"
+    | "content_modification"
+    | "other";
   title: string;
   description: string | null;
   priority: "low" | "medium" | "high";
   status: "pending" | "assigned" | "in_progress" | "completed" | "rejected";
-  sourceDepartmentSlug: Exclude<MockDepartmentSlug, "executive">;
-  targetDepartmentSlug: "media" | "development" | "pr";
+  sourceDepartmentSlug: MockDepartmentSlug;
+  targetDepartmentSlug: MockDepartmentSlug;
   requestedBy: number;
   assigneeId: number | null;
   assigneeNote: string | null;
