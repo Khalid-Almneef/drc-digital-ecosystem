@@ -64,6 +64,8 @@ export const GET = handle(async () => {
             d.slug::text AS "departmentSlug", d.name AS "departmentName", d.name_ar AS "departmentNameAr",
             p.full_name AS "fullName", p.full_name_ar AS "fullNameAr",
             p.avatar_url AS "avatarUrl", p.bio, p.major, p.gender,
+            p.custom_role    AS "customRole",
+            p.custom_role_ar AS "customRoleAr",
             CASE WHEN COALESCE(p.is_linkedin_public, TRUE) THEN p.linkedin_url ELSE NULL END AS "linkedinUrl",
             CASE WHEN COALESCE(p.is_github_public,   TRUE) THEN p.github_url   ELSE NULL END AS "githubUrl",
             CASE WHEN COALESCE(p.is_phone_public,    FALSE) THEN p.phone_number ELSE NULL END AS "phoneNumber",
