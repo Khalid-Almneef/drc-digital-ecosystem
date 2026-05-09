@@ -370,7 +370,7 @@ function ArchiveEditorModal({
               >
                 <option value="project">Project</option>
                 <option value="event">Event</option>
-                <option value="competition">Competition</option>
+                <option value="competition">Technical Event (counts as competition)</option>
               </select>
             </label>
 

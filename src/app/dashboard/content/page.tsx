@@ -37,6 +37,7 @@ import {
 import { api } from "@/lib/client";
 import { useApi } from "@/lib/hooks/useApi";
 import { MediaPicker } from "@/components/dashboard/MediaPicker";
+import { JoinControlsCard } from "@/components/dashboard/JoinControlsCard";
 import { baseTranslations } from "@/contexts/LanguageContext";
 import {
   ABOUT_VALUE_ICON_OPTIONS as ABOUT_ICONS,
@@ -2240,6 +2241,8 @@ export default function ContentDashboard() {
             })()}
           </p>
         </section>
+
+        {activePage === "join" && <JoinControlsCard />}
 
         {activePage && (
           <section className="glass-card overflow-hidden p-5">

@@ -59,13 +59,20 @@ type DeptConfig = {
   viceRole: string | null;
   coLeader?: boolean;
   qa?: boolean;
+  // promoteSubs: render sub-leaders alongside the dept leader/vice in the
+  // head row instead of in a separate "Sub-leads" panel. The displayed
+  // role for each sub-leader falls back to their customRole when set
+  // (e.g. "Quality & Assurance Lead", "Media Advisor"), so the public
+  // hierarchy reads as a flat leadership team. Underlying permissions
+  // are unchanged — the position field still drives dashboard access.
+  promoteSubs?: boolean;
 };
 
 const DEPT_CONFIGS: DeptConfig[] = [
   // Innovation is the engineering core of the club — pinned first.
-  { dept: "innovation",  leaderRole: "team.role.leader",    viceRole: "team.role.vice", qa: true },
+  { dept: "innovation",  leaderRole: "team.role.leader",    viceRole: "team.role.vice", qa: true, promoteSubs: true },
   { dept: "development", leaderRole: "team.role.leader",    viceRole: "team.role.vice"      },
-  { dept: "media",       leaderRole: "team.role.leader",    viceRole: "team.role.vice"      },
+  { dept: "media",       leaderRole: "team.role.leader",    viceRole: "team.role.vice", promoteSubs: true },
   { dept: "pr",          leaderRole: "team.role.leader",    viceRole: "team.role.vice"      },
   { dept: "hr",          leaderRole: "team.role.leader",    viceRole: "team.role.vice"      },
   { dept: "finance",     leaderRole: "team.role.leader",    viceRole: null                  },
@@ -395,18 +402,21 @@ export default function TeamPage() {
                   </div>
 
                   {(() => {
-                    // For QA-flagged departments (Innovation), promote sub-leaders
-                    // into the same row as the dept leader / vice — they're
-                    // "Quality & Assurance leaders" with the same dashboard
-                    // access. Other departments keep sub-leaders in a separate
-                    // panel below.
-                    const promotedHeads = cfg.qa
+                    // promoteSubs: lift sub-leaders into the same row as
+                    // the dept leader/vice so the public hierarchy reads
+                    // flat. Their display role uses customRole when set
+                    // (e.g. "Quality & Assurance Lead", "Media Advisor").
+                    // qa-flagged depts use the QA role key as a fallback.
+                    // Other departments keep the separate Sub-leads panel.
+                    const shouldPromote = cfg.promoteSubs || cfg.qa;
+                    const fallbackSubRole = cfg.qa ? "team.role.qa_leader" : "team.role.sub_leader";
+                    const promotedHeads = shouldPromote
                       ? [
                           ...headEntries,
-                          ...subs.map((m) => ({ member: m as PublicMember | null, role: "team.role.qa_leader" })),
+                          ...subs.map((m) => ({ member: m as PublicMember | null, role: fallbackSubRole })),
                         ]
                       : headEntries;
-                    const remainingSubs = cfg.qa ? [] : subs;
+                    const remainingSubs = shouldPromote ? [] : subs;
                     const cols =
                       promotedHeads.length === 1 ? "grid-cols-1 max-w-xl" :
                       promotedHeads.length === 2 ? "grid-cols-1 sm:grid-cols-2" :

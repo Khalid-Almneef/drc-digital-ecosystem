@@ -279,8 +279,19 @@ export function useHomeData() {
       .then((d) => { if (d?.json) setVisibility({ ...DEFAULT_VISIBILITY, ...d.json }); })
       .catch(() => {});
 
-    api.get<{ key: string; json: HomeStats | null }>("/api/site-content/home.stats")
-      .then((d) => { if (d?.json) setHomeStats({ ...DEFAULT_STATS, ...d.json }); })
+    // Live counts from the DB. The endpoint already merges in the manual
+    // home.stats override per-field, so a number leadership pinned wins
+    // over the live count and a blank value falls back to the count.
+    api.get<{ projects: number | string; competitions: number | string; members: number | string; departments: number | string }>("/api/stats/overview")
+      .then((d) => {
+        if (!d) return;
+        setHomeStats({
+          projects: String(d.projects ?? "—"),
+          competitions: String(d.competitions ?? "—"),
+          members: String(d.members ?? "—"),
+          departments: String(d.departments ?? "—"),
+        });
+      })
       .catch(() => {});
 
     api.get<{ key: string; json: HomeHighlightItem[] | null }>("/api/site-content/home.highlights")
