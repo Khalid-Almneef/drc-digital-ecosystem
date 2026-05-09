@@ -22,6 +22,7 @@ import Image from "next/image";
 import { api } from "@/lib/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { localizedValue } from "@/lib/public-content";
+import { displayMemberName, translateMajor } from "@/lib/format-name";
 
 interface AlumnusInfo {
   memberId: number;
@@ -63,7 +64,7 @@ export default function AlumnusProfilePage() {
 
   if (!data) return null;
 
-  const displayName = lang === "ar" && data.fullNameAr ? data.fullNameAr : data.fullName;
+  const displayName = displayMemberName(data.fullName, data.fullNameAr, lang as "en" | "ar");
   const displayDept = lang === "ar" && data.departmentNameAr ? data.departmentNameAr : data.departmentName;
   const displayQuote = lang === "ar" && data.quoteAr ? data.quoteAr : data.quote;
 
@@ -171,8 +172,8 @@ export default function AlumnusProfilePage() {
                   <GraduationCap size={24} />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted font-bold">Major</p>
-                  <p className="text-foreground font-semibold">{data.major || 'Engineering'}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted font-bold">{lang === "ar" ? "التخصص" : "Major"}</p>
+                  <p className="text-foreground font-semibold">{translateMajor(data.major, lang as "en" | "ar") || "—"}</p>
                 </div>
               </div>
               <div className="glass-card p-5 flex items-center gap-4">

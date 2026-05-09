@@ -7,6 +7,7 @@ import { ArrowLeft, GraduationCap, Building2, Briefcase } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { api } from "@/lib/client";
+import { displayMemberName, translateMajor } from "@/lib/format-name";
 import { useLang } from "@/contexts/LanguageContext";
 
 const Github = (props: React.SVGProps<SVGSVGElement>) => (
@@ -99,7 +100,7 @@ export default function TeamMemberProfilePage() {
     );
   }
 
-  const displayName = lang === "ar" && data.fullNameAr ? data.fullNameAr : data.fullName;
+  const displayName = displayMemberName(data.fullName, data.fullNameAr, lang as "en" | "ar");
   const displayDept = lang === "ar" && data.departmentNameAr ? data.departmentNameAr : data.departmentName;
   const positionLabel = POSITION_LABELS[data.position]
     ? POSITION_LABELS[data.position][lang === "ar" ? "ar" : "en"]
@@ -214,7 +215,7 @@ export default function TeamMemberProfilePage() {
                     <p className="text-[10px] uppercase tracking-wider text-muted font-bold">
                       {lang === "ar" ? "التخصص" : "Major"}
                     </p>
-                    <p className="text-foreground font-semibold truncate">{data.major}</p>
+                    <p className="text-foreground font-semibold truncate">{translateMajor(data.major, lang as "en" | "ar")}</p>
                   </div>
                 </div>
               )}

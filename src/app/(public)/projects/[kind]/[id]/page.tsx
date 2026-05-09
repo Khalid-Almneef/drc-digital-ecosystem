@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { api } from "@/lib/client";
+import { firstAndLastName } from "@/lib/format-name";
 import { ContentImage } from "@/lib/ui-helpers";
 import {
   archiveStateFromEventDates,
@@ -117,7 +118,7 @@ function MemberDialog({
           Team Member
         </p>
         <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-foreground">
-          {member.fullName}
+          {firstAndLastName(member.fullName)}
         </h2>
         {member.bio ? (
           <p className="mt-4 text-sm leading-7 text-muted">{member.bio}</p>
@@ -445,7 +446,7 @@ export default function ArchiveDetailPage() {
                           onClick={() => setSelectedMember(member)}
                           className="rounded-[1.2rem] border border-border bg-surface/50 p-4 text-left transition-colors hover:border-primary/20 hover:bg-surface-elevated"
                         >
-                          <p className="text-sm font-semibold text-foreground">{member.fullName}</p>
+                          <p className="text-sm font-semibold text-foreground">{firstAndLastName(member.fullName)}</p>
                           <p className="mt-1 text-xs uppercase tracking-[0.18em] text-primary/70">{member.role}</p>
                         </button>
                       ))}

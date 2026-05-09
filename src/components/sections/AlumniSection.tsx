@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { api } from "@/lib/client";
 import { useLang } from "@/contexts/LanguageContext";
+import { displayMemberName, translateMajor } from "@/lib/format-name";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, Building2, Quote, X } from "lucide-react";
 
@@ -147,7 +148,7 @@ function AlumniCard({
   lang: string;
   onView: () => void;
 }) {
-  const displayName = lang === "ar" && alumnus.fullNameAr ? alumnus.fullNameAr : alumnus.fullName;
+  const displayName = displayMemberName(alumnus.fullName, alumnus.fullNameAr, lang as "en" | "ar");
   const displayQuote = lang === "ar" && alumnus.quoteAr ? alumnus.quoteAr : alumnus.quote;
 
   return (
@@ -318,12 +319,12 @@ function AlumniModal({ alumnus, lang, onClose }: { alumnus: AlumniMember; lang: 
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted font-bold mb-1">Major</p>
-                  <p className="text-foreground text-sm font-semibold">{alumnus.major || 'Engineering'}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted font-bold mb-1">{lang === "ar" ? "التخصص" : "Major"}</p>
+                  <p className="text-foreground text-sm font-semibold">{translateMajor(alumnus.major, lang as "en" | "ar") || (lang === "ar" ? "—" : "—")}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted font-bold mb-1">Graduation</p>
-                  <p className="text-foreground text-sm font-semibold">{alumnus.graduationYear || '2024'}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted font-bold mb-1">{lang === "ar" ? "سنة التخرج" : "Graduation"}</p>
+                  <p className="text-foreground text-sm font-semibold">{alumnus.graduationYear ?? "—"}</p>
                 </div>
               </div>
             </div>

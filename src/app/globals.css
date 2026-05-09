@@ -460,26 +460,60 @@ h2, h3 {
   color: var(--primary);
 }
 
-/* ── Background Patterns ── */
+/* ── Background Patterns ──
+ *
+ * Section-level decorative pattern. Replaces the previous generic square
+ * grid with a fine dot field — subtle, doesn't compete with content, and
+ * reads as instrumentation/HUD without being "PCB cliché". Use sparingly
+ * on dark sections only; pair with a soft mask so edges fade out.
+ */
 .bg-grid {
   background-image:
-    linear-gradient(var(--hud-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--hud-line) 1px, transparent 1px);
-  background-size: 48px 48px;
+    radial-gradient(color-mix(in srgb, var(--primary) 18%, transparent) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  background-position: 0 0;
+  -webkit-mask-image: radial-gradient(ellipse 70% 75% at 50% 35%, #000 55%, transparent 100%);
+          mask-image: radial-gradient(ellipse 70% 75% at 50% 35%, #000 55%, transparent 100%);
 }
 
+/* Page-level backdrop. Layered so the eye reads:
+ *  1. a wide soft accent glow (top-left + bottom-right) for depth
+ *  2. fine dotted "scan field" at very low opacity for technical texture
+ *  3. concentric radar arcs anchored bottom-right for subtle motion suggestion
+ *  4. a deep linear wash so content surfaces float above
+ *
+ * All values use color-mix on theme tokens, so light/dark inherit
+ * automatically and the pattern stays calm under text. */
 .public-site-bg {
   position: fixed;
   inset: 0;
   z-index: -20;
   pointer-events: none;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 25%),
-    radial-gradient(circle at 84% 12%, color-mix(in srgb, var(--secondary-light) 16%, transparent), transparent 30%),
-    radial-gradient(circle at 64% 88%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 28%),
-    linear-gradient(135deg, color-mix(in srgb, var(--surface-elevated) 18%, transparent), transparent 34%),
-    linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--background) 32%, transparent) 100%);
+  background-color: var(--background);
+  background-image:
+    /* radar arcs (very subtle), bottom-right */
+    radial-gradient(circle at 88% 92%, color-mix(in srgb, var(--primary) 6%, transparent) 0 1px, transparent 1.5px 280px),
+    radial-gradient(circle at 88% 92%, color-mix(in srgb, var(--primary) 5%, transparent) 0 1px, transparent 1.5px 460px),
+    radial-gradient(circle at 88% 92%, color-mix(in srgb, var(--primary) 4%, transparent) 0 1px, transparent 1.5px 660px),
+    /* dot scan field */
+    radial-gradient(color-mix(in srgb, var(--primary) 7%, transparent) 1px, transparent 1.3px),
+    /* accent glows */
+    radial-gradient(60% 50% at 12% 8%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 70%),
+    radial-gradient(55% 45% at 90% 18%, color-mix(in srgb, var(--secondary-light) 14%, transparent), transparent 70%),
+    radial-gradient(50% 40% at 50% 100%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 75%),
+    /* deep wash to keep surfaces floating */
+    linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--background) 40%, transparent) 100%);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    32px 32px,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat;
 }
 
 .public-site-bg::before,

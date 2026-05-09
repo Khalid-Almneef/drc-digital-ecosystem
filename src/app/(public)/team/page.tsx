@@ -11,6 +11,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { ExternalLink, Mail, Users } from "lucide-react";
 import { api } from "@/lib/client";
 import { DEFAULT_TEAM_STATS, TeamStatItem, localizedValue, parseCollection } from "@/lib/public-content";
+import { displayMemberName, firstAndLastName } from "@/lib/format-name";
 import { MotmModal } from "@/components/team/MotmModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -122,7 +123,7 @@ function MemberCard({
 }) {
   const gradient = DEPT_COLORS[deptSlug ?? "executive"] ?? "from-primary/20 to-secondary/20";
   const displayName = member
-    ? (lang === "ar" && member.fullNameAr ? member.fullNameAr : member.fullName)
+    ? displayMemberName(member.fullName, member.fullNameAr, lang as "en" | "ar")
     : t("team.placeholder.name");
 
   return (
@@ -519,12 +520,12 @@ export default function TeamPage() {
                     transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] as const }}
                     onClick={() => setMotmFocus(m.memberId)}
                     className="glass-card overflow-hidden card-hover w-52 text-left transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                    aria-label={`${lang === "ar" && m.fullNameAr ? m.fullNameAr : m.fullName} — ${lang === "ar" ? "عرض التفاصيل" : "view details"}`}
+                    aria-label={`${displayMemberName(m.fullName, m.fullNameAr, lang as "en" | "ar")} — ${lang === "ar" ? "عرض التفاصيل" : "view details"}`}
                   >
                     <div className={`h-24 bg-gradient-to-br ${DEPT_COLORS[m.departmentSlug ?? "executive"] ?? "from-primary/20 to-secondary/20"} relative overflow-hidden`}>
                       {m.avatarUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={m.avatarUrl} alt={lang === "ar" && m.fullNameAr ? m.fullNameAr : m.fullName} className="absolute inset-0 h-full w-full object-cover" />
+                        <img src={m.avatarUrl} alt={displayMemberName(m.fullName, m.fullNameAr, lang as "en" | "ar")} className="absolute inset-0 h-full w-full object-cover" />
                       ) : (
                         <>
                           <div className="absolute inset-0 bg-circuit opacity-30" />
@@ -536,7 +537,7 @@ export default function TeamPage() {
                     </div>
                     <div className="p-4 text-center">
                       <h4 className="text-sm font-semibold text-foreground">
-                        {lang === "ar" && m.fullNameAr ? m.fullNameAr : m.fullName}
+                        {displayMemberName(m.fullName, m.fullNameAr, lang as "en" | "ar")}
                       </h4>
                       <p className="text-xs text-primary mt-1">
                         {lang === "ar" && m.departmentNameAr ? m.departmentNameAr : m.departmentName}
