@@ -12,6 +12,11 @@ import {
 import { sendEmail, renderEmail } from "@/lib/email";
 import { getRequireDeviceConfirm } from "@/lib/auth-settings";
 import { getMockStore, isMockMode, MOCK_DEMO_USERS, mockSessionFromKey } from "@/lib/mock-store";
+import { NextResponse } from "next/server";
+import { clientIp, rateLimit, rateLimitReset } from "@/lib/rate-limit";
+
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 function resolveAppUrl(): string {
   return (
@@ -56,6 +61,24 @@ async function sendSetupEmail(memberId: number, email: string) {
 
 export const POST = handle(async (req) => {
   const { email, password } = await parseBody(req, Body);
+  const normEmail = email.toLowerCase();
+  const ip = clientIp(req);
+  const limitKey = `login:${ip}:${normEmail}`;
+
+  // Pre-check: if this IP+email is already over its failed-attempt budget,
+  // bail before even touching the DB or bcrypt. We DO NOT distinguish "no
+  // such user" from "wrong password" in the 429 message so the limiter does
+  // not become an enumeration oracle.
+  {
+    const probe = rateLimit(limitKey, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS);
+    if (!probe.allowed) {
+      const retrySec = Math.ceil(probe.retryAfterMs / 1000);
+      return NextResponse.json(
+        { error: { message: "Too many attempts. Try again later.", code: "rate_limited" } },
+        { status: 429, headers: { "Retry-After": String(retrySec) } },
+      );
+    }
+  }
   if (isMockMode()) {
     const entry = Object.entries(MOCK_DEMO_USERS).find(([, user]) => user.email.toLowerCase() === email.toLowerCase());
     if (entry) {
@@ -137,5 +160,8 @@ export const POST = handle(async (req) => {
   await query(`UPDATE users SET last_login = NOW() WHERE member_id = $1`, [user.memberId]);
   await query(`UPDATE user_devices SET last_seen_at = NOW() WHERE device_token = $1`, [deviceToken]);
   await setSessionCookie(user);
+  // Legitimate sign-in — clear the failed-attempt counter so a subsequent
+  // mistyped-password session doesn't lock the real user out.
+  rateLimitReset(limitKey);
   return ok({ user });
 });

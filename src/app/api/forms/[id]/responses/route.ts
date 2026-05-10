@@ -3,6 +3,14 @@ import { handle, ok, err, parseBody } from "@/lib/api";
 import { query, queryOne, withTx } from "@/lib/db";
 import { getSession, requireSession } from "@/lib/auth";
 import { canManageForms, type FormResponseRecord } from "@/lib/forms";
+import { NextResponse } from "next/server";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
+
+// Public forms accept unauthenticated submissions, so they need a per-IP cap
+// to keep spam off the database. Members/leaders forms already require a
+// session and are bounded by enrollment, so we don't gate them here.
+const PUBLIC_FORM_MAX_PER_IP = 10;
+const PUBLIC_FORM_WINDOW_MS = 60 * 60 * 1000;
 
 const AnswerInput = z.object({
   questionId: z.number().int(),
@@ -67,6 +75,24 @@ export const POST = handle(async (req, ctx) => {
   if (!form) return err(404, "Form not found");
   if (!form.is_open) return err(403, "This application is closed.");
   if (form.closes_at && new Date(form.closes_at).getTime() < Date.now()) return err(403, "This application has closed.");
+
+  // Per-IP cap for public forms only. Authenticated forms are bounded by the
+  // existing "one response per member" check below.
+  if (form.audience === "public") {
+    const ip = clientIp(req);
+    const probe = rateLimit(
+      `form-response:${formId}:${ip}`,
+      PUBLIC_FORM_MAX_PER_IP,
+      PUBLIC_FORM_WINDOW_MS,
+    );
+    if (!probe.allowed) {
+      const retrySec = Math.ceil(probe.retryAfterMs / 1000);
+      return NextResponse.json(
+        { error: { message: "Too many submissions. Try again later.", code: "rate_limited" } },
+        { status: 429, headers: { "Retry-After": String(retrySec) } },
+      );
+    }
+  }
 
   const session = await getSession();
   if (form.audience !== "public" && !session) return err(401, "Sign in to submit this application.");

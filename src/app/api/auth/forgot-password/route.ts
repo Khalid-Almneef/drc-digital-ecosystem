@@ -3,15 +3,34 @@ import { handle, ok, parseBody } from "@/lib/api";
 import { query, queryOne } from "@/lib/db";
 import { randomToken, sha256 } from "@/lib/auth";
 import { sendEmail, renderEmail } from "@/lib/email";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const Body = z.object({ email: z.string().email() });
 
+// 3 requests per email per hour, 20 per IP per hour. We intentionally do NOT
+// surface 429 to the caller: returning a different shape would re-introduce the
+// enumeration channel that the always-200 response was designed to close. When
+// over budget we silently skip the DB write + email send and still return 200.
+const PER_EMAIL_MAX = 3;
+const PER_EMAIL_WINDOW_MS = 60 * 60 * 1000;
+const PER_IP_MAX = 20;
+const PER_IP_WINDOW_MS = 60 * 60 * 1000;
+
 export const POST = handle(async (req) => {
   const { email } = await parseBody(req, Body);
-  const row = await queryOne<{ member_id: number }>(
-    `SELECT member_id FROM users WHERE email = $1 AND is_active = TRUE`,
-    [email.toLowerCase()],
-  );
+  const normEmail = email.toLowerCase();
+  const ip = clientIp(req);
+
+  const emailBudget = rateLimit(`forgot:email:${normEmail}`, PER_EMAIL_MAX, PER_EMAIL_WINDOW_MS);
+  const ipBudget = rateLimit(`forgot:ip:${ip}`, PER_IP_MAX, PER_IP_WINDOW_MS);
+  const withinBudget = emailBudget.allowed && ipBudget.allowed;
+
+  const row = withinBudget
+    ? await queryOne<{ member_id: number; email: string }>(
+        `SELECT member_id, email FROM users WHERE email = $1 AND is_active = TRUE`,
+        [normEmail],
+      )
+    : null;
 
   // Always respond OK to avoid user enumeration.
   if (row) {
@@ -32,7 +51,10 @@ export const POST = handle(async (req) => {
     const resetUrl = `${appUrl}/reset-password?token=${plain}`;
     try {
       await sendEmail({
-        to: email,
+        // Use the canonical DB-stored email rather than the user-supplied
+        // casing. Falls back to the normalized input if the DB row somehow
+        // came back without it.
+        to: row.email ?? normEmail,
         subject: "Reset your DRC password",
         html: renderEmail({
           siteUrl: appUrl,
