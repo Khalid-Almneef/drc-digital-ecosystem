@@ -52,6 +52,7 @@ export interface Announcement {
   title: string;
   body: string | null;
   imageUrl?: string | null;
+  linkUrl?: string | null;
   priority: "low" | "medium" | "high" | "critical";
   isPinned: boolean;
   createdAt: string;

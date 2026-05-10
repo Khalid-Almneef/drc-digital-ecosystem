@@ -88,6 +88,8 @@ interface AnnouncementItem {
   announcementId: number;
   title: string;
   body: string | null;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
   priority: "low" | "medium" | "high" | "critical";
   isPinned: boolean;
   createdAt: string;
@@ -578,11 +580,24 @@ export default function DashboardOverview() {
                 <div className="space-y-2">
                   {announcements.slice(0, 3).map((announcement) => (
                     <div key={announcement.announcementId} className="rounded-[1rem] border border-border bg-surface/45 p-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm font-medium text-foreground">{announcement.title}</p>
-                        {announcement.isPinned ? <span className="badge badge-primary text-[10px]">{tr("Pinned", "مثبت")}</span> : null}
+                      <div className="flex items-start gap-3">
+                        {announcement.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={announcement.imageUrl} alt={announcement.title} className="h-12 w-12 shrink-0 rounded-lg border border-border object-cover" />
+                        ) : null}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="text-sm font-medium text-foreground">{announcement.title}</p>
+                            {announcement.isPinned ? <span className="badge badge-primary text-[10px]">{tr("Pinned", "مثبت")}</span> : null}
+                          </div>
+                          {announcement.body ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{announcement.body}</p> : null}
+                          {announcement.linkUrl ? (
+                            <a href={announcement.linkUrl} target="_blank" rel="noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                              {tr("Open link", "فتح الرابط")} <ExternalLink size={11} />
+                            </a>
+                          ) : null}
+                        </div>
                       </div>
-                      {announcement.body ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{announcement.body}</p> : null}
                     </div>
                   ))}
                 </div>

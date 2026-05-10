@@ -32,6 +32,7 @@ interface Announcement {
   title: string;
   body: string | null;
   imageUrl: string | null;
+  linkUrl: string | null;
   priority: "low" | "medium" | "high" | "critical";
   isPinned: boolean;
   expiresAt: string | null;
@@ -116,6 +117,7 @@ export default function LeadersDashboard() {
   const [formTitle, setFormTitle] = useState("");
   const [formBody, setFormBody] = useState("");
   const [formImageUrl, setFormImageUrl] = useState("");
+  const [formLinkUrl, setFormLinkUrl] = useState("");
   const [formPriority, setFormPriority] = useState<"low" | "medium" | "high" | "critical">("medium");
   const [formPinned, setFormPinned] = useState(false);
   const [formExpires, setFormExpires] = useState("");
@@ -222,6 +224,7 @@ export default function LeadersDashboard() {
     setFormTitle("");
     setFormBody("");
     setFormImageUrl("");
+    setFormLinkUrl("");
     setFormPriority("medium");
     setFormPinned(false);
     setFormExpires("");
@@ -233,6 +236,7 @@ export default function LeadersDashboard() {
     setFormTitle(announcement.title);
     setFormBody(announcement.body ?? "");
     setFormImageUrl(announcement.imageUrl ?? "");
+    setFormLinkUrl(announcement.linkUrl ?? "");
     setFormPriority(announcement.priority);
     setFormPinned(announcement.isPinned);
     setFormExpires(announcement.expiresAt ? announcement.expiresAt.slice(0, 10) : "");
@@ -247,6 +251,7 @@ export default function LeadersDashboard() {
         title: formTitle.trim(),
         body: formBody.trim() || undefined,
         imageUrl: formImageUrl.trim() || undefined,
+        linkUrl: formLinkUrl.trim() || undefined,
         priority: formPriority,
         isPinned: formPinned,
         expiresAt: formExpires || undefined,
@@ -269,6 +274,7 @@ export default function LeadersDashboard() {
         title: formTitle.trim(),
         body: formBody.trim() || undefined,
         imageUrl: formImageUrl.trim() || null,
+        linkUrl: formLinkUrl.trim() || null,
         priority: formPriority,
         isPinned: formPinned,
         expiresAt: formExpires || null,
@@ -323,11 +329,12 @@ export default function LeadersDashboard() {
 
   function getAnnouncementsCsv() {
     return toCsv(
-      ["title", "body", "imageUrl", "priority", "isPinned", "expiresAt"],
+      ["title", "body", "imageUrl", "linkUrl", "priority", "isPinned", "expiresAt"],
       announcements.map((announcement) => [
         announcement.title,
         announcement.body ?? "",
         announcement.imageUrl ?? "",
+        announcement.linkUrl ?? "",
         announcement.priority,
         announcement.isPinned,
         announcement.expiresAt ?? "",
@@ -337,8 +344,8 @@ export default function LeadersDashboard() {
 
   function getAnnouncementsTemplateCsv() {
     return toCsv(
-      ["title", "body", "imageUrl", "priority", "isPinned", "expiresAt"],
-      [["Weekly update", "Short summary for members", "", "medium", false, ""]],
+      ["title", "body", "imageUrl", "linkUrl", "priority", "isPinned", "expiresAt"],
+      [["Weekly update", "Short summary for members", "", "", "medium", false, ""]],
     );
   }
 
@@ -349,6 +356,7 @@ export default function LeadersDashboard() {
         title: row.title.trim(),
         body: row.body?.trim() || undefined,
         imageUrl: row.imageUrl?.trim() || undefined,
+        linkUrl: row.linkUrl?.trim() || undefined,
         priority: (row.priority?.trim() || "medium") as "low" | "medium" | "high" | "critical",
         isPinned: parseBoolean(row.isPinned ?? ""),
         expiresAt: row.expiresAt?.trim() || undefined,
@@ -496,6 +504,13 @@ export default function LeadersDashboard() {
                       />
                     </label>
                   </div>
+                  <input
+                    className="dashboard-field"
+                    type="url"
+                    placeholder={tr("Link URL (optional, e.g. registration link)", "رابط (اختياري، مثلاً رابط التسجيل)")}
+                    value={formLinkUrl}
+                    onChange={(event) => setFormLinkUrl(event.target.value)}
+                  />
                   <div className="grid gap-2 sm:grid-cols-2">
                     <select
                       className="dashboard-select"
@@ -561,6 +576,11 @@ export default function LeadersDashboard() {
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-foreground">{announcement.title}</p>
                       {announcement.body && <p className="mt-0.5 line-clamp-2 text-[10px] text-muted">{announcement.body}</p>}
+                      {announcement.linkUrl && (
+                        <a href={announcement.linkUrl} target="_blank" rel="noreferrer" className="mt-0.5 inline-block text-[10px] text-primary hover:underline">
+                          {tr("Open link", "فتح الرابط")} ↗
+                        </a>
+                      )}
                       <p className="mt-0.5 text-[10px] text-muted/60">
                         <MemberLink memberId={announcement.authorId} name={announcement.authorName ?? tr("Unknown", "غير معروف")} underline={false} className="text-muted/60" />
                         {" · "}

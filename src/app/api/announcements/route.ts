@@ -33,6 +33,7 @@ export const GET = handle(async () => {
   }
   const { rows } = await query(
     `SELECT a.announcement_id AS "announcementId", a.title, a.body, a.image_url AS "imageUrl",
+            a.link_url AS "linkUrl",
             a.priority::text AS priority, a.target_position::text AS "targetPosition",
             a.target_department_id AS "targetDepartmentId", a.is_pinned AS "isPinned",
             a.expires_at AS "expiresAt", a.created_at AS "createdAt",
@@ -53,6 +54,7 @@ const Post = z.object({
   title: z.string().min(1),
   body: z.string().optional(),
   imageUrl: z.string().optional(),
+  linkUrl: z.string().max(2048).optional().or(z.literal("")),
   priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
   targetPosition: z
     .enum(["president", "vice_president", "dept_leader", "dept_vice_leader", "sub_leader", "member"])
@@ -105,10 +107,10 @@ export const POST = handle(async (req) => {
     return ok({ announcementId }, { status: 201 });
   }
   const { rows } = await query<{ announcement_id: number }>(
-    `INSERT INTO announcements (title, body, image_url, priority, target_position, target_department_id, is_pinned, expires_at, created_by)
-     VALUES ($1,$2,$3,$4::announcement_priority,$5,$6,$7,$8,$9) RETURNING announcement_id`,
+    `INSERT INTO announcements (title, body, image_url, link_url, priority, target_position, target_department_id, is_pinned, expires_at, created_by)
+     VALUES ($1,$2,$3,$4,$5::announcement_priority,$6,$7,$8,$9,$10) RETURNING announcement_id`,
     [
-      b.title, b.body ?? null, b.imageUrl ?? null, b.priority, b.targetPosition ?? null,
+      b.title, b.body ?? null, b.imageUrl ?? null, b.linkUrl || null, b.priority, b.targetPosition ?? null,
       b.targetDepartmentId ?? null, b.isPinned, b.expiresAt ?? null, s.memberId,
     ],
   );

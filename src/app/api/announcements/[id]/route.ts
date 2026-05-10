@@ -9,6 +9,7 @@ const Patch = z.object({
   title: z.string().optional(),
   body: z.string().optional(),
   imageUrl: z.string().nullable().optional(),
+  linkUrl: z.string().max(2048).nullable().optional(),
   priority: z.enum(["low", "medium", "high", "critical"]).optional(),
   isPinned: z.boolean().optional(),
   expiresAt: z.string().nullable().optional(),
@@ -51,7 +52,7 @@ export const PATCH = handle(async (req, ctx) => {
   const gate = await gateAnnouncement(s, id);
   if (gate) return gate;
   const map: Record<string, string> = {
-    title: "title", body: "body", imageUrl: "image_url", isPinned: "is_pinned", expiresAt: "expires_at",
+    title: "title", body: "body", imageUrl: "image_url", linkUrl: "link_url", isPinned: "is_pinned", expiresAt: "expires_at",
   };
   const sets: string[] = [];
   const params: unknown[] = [id];

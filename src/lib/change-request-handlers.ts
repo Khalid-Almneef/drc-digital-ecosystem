@@ -30,6 +30,7 @@ interface PostAnnouncementPayload {
   title: string;
   body?: string | null;
   imageUrl?: string | null;
+  linkUrl?: string | null;
   priority: "low" | "medium" | "high" | "critical";
   targetPosition?: string | null;
   targetDepartmentId?: number | null;
@@ -63,12 +64,13 @@ registerChangeRequestHandler("post_announcement", async ({ payload, decidedById 
     });
   } else {
     const result = await query<{ announcement_id: number }>(
-      `INSERT INTO announcements (title, body, image_url, priority, target_position, target_department_id, is_pinned, expires_at, created_by)
-       VALUES ($1, $2, $3, $4::announcement_priority, $5, $6, $7, $8, $9) RETURNING announcement_id`,
+      `INSERT INTO announcements (title, body, image_url, link_url, priority, target_position, target_department_id, is_pinned, expires_at, created_by)
+       VALUES ($1, $2, $3, $4, $5::announcement_priority, $6, $7, $8, $9, $10) RETURNING announcement_id`,
       [
         data.title,
         data.body ?? null,
         data.imageUrl ?? null,
+        data.linkUrl ?? null,
         data.priority,
         data.targetPosition ?? null,
         data.targetDepartmentId ?? null,

@@ -106,25 +106,38 @@ function NewsCard({ item, index, lang, t }: { item: Announcement; index: number;
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.8, y: 16 }}
       transition={{ duration: 0.5, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
     >
-      <Link href={`/announcements/${item.announcementId}`} className="glass-card group block p-5 transition-colors hover:bg-surface/65">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-primary">{item.title}</h3>
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">{item.body || ""}</p>
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
-              <span className="flex items-center gap-1.5">
-                <Calendar size={11} />
-                {item.createdAt ? new Date(item.createdAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US") : ""}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock size={11} />
-                {item.createdAt ? new Date(item.createdAt).toLocaleTimeString(lang === "ar" ? "ar-SA" : "en-US", { hour: "2-digit", minute: "2-digit" }) : ""}
-              </span>
+      {(() => {
+        const inner = (
+          <div className="flex items-start gap-4">
+            {item.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={item.imageUrl} alt={item.title} className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover" />
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-primary">{item.title}</h3>
+              <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">{item.body || ""}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
+                <span className="flex items-center gap-1.5">
+                  <Calendar size={11} />
+                  {item.createdAt ? new Date(item.createdAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US") : ""}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock size={11} />
+                  {item.createdAt ? new Date(item.createdAt).toLocaleTimeString(lang === "ar" ? "ar-SA" : "en-US", { hour: "2-digit", minute: "2-digit" }) : ""}
+                </span>
+              </div>
             </div>
+            {item.linkUrl ? <ChevronRight size={16} className="mt-1 shrink-0 text-muted transition-colors group-hover:text-primary" /> : null}
           </div>
-          <ChevronRight size={16} className="mt-1 shrink-0 text-muted transition-colors group-hover:text-primary" />
-        </div>
-      </Link>
+        );
+        return item.linkUrl ? (
+          <a href={item.linkUrl} target="_blank" rel="noreferrer" className="glass-card group block p-5 transition-colors hover:bg-surface/65">
+            {inner}
+          </a>
+        ) : (
+          <div className="glass-card group p-5">{inner}</div>
+        );
+      })()}
     </motion.div>
   );
 }
