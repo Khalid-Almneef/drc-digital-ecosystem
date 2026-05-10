@@ -627,63 +627,75 @@ export default function MadaratDashboard() {
             </div>
           ) : (
             <div className="grid gap-6 xl:grid-cols-2">
-              {[{ label: "Upcoming", rows: upcomingSessions }, { label: "Previous", rows: pastSessions }].map((group) => (
-                <div key={group.label} className="glass-card p-5">
+              {[
+                { key: "upcoming", label: tr("Upcoming Interviewees", "الضيوف القادمون"), empty: tr("No upcoming Madarat sessions.", "لا توجد جلسات قادمة."), rows: upcomingSessions },
+                { key: "previous", label: tr("Previous Interviewees", "الضيوف السابقون"), empty: tr("No previous Madarat sessions.", "لا توجد جلسات سابقة."), rows: pastSessions },
+              ].map((group) => (
+                <div key={group.key} className="glass-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-foreground">{group.label} Interviewees</h3>
+                    <h3 className="text-sm font-semibold text-foreground">{group.label}</h3>
                     <span className="badge bg-surface-elevated text-muted border-border">{group.rows.length}</span>
                   </div>
                   {group.rows.length === 0 ? (
-                    <p className="py-8 text-center text-sm text-muted">No {group.label.toLowerCase()} Madarat sessions.</p>
+                    <p className="py-8 text-center text-sm text-muted">{group.empty}</p>
                   ) : (
                     <div className="space-y-3">
                       {group.rows.map((session) => (
                         <div key={session.sessionId} className="rounded-xl border border-border bg-surface-elevated/30 p-4">
-                          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-semibold text-foreground">{session.title}</p>
-                                <span className={
-                                  session.programType === "madarat"
-                                    ? "badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20"
-                                    : "badge bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/20"
-                                }>
-                                  {session.programType === "madarat"
-                                    ? "Madarat"
-                                    : session.programType === "madariya_males"
-                                      ? "Madariya (Males)"
-                                      : "Madariya (Females)"}
-                                </span>
-                                <span className={session.isPublished ? "badge badge-success" : "badge"}>{session.isPublished ? "Published" : "Draft"}</span>
-                              </div>
-                              <p className="mt-1 text-sm text-foreground">{session.intervieweeName}</p>
-                              {session.interviewerName && <p className="text-xs text-muted mt-0.5">Interviewer: {session.interviewerName}</p>}
-                              {session.intervieweeRole && <p className="text-xs text-muted mt-0.5">{session.intervieweeRole}</p>}
-                              <p className="mt-2 text-xs text-muted">{fmtDateTime(session.scheduledAt)}{session.location ? ` · ${session.location}` : ""}</p>
-                              {session.description && <p className="mt-2 text-sm text-muted">{session.description}</p>}
-                            </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="min-w-0 truncate text-sm font-semibold text-foreground">{session.title}</p>
+                            <span className={
+                              session.programType === "madarat"
+                                ? "badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20"
+                                : "badge bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/20"
+                            }>
+                              {session.programType === "madarat"
+                                ? tr("Madarat", "مدارات")
+                                : session.programType === "madariya_males"
+                                  ? tr("Madariya (Males)", "مدارية (رجال)")
+                                  : tr("Madariya (Females)", "مدارية (نساء)")}
+                            </span>
+                            <span className={session.isPublished ? "badge badge-success" : "badge"}>
+                              {session.isPublished ? tr("Published", "منشور") : tr("Draft", "مسودة")}
+                            </span>
+                          </div>
 
-                            <div className="flex flex-wrap items-center gap-3">
-                              <button onClick={() => setViewRegsFor(session)} className="text-xs text-primary hover:underline">
-                                {session.registrationCount} registrations
-                              </button>
-                              <label className="flex items-center gap-2 text-[11px] text-muted">
-                                Reg
+                          <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-xs text-muted sm:grid-cols-2">
+                            <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("Guest", "الضيف")}:</dt><dd className="text-foreground">{session.intervieweeName}</dd></div>
+                            {session.interviewerName ? <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("Interviewer", "المُحاوِر")}:</dt><dd className="text-foreground">{session.interviewerName}</dd></div> : null}
+                            {session.intervieweeRole ? <div className="flex gap-2 sm:col-span-2"><dt className="shrink-0 text-muted/70">{tr("Role", "الدور")}:</dt><dd>{session.intervieweeRole}</dd></div> : null}
+                            <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("When", "الموعد")}:</dt><dd>{fmtDateTime(session.scheduledAt)}</dd></div>
+                            {session.location ? <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("Where", "المكان")}:</dt><dd>{session.location}</dd></div> : null}
+                          </dl>
+                          {session.description ? <p className="mt-3 text-sm leading-6 text-muted">{session.description}</p> : null}
+
+                          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3">
+                            <button onClick={() => setViewRegsFor(session)} className="text-xs font-medium text-primary hover:underline">
+                              {session.registrationCount}{session.maxRegistrants ? `/${session.maxRegistrants}` : ""} {tr("registered", "مسجّل")}
+                            </button>
+                            <div className="flex flex-wrap items-center gap-4">
+                              <label className="inline-flex items-center gap-2 text-[11px] text-muted">
+                                {tr("Registration", "التسجيل")}
                                 <Toggle
                                   checked={session.registrationOpen}
                                   onChange={() => patchSession(session.sessionId, { registrationOpen: !session.registrationOpen })}
                                   disabled={updatingSessionId === session.sessionId}
                                 />
                               </label>
-                              <label className="flex items-center gap-2 text-[11px] text-muted">
-                                Pub
+                              <label className="inline-flex items-center gap-2 text-[11px] text-muted">
+                                {tr("Publish", "النشر")}
                                 <Toggle
                                   checked={session.isPublished}
                                   onChange={() => patchSession(session.sessionId, { isPublished: !session.isPublished })}
                                   disabled={updatingSessionId === session.sessionId}
                                 />
                               </label>
-                              <button onClick={() => deleteSession(session.sessionId)} disabled={updatingSessionId === session.sessionId} className="rounded-lg p-2 text-muted hover:bg-red-500/10 hover:text-red-300">
+                              <button
+                                onClick={() => deleteSession(session.sessionId)}
+                                disabled={updatingSessionId === session.sessionId}
+                                aria-label={tr("Delete session", "حذف الجلسة")}
+                                className="rounded-lg p-1.5 text-muted hover:bg-red-500/10 hover:text-red-300"
+                              >
                                 <Trash2 size={14} />
                               </button>
                             </div>
