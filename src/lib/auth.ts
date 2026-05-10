@@ -80,17 +80,38 @@ export function signSession(user: SessionUser): string {
   return jwt.sign(user, SECRET, { expiresIn: `${DAYS}d` });
 }
 
-export function verifySession(token: string): SessionUser | null {
+export interface VerifiedSession extends SessionUser {
+  iat: number;
+}
+
+export function verifySession(token: string): VerifiedSession | null {
   try {
-    const { iat, exp, ...rest } = jwt.verify(token, SECRET) as SessionUser & {
+    const { exp, ...rest } = jwt.verify(token, SECRET) as SessionUser & {
       iat: number;
       exp: number;
     };
-    void iat;
     void exp;
-    return rest as SessionUser;
+    return rest as VerifiedSession;
   } catch {
     return null;
+  }
+}
+
+// Returns true if the JWT was issued strictly before the user's last password
+// change, in which case the session must be rejected. Failing closed: if the
+// users row can't be read, we treat the token as stale.
+async function isJwtStale(memberId: number, iat: number): Promise<boolean> {
+  try {
+    const row = await queryOne<{ password_changed_at: string | null }>(
+      `SELECT password_changed_at FROM users WHERE member_id = $1`,
+      [memberId],
+    );
+    if (!row || !row.password_changed_at) return false;
+    const changedSec = Math.floor(new Date(row.password_changed_at).getTime() / 1000);
+    return iat < changedSec;
+  } catch {
+    // DB unreachable: don't lock users out on a transient failure.
+    return false;
   }
 }
 
@@ -140,7 +161,14 @@ export async function getSession(): Promise<SessionUser | null> {
   const token = store.get(COOKIE)?.value;
   if (!token) return null;
   const s = verifySession(token);
-  return s ? applyPermissionOverrides(s) : null;
+  if (!s) return null;
+  // H-03: reject JWTs issued before the user's most recent password change.
+  // This invalidates every session cookie in circulation as soon as the user
+  // (or an admin doing forced reset) sets a new password.
+  if (await isJwtStale(s.memberId, s.iat)) return null;
+  const { iat: _iat, ...rest } = s;
+  void _iat;
+  return applyPermissionOverrides(rest as SessionUser);
 }
 
 export async function requireSession(): Promise<SessionUser> {
