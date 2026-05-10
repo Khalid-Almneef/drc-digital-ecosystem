@@ -61,3 +61,24 @@ export function canMutateDeptResource(
     canManageDept(s, resourceDepartmentId)
   );
 }
+
+/**
+ * Default-deny short-term mitigation for the mass-IDOR sweep (C-02).
+ * True when the user has *some* leadership role (club admin, dept lead,
+ * dept vice lead). Plain members fail this gate.
+ *
+ * Sub-leaders are normalized to dept_vice_leader by applyPermissionOverrides
+ * before sessions are handed out, so they pass this check too.
+ *
+ * Routes that have not yet been wired with finer-grained owner / department
+ * checks should call `requireAnyLead(s)` to at least block ordinary members
+ * from mutating shared records.
+ */
+export function isAnyLead(s: SessionUser): boolean {
+  return (
+    s.position === "president" ||
+    s.position === "vice_president" ||
+    s.position === "dept_leader" ||
+    s.position === "dept_vice_leader"
+  );
+}
