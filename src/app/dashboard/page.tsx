@@ -33,6 +33,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ImageUrlInput } from "@/components/dashboard/ImageUrlInput";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { MemberLink } from "@/components/dashboard/MemberLink";
+import { MemberCombobox } from "@/components/dashboard/MemberCombobox";
 import { api } from "@/lib/client";
 
 interface EventItem {
@@ -729,15 +730,16 @@ export default function DashboardOverview() {
 
                 <div className="rounded-[1.1rem] border border-primary/15 bg-surface/45 p-5 space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
-                    <label className="block">
+                    <div className="block">
                       <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">{tr("Member", "العضو")}</span>
-                      <select value={endorsementForm.endorseeMemberId} onChange={(event) => setEndorsementForm((form) => ({ ...form, endorseeMemberId: event.target.value, projectId: "" }))} className="dashboard-field min-h-11 w-full px-3 py-2 text-sm">
-                        <option value="">{tr("Choose a member", "اختر عضو")}</option>
-                        {endorsementMembers.map((member) => (
-                          <option key={member.memberId} value={member.memberId}>{member.fullName} · {member.departmentName}</option>
-                        ))}
-                      </select>
-                    </label>
+                      <MemberCombobox
+                        value={endorsementForm.endorseeMemberId}
+                        members={endorsementMembers.map((m) => ({ memberId: m.memberId, fullName: m.fullName, departmentName: m.departmentName }))}
+                        onChange={(memberId) => setEndorsementForm((form) => ({ ...form, endorseeMemberId: memberId, projectId: "" }))}
+                        placeholder={tr("Type a name…", "ابحث عن عضو…")}
+                        noResultsText={tr("No matches.", "لا نتائج.")}
+                      />
+                    </div>
                     <label className="block">
                       <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">{tr("Reason", "السبب")}</span>
                       <select value={endorsementForm.contextType} onChange={(event) => setEndorsementForm((form) => ({ ...form, contextType: event.target.value as "worked_together" | "project_together", projectId: "" }))} className="dashboard-field min-h-11 w-full px-3 py-2 text-sm">
