@@ -375,11 +375,11 @@ export default function LeadersDashboard() {
         <section className="space-y-6">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-foreground">Committee Oversight</h3>
-              <p className="mt-1 text-sm text-muted">Live committee cards built from member rosters, service requests, finance queues, and announcement requests.</p>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-foreground">{tr("Committee Oversight", "متابعة اللجان")}</h3>
+              <p className="mt-1 text-sm text-muted">{tr("Live committee cards built from member rosters, service requests, finance queues, and announcement requests.", "بطاقات لجان مباشرة مبنية على الأعضاء وطلبات الخدمات والمالية والإعلانات.")}</p>
             </div>
             <button onClick={() => void loadExecutiveOverview()} className="btn-secondary px-4 py-2 text-xs">
-              Refresh board
+              {tr("Refresh board", "تحديث اللوحة")}
             </button>
           </div>
 
@@ -463,13 +463,13 @@ export default function LeadersDashboard() {
                 >
                   <input
                     className="dashboard-field"
-                    placeholder="Title *"
+                    placeholder={tr("Title *", "العنوان *")}
                     value={formTitle}
                     onChange={(event) => setFormTitle(event.target.value)}
                   />
                   <textarea
                     className="dashboard-field resize-none"
-                    placeholder="Body (optional)"
+                    placeholder={tr("Body (optional)", "النص (اختياري)")}
                     rows={3}
                     value={formBody}
                     onChange={(event) => setFormBody(event.target.value)}
@@ -477,13 +477,13 @@ export default function LeadersDashboard() {
                   <div className="space-y-2">
                     <input
                       className="dashboard-field"
-                      placeholder="Image URL (optional)"
+                      placeholder={tr("Image URL (optional)", "رابط الصورة (اختياري)")}
                       value={formImageUrl}
                       onChange={(event) => setFormImageUrl(event.target.value)}
                     />
                     <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-muted">
                       <Upload size={12} />
-                      {uploadingImage ? "Uploading image…" : "Upload image"}
+                      {uploadingImage ? tr("Uploading image…", "جارٍ رفع الصورة…") : tr("Upload image", "رفع صورة")}
                       <input
                         type="file"
                         accept="image/*"
@@ -502,10 +502,10 @@ export default function LeadersDashboard() {
                       value={formPriority}
                       onChange={(event) => setFormPriority(event.target.value as typeof formPriority)}
                     >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                      <option value="critical">Critical</option>
+                      <option value="low">{tr("Low", "منخفضة")}</option>
+                      <option value="medium">{tr("Medium", "متوسطة")}</option>
+                      <option value="high">{tr("High", "مرتفعة")}</option>
+                      <option value="critical">{tr("Critical", "حرجة")}</option>
                     </select>
                     <input
                       type="date"
@@ -521,7 +521,7 @@ export default function LeadersDashboard() {
                       onChange={(event) => setFormPinned(event.target.checked)}
                       className="accent-primary"
                     />
-                    Pin to top
+                    {tr("Pin to top", "تثبيت في الأعلى")}
                   </label>
                   <div className="flex gap-2">
                     <button
@@ -530,10 +530,10 @@ export default function LeadersDashboard() {
                       className="btn-primary flex-1 px-3 py-1.5 text-xs inline-flex items-center justify-center gap-1.5"
                     >
                       {saving && <Loader2 size={11} className="animate-spin" />}
-                      {editingAnnouncementId ? "Save Changes" : "Post"}
+                      {editingAnnouncementId ? tr("Save Changes", "حفظ التغييرات") : tr("Post", "نشر")}
                     </button>
                     <button onClick={resetAnnouncementForm} className="btn-secondary flex-1 px-3 py-1.5 text-xs">
-                      Cancel
+                      {tr("Cancel", "إلغاء")}
                     </button>
                   </div>
                 </motion.div>
@@ -542,7 +542,7 @@ export default function LeadersDashboard() {
 
             <div className="space-y-2">
               {announcements.length === 0 && (
-                <div className="glass-card p-4 text-center text-sm text-muted">No announcements yet.</div>
+                <div className="glass-card p-4 text-center text-sm text-muted">{tr("No announcements yet.", "لا توجد إعلانات بعد.")}</div>
               )}
               {announcements.map((announcement, index) => (
                 <motion.div
@@ -562,10 +562,10 @@ export default function LeadersDashboard() {
                       <p className="text-xs font-medium text-foreground">{announcement.title}</p>
                       {announcement.body && <p className="mt-0.5 line-clamp-2 text-[10px] text-muted">{announcement.body}</p>}
                       <p className="mt-0.5 text-[10px] text-muted/60">
-                        <MemberLink memberId={announcement.authorId} name={announcement.authorName ?? "Unknown"} underline={false} className="text-muted/60" />
+                        <MemberLink memberId={announcement.authorId} name={announcement.authorName ?? tr("Unknown", "غير معروف")} underline={false} className="text-muted/60" />
                         {" · "}
                         {fmtDate(announcement.createdAt)}
-                        {announcement.isPinned && <span className="ms-1 text-primary">· pinned</span>}
+                        {announcement.isPinned && <span className="ms-1 text-primary">· {tr("pinned", "مثبَّت")}</span>}
                       </p>
                     </div>
                     <button
@@ -590,8 +590,8 @@ export default function LeadersDashboard() {
 
           <div className="glass-card p-4">
             <div className="mb-3">
-              <h3 className="text-sm font-semibold text-foreground">Announcement Tools</h3>
-              <p className="mt-1 text-xs text-muted">Bulk import, export, or hand off the announcement queue from here.</p>
+              <h3 className="text-sm font-semibold text-foreground">{tr("Announcement Tools", "أدوات الإعلانات")}</h3>
+              <p className="mt-1 text-xs text-muted">{tr("Bulk import, export, or hand off the announcement queue from here.", "استورد، صدّر، أو سلّم قائمة الإعلانات من هنا.")}</p>
             </div>
             <ImportExportToolbar
               exportFilename="leaders-announcements.csv"
@@ -599,19 +599,19 @@ export default function LeadersDashboard() {
               getExportCsv={getAnnouncementsCsv}
               getTemplateCsv={getAnnouncementsTemplateCsv}
               onImportRows={importAnnouncements}
-              exportLabel="Export announcements"
-              templateLabel="Announcement template"
-              importLabel="Import announcements"
+              exportLabel={tr("Export announcements", "تصدير الإعلانات")}
+              templateLabel={tr("Announcement template", "قالب الإعلان")}
+              importLabel={tr("Import announcements", "استيراد إعلانات")}
             />
           </div>
 
           <div className="glass-card p-4">
             <div className="mb-3">
-              <h3 className="text-sm font-semibold text-foreground">Latest Content Updates</h3>
-              <p className="mt-1 text-xs text-muted">Recent Content dashboard changes based on stored site-content timestamps.</p>
+              <h3 className="text-sm font-semibold text-foreground">{tr("Latest Content Updates", "آخر تحديثات المحتوى")}</h3>
+              <p className="mt-1 text-xs text-muted">{tr("Recent Content dashboard changes based on stored site-content timestamps.", "تحديثات حديثة في لوحة المحتوى وفق طوابع الوقت المحفوظة.")}</p>
             </div>
             {latestContentUpdates.length === 0 ? (
-              <p className="text-sm text-muted">No content updates recorded yet.</p>
+              <p className="text-sm text-muted">{tr("No content updates recorded yet.", "لا توجد تحديثات محتوى مسجَّلة بعد.")}</p>
             ) : (
               <div className="space-y-2">
                 {latestContentUpdates.map((row) => (

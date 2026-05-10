@@ -68,6 +68,8 @@ const EMPTY_PROJECT_FORM = {
 interface CreateProjectModalProps { onClose: () => void; onCreated: () => void }
 
 function CreateProjectModal({ onClose, onCreated }: CreateProjectModalProps) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [f, setF] = useState(EMPTY_PROJECT_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -145,7 +147,7 @@ function CreateProjectModal({ onClose, onCreated }: CreateProjectModalProps) {
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors">
           <X size={18} />
         </button>
-        <h2 className="text-lg font-bold text-foreground mb-6">Create Project</h2>
+        <h2 className="text-lg font-bold text-foreground mb-6">{tr("Create Project", "إنشاء مشروع")}</h2>
 
         {error && (
           <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 mb-4">{error}</p>
@@ -153,40 +155,40 @@ function CreateProjectModal({ onClose, onCreated }: CreateProjectModalProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className={labelCls}>Title *</label>
-            <input required value={f.title} onChange={set("title")} placeholder="Project title" className={inputCls} />
+            <label className={labelCls}>{tr("Title *", "العنوان *")}</label>
+            <input required value={f.title} onChange={set("title")} placeholder={tr("Project title", "عنوان المشروع")} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Description</label>
-            <textarea value={f.description} onChange={set("description")} rows={3} placeholder="What is this project about?" className={`${inputCls} resize-none`} />
+            <label className={labelCls}>{tr("Description", "الوصف")}</label>
+            <textarea value={f.description} onChange={set("description")} rows={3} placeholder={tr("What is this project about?", "عن أي شيء هذا المشروع؟")} className={`${inputCls} resize-none`} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Category</label>
-              <input value={f.category} onChange={set("category")} placeholder="e.g. Robotics, AI" className={inputCls} />
+              <label className={labelCls}>{tr("Category", "التصنيف")}</label>
+              <input value={f.category} onChange={set("category")} placeholder={tr("e.g. Robotics, AI", "مثل: روبوتات، ذكاء اصطناعي")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Status</label>
+              <label className={labelCls}>{tr("Status", "الحالة")}</label>
               <select value={f.status} onChange={set("status")} className={selectCls}>
-                <option value="planning">Planning</option>
-                <option value="in_progress">In Progress</option>
-                <option value="testing">Testing</option>
-                <option value="completed">Completed</option>
+                <option value="planning">{tr("Planning", "تخطيط")}</option>
+                <option value="in_progress">{tr("In Progress", "قيد التنفيذ")}</option>
+                <option value="testing">{tr("Testing", "تجريب")}</option>
+                <option value="completed">{tr("Completed", "مكتمل")}</option>
               </select>
             </div>
           </div>
           <div>
-            <label className={labelCls}>Tech Stack (comma-separated)</label>
-            <input value={f.techStack} onChange={set("techStack")} placeholder="e.g. ROS2, Python, OpenCV" className={inputCls} />
+            <label className={labelCls}>{tr("Tech Stack (comma-separated)", "التقنيات المستخدمة (مفصولة بفاصلة)")}</label>
+            <input value={f.techStack} onChange={set("techStack")} placeholder={tr("e.g. ROS2, Python, OpenCV", "مثل: ROS2، Python، OpenCV")} className={inputCls} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Credit Hours</label>
+              <label className={labelCls}>{tr("Credit Hours", "الساعات المعتمدة")}</label>
               <input type="number" min="0" step="0.5" value={f.creditHours} onChange={set("creditHours")} placeholder="0" className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Budget (SAR)</label>
-              <input type="number" min="0" step="0.01" value={f.cost} onChange={set("cost")} placeholder="optional" className={inputCls} />
+              <label className={labelCls}>{tr("Budget (SAR)", "الميزانية (ر.س)")}</label>
+              <input type="number" min="0" step="0.01" value={f.cost} onChange={set("cost")} placeholder={tr("optional", "اختياري")} className={inputCls} />
             </div>
           </div>
 
@@ -199,25 +201,25 @@ function CreateProjectModal({ onClose, onCreated }: CreateProjectModalProps) {
                 className="mt-1 h-4 w-4 rounded border-border bg-surface-elevated text-primary focus:ring-primary/30"
               />
               <div>
-                <p className="text-sm font-semibold text-foreground">Accept member applications for this project</p>
+                <p className="text-sm font-semibold text-foreground">{tr("Accept member applications for this project", "قبول طلبات الأعضاء لهذا المشروع")}</p>
                 <p className="mt-1 text-xs leading-5 text-muted">
-                  When enabled, signed-in members will see the open roles on the Projects page and can apply there.
+                  {tr("When enabled, signed-in members will see the open roles on the Projects page and can apply there.", "عند التفعيل، يرى الأعضاء المسجَّلون الأدوار المفتوحة في صفحة المشاريع ويمكنهم التقديم.")}
                 </p>
               </div>
             </label>
 
             {f.applicationsEnabled && (
               <div className="mt-4">
-                <label className={labelCls}>Application Roles</label>
+                <label className={labelCls}>{tr("Application Roles", "أدوار الطلب")}</label>
                 <textarea
                   value={f.applicationRoles}
                   onChange={set("applicationRoles")}
                   rows={4}
-                  placeholder={"One role per line\nFlight Controls\nComputer Vision\nField Testing"}
+                  placeholder={tr("One role per line\nFlight Controls\nComputer Vision\nField Testing", "دور واحد في كل سطر\nFlight Controls\nComputer Vision\nField Testing")}
                   className={`${inputCls} resize-none`}
                 />
                 <p className="mt-2 text-[11px] leading-5 text-muted">
-                  Add every role members can apply for. These roles will appear individually in the member application form.
+                  {tr("Add every role members can apply for. These roles will appear individually in the member application form.", "أضف كل دور يستطيع الأعضاء التقديم له. ستظهر الأدوار منفصلة في نموذج تقديم العضو.")}
                 </p>
               </div>
             )}
@@ -232,34 +234,34 @@ function CreateProjectModal({ onClose, onCreated }: CreateProjectModalProps) {
                 className="mt-1 h-4 w-4 rounded border-border bg-surface-elevated text-primary focus:ring-primary/30"
               />
               <div>
-                <p className="text-sm font-semibold text-foreground">Create linked Media photo request</p>
+                <p className="text-sm font-semibold text-foreground">{tr("Create linked Media photo request", "إنشاء طلب تصوير مرتبط بفريق الإعلام")}</p>
                 <p className="mt-1 text-xs leading-5 text-muted">
-                  Sends a project-media request to the Media team so they can capture and upload photos for this project.
+                  {tr("Sends a project-media request to the Media team so they can capture and upload photos for this project.", "يرسل طلب إعلامي لفريق الإعلام لالتقاط ورفع صور المشروع.")}
                 </p>
               </div>
             </label>
 
             {f.createMediaRequest && (
               <div className="mt-4">
-                <label className={labelCls}>Media Request Brief</label>
+                <label className={labelCls}>{tr("Media Request Brief", "ملخّص طلب الإعلام")}</label>
                 <textarea
                   value={f.mediaRequestBrief}
                   onChange={set("mediaRequestBrief")}
                   rows={4}
-                  placeholder="What kind of photos or coverage does the project need?"
+                  placeholder={tr("What kind of photos or coverage does the project need?", "ما نوع الصور أو التغطية التي يحتاجها المشروع؟")}
                   className={`${inputCls} resize-none`}
                 />
                 <p className="mt-2 text-[11px] leading-5 text-muted">
-                  If left blank, the project description will be used as the base brief.
+                  {tr("If left blank, the project description will be used as the base brief.", "إذا تُرك فارغاً، سيُستخدم وصف المشروع كملخّص أساسي.")}
                 </p>
               </div>
             )}
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">Cancel</button>
+            <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
             <button type="submit" disabled={saving} className="btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-60 flex items-center justify-center gap-2">
-              {saving ? <><Loader2 size={14} className="animate-spin" /> Creating…</> : "Create Project"}
+              {saving ? <><Loader2 size={14} className="animate-spin" /> {tr("Creating…", "جارٍ الإنشاء…")}</> : tr("Create Project", "إنشاء المشروع")}
             </button>
           </div>
         </form>

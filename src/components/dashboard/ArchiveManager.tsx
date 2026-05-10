@@ -16,6 +16,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+import { useLang } from "@/contexts/LanguageContext";
 import { ImportExportToolbar } from "@/components/dashboard/ImportExportToolbar";
 import { ImageUrlInput } from "@/components/dashboard/ImageUrlInput";
 import { api } from "@/lib/client";
@@ -204,6 +205,8 @@ function ArchiveEditorModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const editing = Boolean(initialItem);
   const initialGallery = initialItem
     ? config.galleries[initialItem.section][String(initialItem.id)] ?? []
@@ -361,48 +364,48 @@ function ArchiveEditorModal({
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label>
-              <span className={labelClass}>Type</span>
+              <span className={labelClass}>{tr("Type", "النوع")}</span>
               <select
                 value={values.kind}
                 onChange={(event) => set("kind", event.target.value as ArchiveKind)}
                 disabled={editing}
                 className={selectClass}
               >
-                <option value="project">Project</option>
-                <option value="event">Event</option>
-                <option value="competition">Technical Event (counts as competition)</option>
+                <option value="project">{tr("Project", "مشروع")}</option>
+                <option value="event">{tr("Event", "فعالية")}</option>
+                <option value="competition">{tr("Technical Event (counts as competition)", "فعالية تقنية (تُحتسب كمسابقة)")}</option>
               </select>
             </label>
 
             <label>
-              <span className={labelClass}>Category</span>
-              <input value={values.category} onChange={(event) => set("category", event.target.value)} className={inputClass} placeholder="Optional category" />
+              <span className={labelClass}>{tr("Category", "التصنيف")}</span>
+              <input value={values.category} onChange={(event) => set("category", event.target.value)} className={inputClass} placeholder={tr("Optional category", "تصنيف اختياري")} />
             </label>
           </div>
 
           <label>
-            <span className={labelClass}>Title</span>
-            <input required value={values.title} onChange={(event) => set("title", event.target.value)} className={inputClass} placeholder="Archive item title" />
+            <span className={labelClass}>{tr("Title", "العنوان")}</span>
+            <input required value={values.title} onChange={(event) => set("title", event.target.value)} className={inputClass} placeholder={tr("Archive item title", "عنوان عنصر الأرشيف")} />
           </label>
 
           <label>
-            <span className={labelClass}>Description</span>
-            <textarea value={values.description} onChange={(event) => set("description", event.target.value)} rows={4} className={`${inputClass} resize-none`} placeholder="Short public detail summary" />
+            <span className={labelClass}>{tr("Description", "الوصف")}</span>
+            <textarea value={values.description} onChange={(event) => set("description", event.target.value)} rows={4} className={`${inputClass} resize-none`} placeholder={tr("Short public detail summary", "ملخص قصير يظهر للعموم")} />
           </label>
 
           <label>
-            <span className={labelClass}>Cover Image</span>
+            <span className={labelClass}>{tr("Cover Image", "صورة الغلاف")}</span>
             <ImageUrlInput value={values.imageUrl} onChange={(value) => set("imageUrl", value)} placeholder="https://…" />
           </label>
 
           <label>
-            <span className={labelClass}>Gallery Images</span>
+            <span className={labelClass}>{tr("Gallery Images", "صور المعرض")}</span>
             <textarea
               value={values.galleryUrls}
               onChange={(event) => set("galleryUrls", event.target.value)}
               rows={4}
               className={`${inputClass} resize-none`}
-              placeholder={"One URL per line\nhttps://…"}
+              placeholder={tr("One URL per line\nhttps://…", "رابط واحد في كل سطر\nhttps://…")}
             />
           </label>
 
@@ -410,23 +413,23 @@ function ArchiveEditorModal({
             <>
               <div className="grid gap-4 md:grid-cols-2">
                 <label>
-                  <span className={labelClass}>Internal Status</span>
+                  <span className={labelClass}>{tr("Internal Status", "الحالة الداخلية")}</span>
                   <select value={values.status} onChange={(event) => set("status", event.target.value as ProjectStatus)} className={selectClass}>
-                    <option value="planning">Planning</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="testing">Testing</option>
-                    <option value="completed">Completed</option>
+                    <option value="planning">{tr("Planning", "تخطيط")}</option>
+                    <option value="in_progress">{tr("In Progress", "قيد التنفيذ")}</option>
+                    <option value="testing">{tr("Testing", "تجريب")}</option>
+                    <option value="completed">{tr("Completed", "مكتمل")}</option>
                   </select>
                 </label>
 
                 <label>
-                  <span className={labelClass}>GitHub</span>
+                  <span className={labelClass}>{tr("GitHub", "GitHub")}</span>
                   <input value={values.githubUrl} onChange={(event) => set("githubUrl", event.target.value)} className={inputClass} placeholder="https://github.com/…" />
                 </label>
               </div>
 
               <label>
-                <span className={labelClass}>Tech Stack</span>
+                <span className={labelClass}>{tr("Tech Stack", "التقنيات المستخدمة")}</span>
                 <input value={values.techStack} onChange={(event) => set("techStack", event.target.value)} className={inputClass} placeholder="ROS2, Python, OpenCV" />
               </label>
 
@@ -439,19 +442,19 @@ function ArchiveEditorModal({
                     className="mt-1 h-4 w-4 rounded border-border bg-surface-elevated"
                   />
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Accept member applications</p>
-                    <p className="mt-1 text-xs leading-5 text-muted">Keeps the public detail page open for member role applications.</p>
+                    <p className="text-sm font-semibold text-foreground">{tr("Accept member applications", "قبول طلبات الأعضاء")}</p>
+                    <p className="mt-1 text-xs leading-5 text-muted">{tr("Keeps the public detail page open for member role applications.", "يبقي صفحة التفاصيل العامة مفتوحة لاستقبال طلبات الأعضاء.")}</p>
                   </div>
                 </label>
                 {values.applicationsEnabled ? (
                   <label className="mt-4 block">
-                    <span className={labelClass}>Application Roles</span>
+                    <span className={labelClass}>{tr("Application Roles", "أدوار الطلب")}</span>
                     <textarea
                       value={values.applicationRoles}
                       onChange={(event) => set("applicationRoles", event.target.value)}
                       rows={4}
                       className={`${inputClass} resize-none`}
-                      placeholder={"One role per line\nFlight Controls\nComputer Vision"}
+                      placeholder={tr("One role per line\nFlight Controls\nComputer Vision", "دور واحد في كل سطر\nFlight Controls\nComputer Vision")}
                     />
                   </label>
                 ) : null}
@@ -461,32 +464,32 @@ function ArchiveEditorModal({
             <>
               <div className="grid gap-4 md:grid-cols-2">
                 <label>
-                  <span className={labelClass}>Start Time</span>
+                  <span className={labelClass}>{tr("Start Time", "وقت البدء")}</span>
                   <input type="datetime-local" value={values.startTime} onChange={(event) => set("startTime", event.target.value)} className={inputClass} />
                 </label>
                 <label>
-                  <span className={labelClass}>End Time</span>
+                  <span className={labelClass}>{tr("End Time", "وقت الانتهاء")}</span>
                   <input type="datetime-local" value={values.endTime} onChange={(event) => set("endTime", event.target.value)} className={inputClass} />
                 </label>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label>
-                  <span className={labelClass}>Location</span>
-                  <input value={values.location} onChange={(event) => set("location", event.target.value)} className={inputClass} placeholder="Venue or hall" />
+                  <span className={labelClass}>{tr("Location", "المكان")}</span>
+                  <input value={values.location} onChange={(event) => set("location", event.target.value)} className={inputClass} placeholder={tr("Venue or hall", "المقر أو القاعة")} />
                 </label>
                 <label className="flex items-center gap-3 rounded-xl border border-border bg-surface-elevated/55 px-4 py-3">
                   <input type="checkbox" checked={values.isPublished} onChange={(event) => set("isPublished", event.target.checked)} className="h-4 w-4 rounded border-border bg-surface-elevated" />
-                  <span className="text-sm text-foreground">Published</span>
+                  <span className="text-sm text-foreground">{tr("Published", "منشور")}</span>
                 </label>
               </div>
             </>
           )}
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1 px-5 py-2.5 text-sm">Cancel</button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1 px-5 py-2.5 text-sm">{tr("Cancel", "إلغاء")}</button>
             <button type="submit" disabled={saving} className="btn-primary flex-1 px-5 py-2.5 text-sm disabled:opacity-60">
-              {saving ? "Saving…" : editing ? "Save Changes" : "Create Item"}
+              {saving ? tr("Saving…", "جارٍ الحفظ…") : editing ? tr("Save Changes", "حفظ التغييرات") : tr("Create Item", "إنشاء عنصر")}
             </button>
           </div>
         </form>
@@ -496,6 +499,8 @@ function ArchiveEditorModal({
 }
 
 export function ArchiveManager() {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [projects, setProjects] = useState<ProjectRecord[]>([]);
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [config, setConfig] = useState<ArchiveConfig>(normalizeArchiveConfig(null));
@@ -545,7 +550,7 @@ export function ArchiveManager() {
   }
 
   async function deleteItem(item: ArchiveEntry) {
-    if (!confirm(`Delete ${item.title}? This cannot be undone.`)) return;
+    if (!confirm(tr(`Delete ${item.title}? This cannot be undone.`, `حذف ${item.title}؟ لا يمكن التراجع.`))) return;
     if (item.kind === "project") {
       await api.delete(`/api/projects/${item.id}`);
     } else {
@@ -652,13 +657,13 @@ export function ArchiveManager() {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">{sectionLabel(section)}</h3>
-            <p className="mt-1 text-xs text-muted">Manual order controls the public archive.</p>
+            <p className="mt-1 text-xs text-muted">{tr("Manual order controls the public archive.", "الترتيب اليدوي يتحكّم بالأرشيف العام.")}</p>
           </div>
           {savingOrder === section ? <Loader2 size={14} className="animate-spin text-muted" /> : null}
         </div>
 
         {items.length === 0 ? (
-          <div className="glass-card p-6 text-sm text-muted">No {sectionLabel(section).toLowerCase()} yet.</div>
+          <div className="glass-card p-6 text-sm text-muted">{tr(`No ${sectionLabel(section).toLowerCase()} yet.`, `لا توجد ${sectionLabel(section)} بعد.`)}</div>
         ) : (
           <div className="space-y-3">
             {items.map((item, index) => (
@@ -686,26 +691,26 @@ export function ArchiveManager() {
                     </div>
                     {item.description ? <p className="mt-2 line-clamp-2 text-xs leading-6 text-muted">{item.description}</p> : null}
                     <p className="mt-2 text-[11px] text-muted/70">
-                      Gallery images: {(config.galleries[item.section][String(item.id)] ?? []).length}
+                      {tr("Gallery images", "صور المعرض")}: {(config.galleries[item.section][String(item.id)] ?? []).length}
                     </p>
                   </div>
 
                   <div className="flex shrink-0 items-center gap-1">
-                    <button onClick={() => moveItem(item.section, item.id, -1)} className="rounded-md p-1.5 text-muted transition-colors hover:text-foreground" title="Move up">
+                    <button onClick={() => moveItem(item.section, item.id, -1)} className="rounded-md p-1.5 text-muted transition-colors hover:text-foreground" title={tr("Move up", "تحريك للأعلى")}>
                       <ArrowUp size={14} />
                     </button>
-                    <button onClick={() => moveItem(item.section, item.id, 1)} className="rounded-md p-1.5 text-muted transition-colors hover:text-foreground" title="Move down">
+                    <button onClick={() => moveItem(item.section, item.id, 1)} className="rounded-md p-1.5 text-muted transition-colors hover:text-foreground" title={tr("Move down", "تحريك للأسفل")}>
                       <ArrowDown size={14} />
                     </button>
-                    <button onClick={() => setEditorItem(item)} className="rounded-md p-1.5 text-muted transition-colors hover:text-primary" title="Edit">
+                    <button onClick={() => setEditorItem(item)} className="rounded-md p-1.5 text-muted transition-colors hover:text-primary" title={tr("Edit", "تعديل")}>
                       <Pencil size={14} />
                     </button>
                     {item.trackHref ? (
-                      <Link href={item.trackHref} className="rounded-md p-1.5 text-muted transition-colors hover:text-primary" title="Open track page">
+                      <Link href={item.trackHref} className="rounded-md p-1.5 text-muted transition-colors hover:text-primary" title={tr("Open track page", "فتح صفحة التتبّع")}>
                         <ExternalLink size={14} />
                       </Link>
                     ) : null}
-                    <button onClick={() => deleteItem(item)} className="rounded-md p-1.5 text-muted transition-colors hover:text-red-400" title="Delete">
+                    <button onClick={() => deleteItem(item)} className="rounded-md p-1.5 text-muted transition-colors hover:text-red-400" title={tr("Delete", "حذف")}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -722,8 +727,8 @@ export function ArchiveManager() {
     <>
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">Archive</h3>
-          <p className="mt-1 text-sm text-muted">Projects, events, and competitions now share one public archive and one leader workflow.</p>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">{tr("Archive", "الأرشيف")}</h3>
+          <p className="mt-1 text-sm text-muted">{tr("Projects, events, and competitions now share one public archive and one leader workflow.", "المشاريع والفعاليات والمسابقات تشارك الآن أرشيفاً عاماً واحداً وسير عمل قيادي موحّد.")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <ImportExportToolbar
@@ -732,13 +737,13 @@ export function ArchiveManager() {
             getExportCsv={getArchiveCsv}
             getTemplateCsv={getArchiveTemplateCsv}
             onImportRows={importArchiveRows}
-            exportLabel="Export archive"
-            templateLabel="Archive template"
-            importLabel="Import archive"
+            exportLabel={tr("Export archive", "تصدير الأرشيف")}
+            templateLabel={tr("Archive template", "قالب الأرشيف")}
+            importLabel={tr("Import archive", "استيراد الأرشيف")}
           />
           <button onClick={() => setCreateOpen(true)} className="btn-primary flex items-center gap-1.5 px-4 py-2 text-xs">
             <Plus size={13} />
-            Create Item
+            {tr("Create Item", "إنشاء عنصر")}
           </button>
         </div>
       </div>

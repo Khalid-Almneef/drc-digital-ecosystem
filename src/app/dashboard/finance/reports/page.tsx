@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Download, FileClock, Loader2, ReceiptText, Wallet } from "lucide-react";
+import { useLang } from "@/contexts/LanguageContext";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { FinanceNav } from "@/components/dashboard/FinanceNav";
 import { ImportExportToolbar } from "@/components/dashboard/ImportExportToolbar";
@@ -90,6 +91,8 @@ function buildQuery(filters: { department: DepartmentFilter; status: "all" | Fin
 }
 
 export default function FinanceReportsPage() {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const currentYear = String(new Date().getFullYear());
   const [filters, setFilters] = useState<{ department: DepartmentFilter; status: "all" | FinanceRequestStatus; fiscalYear: string }>({
     department: "all",
@@ -203,7 +206,7 @@ export default function FinanceReportsPage() {
       <div className={`${cardCls} flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between`}>
         <div className="grid flex-1 gap-3 md:grid-cols-3">
           <div>
-            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-muted">Department</label>
+            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-muted">{tr("Department", "القسم")}</label>
             <select
               value={filters.department}
               onChange={(event) => setFilters((current) => ({ ...current, department: event.target.value as DepartmentFilter }))}
@@ -283,7 +286,7 @@ export default function FinanceReportsPage() {
         <section className={cardCls}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">Filtered Requests</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">{tr("Filtered Requests", "الطلبات المفلترة")}</p>
               <h2 className="mt-2 text-xl font-semibold text-foreground">Procurement view</h2>
               <p className="mt-2 text-sm text-muted">
                 {snapshot.pendingCount} pending, {snapshot.approvedCount + snapshot.purchasingCount} in progress, {snapshot.fulfilledCount} fulfilled, {snapshot.rejectedCount} rejected.
@@ -315,11 +318,11 @@ export default function FinanceReportsPage() {
 
                     <div className="rounded-2xl border border-border bg-surface px-4 py-3 text-right">
                       <p className="text-sm font-semibold text-foreground">{formatMoney(request.amountRequested)}</p>
-                      <p className="mt-1 text-[11px] text-muted">Requested</p>
+                      <p className="mt-1 text-[11px] text-muted">{tr("Requested", "مطلوب")}</p>
                       <p className="mt-3 text-sm font-semibold text-foreground">
                         {request.approvedAmount != null ? formatMoney(request.approvedAmount) : "Pending"}
                       </p>
-                      <p className="mt-1 text-[11px] text-muted">Approved</p>
+                      <p className="mt-1 text-[11px] text-muted">{tr("Approved", "معتمد")}</p>
                     </div>
                   </div>
 
@@ -355,7 +358,7 @@ export default function FinanceReportsPage() {
           <section className={cardCls}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">Budget History</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">{tr("Budget History", "سجل الميزانية")}</p>
                 <h2 className="mt-2 text-xl font-semibold text-foreground">Allocation audit trail</h2>
               </div>
               <p className="text-sm text-muted">{reports?.budgetHistory.length ?? 0} changes</p>
@@ -395,7 +398,7 @@ export default function FinanceReportsPage() {
           <section className={cardCls}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">Request History</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">{tr("Request History", "سجل الطلبات")}</p>
                 <h2 className="mt-2 text-xl font-semibold text-foreground">Decision log</h2>
               </div>
               <p className="text-sm text-muted">{reports?.requestHistory.length ?? 0} updates</p>

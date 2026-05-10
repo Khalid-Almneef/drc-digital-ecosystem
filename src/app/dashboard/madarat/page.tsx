@@ -592,13 +592,13 @@ export default function MadaratDashboard() {
               <div className="flex items-start gap-3">
                 <GraduationCap size={16} className="mt-0.5 text-primary" />
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Session Control</h3>
-                  <p className="mt-1 text-xs text-muted">Create Madarat and Madariya sessions from a focused modal instead of filling the whole page inline.</p>
+                  <h3 className="text-sm font-semibold text-foreground">{tr("Session Control", "إدارة الجلسات")}</h3>
+                  <p className="mt-1 text-xs text-muted">{tr("Create Madarat and Madariya sessions from a focused modal instead of filling the whole page inline.", "أنشئ جلسات مدارات ومدارية من نافذة مخصّصة بدلاً من ملء الصفحة بالكامل.")}</p>
                 </div>
               </div>
               <button onClick={() => setCreateSessionOpen(true)} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs">
                 <Plus size={11} />
-                Create Session
+                {tr("Create Session", "إنشاء جلسة")}
               </button>
             </div>
             <div className="mt-4">
@@ -709,7 +709,7 @@ export default function MadaratDashboard() {
           </div>
 
           <div className="glass-card p-5">
-            <h3 className="text-sm font-semibold text-foreground">Registration Performance</h3>
+            <h3 className="text-sm font-semibold text-foreground">{tr("Registration Performance", "أداء التسجيل")}</h3>
             <div className="mt-4 space-y-3">
               {[...sessions].sort((a, b) => b.registrationCount - a.registrationCount).map((session) => (
                 <div key={session.sessionId} className="rounded-xl border border-border bg-surface-elevated/30 p-4">
@@ -741,24 +741,24 @@ export default function MadaratDashboard() {
           <div className="grid gap-4 md:grid-cols-3">
             <StatCard icon={Users} label="HR Tasks" value={departmentCounts.hr} color="text-green-300" />
             <StatCard icon={Megaphone} label="PR Tasks" value={departmentCounts.pr} color="text-sky-300" />
-            <StatCard icon={Radio} label="Media Tasks" value={departmentCounts.media} color="text-purple-300" />
+            <StatCard icon={Radio} label={tr("Media Tasks", "مهام الإعلام")} value={departmentCounts.media} color="text-purple-300" />
           </div>
 
           <div className="glass-card p-5">
-            <h3 className="text-sm font-semibold text-foreground">Create Support Task</h3>
-            <p className="mt-1 text-xs text-muted">Distribute work from Madarat to HR, PR, or Media and track status back here.</p>
+            <h3 className="text-sm font-semibold text-foreground">{tr("Create Support Task", "إنشاء مهمة دعم")}</h3>
+            <p className="mt-1 text-xs text-muted">{tr("Distribute work from Madarat to HR, PR, or Media and track status back here.", "وزّع العمل من مدارات إلى HR أو العلاقات العامة أو الإعلام وتابع الحالة من هنا.")}</p>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className={labelCls}>Task Title</label>
-                <input value={taskForm.title} onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} className={inputCls} placeholder="Prepare audience RSVP reminder" />
+                <label className={labelCls}>{tr("Task Title", "عنوان المهمة")}</label>
+                <input value={taskForm.title} onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} className={inputCls} placeholder={tr("Prepare audience RSVP reminder", "تذكير الجمهور بالحضور")} />
               </div>
               <div className="md:col-span-2">
-                <label className={labelCls}>Description</label>
-                <textarea value={taskForm.description} onChange={(event) => setTaskForm((current) => ({ ...current, description: event.target.value }))} rows={3} className={`${inputCls} resize-none`} placeholder="What does this department need to deliver?" />
+                <label className={labelCls}>{tr("Description", "الوصف")}</label>
+                <textarea value={taskForm.description} onChange={(event) => setTaskForm((current) => ({ ...current, description: event.target.value }))} rows={3} className={`${inputCls} resize-none`} placeholder={tr("What does this department need to deliver?", "ماذا يجب أن يسلّم هذا القسم؟")} />
               </div>
               <div>
-                <label className={labelCls}>Department</label>
+                <label className={labelCls}>{tr("Department", "القسم")}</label>
                 <select
                   value={taskForm.departmentSlug}
                   onChange={(event) => setTaskForm((current) => ({ ...current, departmentSlug: event.target.value as "hr" | "pr" | "media", assignedTo: "" }))}
@@ -770,25 +770,25 @@ export default function MadaratDashboard() {
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Assignee</label>
+                <label className={labelCls}>{tr("Assignee", "المسؤول")}</label>
                 <select value={taskForm.assignedTo} onChange={(event) => setTaskForm((current) => ({ ...current, assignedTo: event.target.value }))} className={selectCls}>
-                  <option value="">Unassigned</option>
+                  <option value="">{tr("Unassigned", "غير معيَّن")}</option>
                   {filteredAssignees.map((member) => (
                     <option key={member.memberId} value={member.memberId}>{member.fullName}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Due Date</label>
+                <label className={labelCls}>{tr("Due Date", "تاريخ الاستحقاق")}</label>
                 <input type="date" value={taskForm.dueDate} onChange={(event) => setTaskForm((current) => ({ ...current, dueDate: event.target.value }))} className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Priority</label>
+                <label className={labelCls}>{tr("Priority", "الأولوية")}</label>
                 <select value={taskForm.priority} onChange={(event) => setTaskForm((current) => ({ ...current, priority: event.target.value as TaskPriority }))} className={selectCls}>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
+                  <option value="low">{tr("Low", "منخفضة")}</option>
+                  <option value="medium">{tr("Medium", "متوسطة")}</option>
+                  <option value="high">{tr("High", "مرتفعة")}</option>
+                  <option value="urgent">{tr("Urgent", "عاجلة")}</option>
                 </select>
               </div>
             </div>
@@ -796,19 +796,19 @@ export default function MadaratDashboard() {
             <div className="mt-4">
               <button onClick={createTask} disabled={taskSaving} className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
                 {taskSaving ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
-                Create Task
+                {tr("Create Task", "إنشاء المهمة")}
               </button>
             </div>
           </div>
 
           <div className="glass-card p-5">
-            <h3 className="text-sm font-semibold text-foreground">Distribution and Tracking</h3>
+            <h3 className="text-sm font-semibold text-foreground">{tr("Distribution and Tracking", "التوزيع والتتبّع")}</h3>
             {tasksLoading ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 size={24} className="animate-spin text-muted" />
               </div>
             ) : tasks.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted">No Madarat support tasks created yet.</p>
+              <p className="py-8 text-center text-sm text-muted">{tr("No Madarat support tasks created yet.", "لا توجد مهام دعم مدارات بعد.")}</p>
             ) : (
               <div className="mt-4 space-y-3">
                 {tasks.map((task) => (
@@ -823,9 +823,9 @@ export default function MadaratDashboard() {
                         </div>
                         {task.description && <p className="mt-2 text-sm text-muted">{task.description}</p>}
                         <p className="mt-2 text-xs text-muted">
-                          {task.assigneeName ? `Assigned to ${task.assigneeName}` : "Unassigned"}
-                          {task.dueDate ? ` · Due ${task.dueDate}` : ""}
-                          {task.submittedAt ? ` · Submitted ${fmtDateTime(task.submittedAt)}` : ""}
+                          {task.assigneeName ? `${tr("Assigned to", "مُسنَدة إلى")} ${task.assigneeName}` : tr("Unassigned", "غير معيَّنة")}
+                          {task.dueDate ? ` · ${tr("Due", "موعد")} ${task.dueDate}` : ""}
+                          {task.submittedAt ? ` · ${tr("Submitted", "أُرسلت")} ${fmtDateTime(task.submittedAt)}` : ""}
                         </p>
                       </div>
 
@@ -836,10 +836,10 @@ export default function MadaratDashboard() {
                           disabled={updatingTaskId === task.taskId}
                           className="dashboard-select text-xs"
                         >
-                          <option value="todo">To Do</option>
-                          <option value="in_progress">In Progress</option>
-                          <option value="review">Review</option>
-                          <option value="done">Done</option>
+                          <option value="todo">{tr("To Do", "قائمة المهام")}</option>
+                          <option value="in_progress">{tr("In Progress", "قيد التنفيذ")}</option>
+                          <option value="review">{tr("Review", "للمراجعة")}</option>
+                          <option value="done">{tr("Done", "تم")}</option>
                         </select>
                       </div>
                     </div>
@@ -853,7 +853,7 @@ export default function MadaratDashboard() {
 
       {activeView === "operations" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-          <DepartmentOperationsPanel departmentSlug="madarat" title="Madarat budget, procurement, and department requests" />
+          <DepartmentOperationsPanel departmentSlug="madarat" title={tr("Madarat budget, procurement, and department requests", "ميزانية مدارات والمشتريات وطلبات القسم")} />
         </motion.div>
       )}
 

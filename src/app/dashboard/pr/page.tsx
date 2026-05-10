@@ -424,7 +424,7 @@ export default function PRDashboard() {
               </h3>
               {editingId && (
                 <button type="button" onClick={() => setEditingId(null)} className="text-xs text-muted hover:text-foreground">
-                  Close
+                  {tr("Close", "إغلاق")}
                 </button>
               )}
             </div>
@@ -432,33 +432,33 @@ export default function PRDashboard() {
             {editingId ? (
               <form onSubmit={saveSponsor} className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Sponsor name" required />
+                  <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={tr("Sponsor name", "اسم الراعي")} required />
                   <select className="input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as SponsorStatus })}>
                     {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </select>
                   <select className="input" value={form.tier} onChange={(e) => setForm({ ...form, tier: e.target.value as SponsorTier })}>
                     {(["bronze", "silver", "gold", "platinum"] as SponsorTier[]).map((tier) => <option key={tier} value={tier}>{tier}</option>)}
                   </select>
-                  <input className="input" type="number" min="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="Amount" />
-                  <input className="input" value={form.contactName} onChange={(e) => setForm({ ...form, contactName: e.target.value })} placeholder="Contact name" />
-                  <input className="input" type="email" value={form.contactEmail} onChange={(e) => setForm({ ...form, contactEmail: e.target.value })} placeholder="Contact email" />
-                  <input className="input" value={form.websiteUrl} onChange={(e) => setForm({ ...form, websiteUrl: e.target.value })} placeholder="Website URL" />
+                  <input className="input" type="number" min="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder={tr("Amount", "المبلغ")} />
+                  <input className="input" value={form.contactName} onChange={(e) => setForm({ ...form, contactName: e.target.value })} placeholder={tr("Contact name", "اسم جهة الاتصال")} />
+                  <input className="input" type="email" value={form.contactEmail} onChange={(e) => setForm({ ...form, contactEmail: e.target.value })} placeholder={tr("Contact email", "البريد الإلكتروني للتواصل")} />
+                  <input className="input" value={form.websiteUrl} onChange={(e) => setForm({ ...form, websiteUrl: e.target.value })} placeholder={tr("Website URL", "رابط الموقع")} />
                   <input className="input" type="date" value={form.lastContactedAt} onChange={(e) => setForm({ ...form, lastContactedAt: e.target.value })} />
                 </div>
-                <input className="input" value={form.nextAction} onChange={(e) => setForm({ ...form, nextAction: e.target.value })} placeholder="Next action" />
-                <textarea className="input min-h-20 resize-y" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Internal notes" />
-                <input className="input" value={form.proposalTitle} onChange={(e) => setForm({ ...form, proposalTitle: e.target.value })} placeholder="Proposal title" />
-                <textarea className="input min-h-44 resize-y" value={form.proposalBody} onChange={(e) => setForm({ ...form, proposalBody: e.target.value })} placeholder="Proposal draft" />
-                <input className="input" value={form.proposalPdfUrl} onChange={(e) => setForm({ ...form, proposalPdfUrl: e.target.value })} placeholder="Imported proposal PDF URL" />
+                <input className="input" value={form.nextAction} onChange={(e) => setForm({ ...form, nextAction: e.target.value })} placeholder={tr("Next action", "الخطوة التالية")} />
+                <textarea className="input min-h-20 resize-y" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder={tr("Internal notes", "ملاحظات داخلية")} />
+                <input className="input" value={form.proposalTitle} onChange={(e) => setForm({ ...form, proposalTitle: e.target.value })} placeholder={tr("Proposal title", "عنوان العرض")} />
+                <textarea className="input min-h-44 resize-y" value={form.proposalBody} onChange={(e) => setForm({ ...form, proposalBody: e.target.value })} placeholder={tr("Proposal draft", "مسودة العرض")} />
+                <input className="input" value={form.proposalPdfUrl} onChange={(e) => setForm({ ...form, proposalPdfUrl: e.target.value })} placeholder={tr("Imported proposal PDF URL", "رابط ملف PDF للعرض المستورد")} />
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
                   <button type="submit" disabled={saving} className="btn-primary">
                     <Save className="w-4 h-4" />
-                    {saving ? "Saving" : "Save"}
+                    {saving ? tr("Saving", "جارٍ الحفظ") : tr("Save", "حفظ")}
                   </button>
                   {typeof editingId === "number" && (
                     <button type="button" onClick={() => deleteSponsor(editingId)} className="btn-ghost text-red-400 hover:text-red-300">
                       <Trash2 className="w-4 h-4" />
-                      Delete
+                      {tr("Delete", "حذف")}
                     </button>
                   )}
                 </div>
@@ -497,11 +497,11 @@ export default function PRDashboard() {
               <div className="flex items-center gap-4 text-xs text-muted">
                 <div className="text-center">
                   <p className="text-sm font-bold text-foreground">{event.reach}</p>
-                  <p className="text-[9px]">Reach</p>
+                  <p className="text-[9px]">{tr("Reach", "الوصول")}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-bold text-foreground">{event.registrations}</p>
-                  <p className="text-[9px]">Sign-ups</p>
+                  <p className="text-[9px]">{tr("Sign-ups", "التسجيلات")}</p>
                 </div>
               </div>
             </motion.div>

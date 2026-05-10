@@ -11,6 +11,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ImageUrlInput } from "@/components/dashboard/ImageUrlInput";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLang } from "@/contexts/LanguageContext";
 import { api } from "@/lib/client";
 import { useApi } from "@/lib/hooks/useApi";
 
@@ -110,6 +111,8 @@ function EditProjectModal({
   onClose: () => void;
   onSaved: (updated: Partial<Project>) => void;
 }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [f, setF] = useState({
     title: project.title,
     description: project.description ?? "",
@@ -171,23 +174,23 @@ function EditProjectModal({
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground">
           <X size={18} />
         </button>
-        <h2 className="text-lg font-bold text-foreground mb-6">Edit Project</h2>
+        <h2 className="text-lg font-bold text-foreground mb-6">{tr("Edit Project", "تعديل المشروع")}</h2>
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className={labelCls}>Title *</label>
+            <label className={labelCls}>{tr("Title *", "العنوان *")}</label>
             <input required value={f.title} onChange={set("title")} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Description</label>
+            <label className={labelCls}>{tr("Description", "الوصف")}</label>
             <textarea value={f.description} onChange={set("description")} rows={3} className={`${inputCls} resize-none`} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Category</label>
-              <input value={f.category} onChange={set("category")} placeholder="e.g. Robotics, AI" className={inputCls} />
+              <label className={labelCls}>{tr("Category", "التصنيف")}</label>
+              <input value={f.category} onChange={set("category")} placeholder={tr("e.g. Robotics, AI", "مثل: روبوتات، ذكاء اصطناعي")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Status</label>
+              <label className={labelCls}>{tr("Status", "الحالة")}</label>
               <select value={f.status} onChange={set("status")} className={inputCls}>
                 {(["planning","in_progress","testing","completed","archived"] as ProjectStatus[]).map((s) => (
                   <option key={s} value={s}>{statusBadge[s].label}</option>
@@ -197,20 +200,20 @@ function EditProjectModal({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Credit Hours</label>
+              <label className={labelCls}>{tr("Credit Hours", "الساعات المعتمدة")}</label>
               <input type="number" min="0" step="0.5" value={f.creditHours} onChange={set("creditHours")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Budget (SAR)</label>
-              <input type="number" min="0" step="0.01" value={f.cost} onChange={set("cost")} placeholder="optional" className={inputCls} />
+              <label className={labelCls}>{tr("Budget (SAR)", "الميزانية (ر.س)")}</label>
+              <input type="number" min="0" step="0.01" value={f.cost} onChange={set("cost")} placeholder={tr("optional", "اختياري")} className={inputCls} />
             </div>
           </div>
           <div>
-            <label className={labelCls}>Tech Stack (comma-separated)</label>
-            <input value={f.techStack} onChange={set("techStack")} placeholder="e.g. ROS2, Python, OpenCV" className={inputCls} />
+            <label className={labelCls}>{tr("Tech Stack (comma-separated)", "التقنيات المستخدمة (مفصولة بفاصلة)")}</label>
+            <input value={f.techStack} onChange={set("techStack")} placeholder={tr("e.g. ROS2, Python, OpenCV", "مثل: ROS2، Python، OpenCV")} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Image URL</label>
+            <label className={labelCls}>{tr("Image URL", "رابط الصورة")}</label>
             <ImageUrlInput
               value={f.imageUrl}
               onChange={(v) => setF((p) => ({ ...p, imageUrl: v }))}
@@ -218,27 +221,27 @@ function EditProjectModal({
             />
           </div>
           <div>
-            <label className={labelCls}>GitHub URL</label>
+            <label className={labelCls}>{tr("GitHub URL", "رابط GitHub")}</label>
             <input value={f.githubUrl} onChange={set("githubUrl")} placeholder="https://github.com/…" className={inputCls} />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className={labelCls}>Start Date</label>
+              <label className={labelCls}>{tr("Start Date", "تاريخ البدء")}</label>
               <input type="date" value={f.startDate} onChange={set("startDate")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Target Date</label>
+              <label className={labelCls}>{tr("Target Date", "التاريخ المستهدف")}</label>
               <input type="date" value={f.targetEndDate} onChange={set("targetEndDate")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Completed Date</label>
+              <label className={labelCls}>{tr("Completed Date", "تاريخ الإنجاز")}</label>
               <input type="date" value={f.completedDate} onChange={set("completedDate")} className={inputCls} />
             </div>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">Cancel</button>
+            <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
             <button type="submit" disabled={saving} className="btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-60 flex items-center justify-center gap-2">
-              {saving ? <><Loader2 size={14} className="animate-spin" /> Saving…</> : "Save Changes"}
+              {saving ? <><Loader2 size={14} className="animate-spin" /> {tr("Saving…", "جارٍ الحفظ…")}</> : tr("Save Changes", "حفظ التغييرات")}
             </button>
           </div>
         </form>
@@ -260,6 +263,8 @@ function AssignMemberModal({
   onClose: () => void;
   onAssigned: (member: ProjectMember) => void;
 }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const { data: allMembers = [] } = useApi<AllMember[]>("/api/members");
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("contributor");
@@ -295,27 +300,27 @@ function AssignMemberModal({
         className="w-full max-w-md glass-card p-6 relative"
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground"><X size={18} /></button>
-        <h2 className="text-base font-bold text-foreground mb-4">Assign Member</h2>
+        <h2 className="text-base font-bold text-foreground mb-4">{tr("Assign Member", "تعيين عضو")}</h2>
 
         <div className="mb-3">
-          <label className={labelCls}>Role</label>
+          <label className={labelCls}>{tr("Role", "الدور")}</label>
           <select value={role} onChange={(e) => setRole(e.target.value)} className={inputCls}>
-            <option value="lead">Lead</option>
-            <option value="contributor">Contributor</option>
-            <option value="reviewer">Reviewer</option>
+            <option value="lead">{tr("Lead", "قائد")}</option>
+            <option value="contributor">{tr("Contributor", "مساهم")}</option>
+            <option value="reviewer">{tr("Reviewer", "مراجع")}</option>
           </select>
         </div>
 
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search members…"
+          placeholder={tr("Search members…", "ابحث عن عضو…")}
           className={`${inputCls} mb-3`}
         />
 
         <div className="max-h-64 overflow-y-auto space-y-1">
           {filtered.length === 0 && (
-            <p className="text-xs text-muted text-center py-4">No members found.</p>
+            <p className="text-xs text-muted text-center py-4">{tr("No members found.", "لم يتم العثور على أعضاء.")}</p>
           )}
           {filtered.map((m) => (
             <button
@@ -351,6 +356,8 @@ function NewTaskModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [f, setF] = useState({ title: "", priority: "medium", assignedTo: "", dueDate: "", creditHours: "" });
   const [saving, setSaving] = useState(false);
   const { data: allMembers = [] } = useApi<AllMember[]>("/api/members");
@@ -390,47 +397,47 @@ function NewTaskModal({
         className="w-full max-w-md glass-card p-6 relative"
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground"><X size={18} /></button>
-        <h2 className="text-base font-bold text-foreground mb-4">New Task</h2>
+        <h2 className="text-base font-bold text-foreground mb-4">{tr("New Task", "مهمة جديدة")}</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className={labelCls}>Title *</label>
+            <label className={labelCls}>{tr("Title *", "العنوان *")}</label>
             <input required value={f.title} onChange={set("title")} className={inputCls} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Priority</label>
+              <label className={labelCls}>{tr("Priority", "الأولوية")}</label>
               <select value={f.priority} onChange={set("priority")} className={inputCls}>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                <option value="low">{tr("Low", "منخفضة")}</option>
+                <option value="medium">{tr("Medium", "متوسطة")}</option>
+                <option value="high">{tr("High", "مرتفعة")}</option>
+                <option value="urgent">{tr("Urgent", "عاجلة")}</option>
               </select>
             </div>
             <div>
-              <label className={labelCls}>Credit Hours</label>
+              <label className={labelCls}>{tr("Credit Hours", "الساعات المعتمدة")}</label>
               <input type="number" min="0" step="0.5" value={f.creditHours} onChange={set("creditHours")} placeholder="0" className={inputCls} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Assign To</label>
+              <label className={labelCls}>{tr("Assign To", "تعيين إلى")}</label>
               <select value={f.assignedTo} onChange={set("assignedTo")} className={inputCls}>
-                <option value="">Club-wide / unassigned</option>
+                <option value="">{tr("Club-wide / unassigned", "للنادي / غير مخصص")}</option>
                 {allMembers.map((m) => (
                   <option key={m.memberId} value={m.memberId}>{m.fullName} · {m.departmentName}</option>
                 ))}
               </select>
-              <p className="mt-1 text-[10px] text-muted">Any club member can be assigned, not only current project members.</p>
+              <p className="mt-1 text-[10px] text-muted">{tr("Any club member can be assigned, not only current project members.", "يمكن تعيين أي عضو في النادي، ليس فقط أعضاء المشروع الحاليين.")}</p>
             </div>
             <div>
-              <label className={labelCls}>Due Date</label>
+              <label className={labelCls}>{tr("Due Date", "تاريخ الاستحقاق")}</label>
               <input type="date" value={f.dueDate} onChange={set("dueDate")} className={inputCls} />
             </div>
           </div>
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="btn-secondary px-4 py-2 text-sm flex-1">Cancel</button>
+            <button type="button" onClick={onClose} className="btn-secondary px-4 py-2 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
             <button type="submit" disabled={saving} className="btn-primary px-4 py-2 text-sm flex-1 disabled:opacity-60 flex items-center justify-center gap-2">
-              {saving ? <Loader2 size={13} className="animate-spin" /> : null} Create
+              {saving ? <Loader2 size={13} className="animate-spin" /> : null} {tr("Create", "إنشاء")}
             </button>
           </div>
         </form>
@@ -445,6 +452,8 @@ export default function ProjectTrackPage() {
   const params = useParams();
   const router = useRouter();
   const { canAccessDept, isClubLeader } = useAuth();
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const projectId = Number(params.id);
 
   const allowed = canAccessDept("innovation") || isClubLeader;
@@ -493,7 +502,7 @@ export default function ProjectTrackPage() {
   }
 
   async function deleteDeliverable(id: number) {
-    if (!confirm("Delete this deliverable?")) return;
+    if (!confirm(tr("Delete this deliverable?", "حذف هذا المخرَج؟"))) return;
     await api.delete(`/api/deliverables/${id}`).catch(() => {});
     void loadDeliverables();
   }
@@ -517,7 +526,7 @@ export default function ProjectTrackPage() {
   }
 
   async function removeMember(memberId: number) {
-    if (!confirm("Remove this member from the project?")) return;
+    if (!confirm(tr("Remove this member from the project?", "إزالة هذا العضو من المشروع؟"))) return;
     await api.delete(`/api/projects/${projectId}/members`, { memberId }).catch(() => {});
     void loadProject();
   }
@@ -659,7 +668,7 @@ export default function ProjectTrackPage() {
               {totalDeliverables > 0 && (
                 <div className="glass-card p-4 mb-4">
                   <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="font-medium text-foreground">Progress</span>
+                    <span className="font-medium text-foreground">{tr("Progress", "التقدّم")}</span>
                     <span className="text-muted">{completedDeliverables}/{totalDeliverables} · {progressPct}%</span>
                   </div>
                   <div className="w-full h-2 bg-surface-elevated rounded-full overflow-hidden">
@@ -676,7 +685,7 @@ export default function ProjectTrackPage() {
               {/* Timeline */}
               <div className="glass-card p-5 space-y-3 mb-4">
                 {deliverables.length === 0 && (
-                  <p className="text-xs text-muted text-center py-4">No deliverables yet. Add one below.</p>
+                  <p className="text-xs text-muted text-center py-4">{tr("No deliverables yet. Add one below.", "لا توجد مخرجات بعد. أضف واحدة أدناه.")}</p>
                 )}
                 {deliverables.map((d) => (
                   <div key={d.deliverableId} className="flex items-start gap-3 group">
@@ -698,7 +707,7 @@ export default function ProjectTrackPage() {
                       </p>
                       {d.dueDate && (
                         <p className="text-[10px] text-muted mt-0.5 flex items-center gap-1">
-                          <Calendar size={9} /> {new Date(d.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          <Calendar size={9} /> {new Date(d.dueDate).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>
                       )}
                     </div>
@@ -715,17 +724,17 @@ export default function ProjectTrackPage() {
               {/* Add deliverable */}
               <div className="glass-card p-4 flex gap-3 items-end">
                 <div className="flex-1">
-                  <label className={labelCls}>Add Deliverable</label>
+                  <label className={labelCls}>{tr("Add Deliverable", "إضافة مخرَج")}</label>
                   <input
                     value={addTitle}
                     onChange={(e) => setAddTitle(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") addDeliverable(); }}
-                    placeholder="Deliverable title…"
+                    placeholder={tr("Deliverable title…", "عنوان المخرَج…")}
                     className={inputCls}
                   />
                 </div>
                 <div className="w-36">
-                  <label className={labelCls}>Due Date</label>
+                  <label className={labelCls}>{tr("Due Date", "تاريخ الاستحقاق")}</label>
                   <input
                     type="date"
                     value={addDue}
@@ -739,7 +748,7 @@ export default function ProjectTrackPage() {
                   className="btn-primary px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50 shrink-0"
                 >
                   {addingSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-                  Add
+                  {tr("Add", "إضافة")}
                 </button>
               </div>
             </motion.div>
@@ -749,23 +758,23 @@ export default function ProjectTrackPage() {
           {activeTab === "tasks" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-muted">{completedTasks}/{tasks.length} tasks completed</p>
+                <p className="text-xs text-muted">{completedTasks}/{tasks.length} {tr("tasks completed", "مهام منجزة")}</p>
                 <button onClick={() => setNewTaskOpen(true)} className="btn-primary px-3 py-1.5 text-xs flex items-center gap-1.5">
-                  <Plus size={12} /> New Task
+                  <Plus size={12} /> {tr("New Task", "مهمة جديدة")}
                 </button>
               </div>
 
               {tasks.length === 0 ? (
-                <div className="glass-card p-10 text-center text-sm text-muted">No tasks yet.</div>
+                <div className="glass-card p-10 text-center text-sm text-muted">{tr("No tasks yet.", "لا توجد مهام بعد.")}</div>
               ) : (
                 <div className="glass-card overflow-hidden">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Title</th>
-                        <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Assignee</th>
-                        <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Priority</th>
-                        <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Status</th>
+                        <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Title", "العنوان")}</th>
+                        <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Assignee", "المسؤول")}</th>
+                        <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Priority", "الأولوية")}</th>
+                        <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Status", "الحالة")}</th>
                       </tr>
                     </thead>
                     <tbody>

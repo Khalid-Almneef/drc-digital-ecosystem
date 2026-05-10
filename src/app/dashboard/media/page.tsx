@@ -686,9 +686,9 @@ export default function MediaDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent submissions */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">Pending Submissions</h3>
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">{tr("Pending Submissions", "التسليمات قيد المراجعة")}</h3>
             {submissions.length === 0 ? (
-              <div className="glass-card p-6 text-center text-sm text-muted">No pending submissions.</div>
+              <div className="glass-card p-6 text-center text-sm text-muted">{tr("No pending submissions.", "لا توجد تسليمات قيد المراجعة.")}</div>
             ) : (
               <div className="space-y-2">
                 {submissions.slice(0, 5).map((t, i) => (
@@ -696,14 +696,14 @@ export default function MediaDashboard() {
                     className="glass-card p-3 flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-foreground truncate">{t.title}</p>
-                      <p className="text-[10px] text-muted">{t.assigneeName ?? "Unassigned"} · {t.submittedAt ? fmtDate(t.submittedAt) : "—"}</p>
+                      <p className="text-[10px] text-muted">{t.assigneeName ?? tr("Unassigned", "غير معيَّن")} · {t.submittedAt ? fmtDate(t.submittedAt) : "—"}</p>
                     </div>
                     <button onClick={() => setTab("submissions")} className="btn-primary px-2 py-1 text-[10px] shrink-0">{tr("Review", "مراجعة")}</button>
                   </motion.div>
                 ))}
                 {submissions.length > 5 && (
                   <button onClick={() => setTab("submissions")} className="text-xs text-primary hover:underline w-full text-center py-1">
-                    +{submissions.length - 5} more
+                    +{submissions.length - 5} {tr("more", "إضافي")}
                   </button>
                 )}
               </div>
@@ -712,9 +712,9 @@ export default function MediaDashboard() {
 
           {/* Recent library uploads */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">Recent Library Uploads</h3>
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">{tr("Recent Library Uploads", "آخر رفوعات المكتبة")}</h3>
             {assets.length === 0 ? (
-              <div className="glass-card p-6 text-center text-sm text-muted">No assets uploaded yet.</div>
+              <div className="glass-card p-6 text-center text-sm text-muted">{tr("No assets uploaded yet.", "لم يتم رفع أصول بعد.")}</div>
             ) : (
               <div className="grid grid-cols-3 gap-2">
                 {assets.slice(0, 6).map((a) => (
@@ -1018,7 +1018,7 @@ export default function MediaDashboard() {
         <div className="space-y-6">
           <div className="glass-card p-5">
             <div className="max-w-3xl">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Homepage Publishing Surfaces</h3>
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">{tr("Homepage Publishing Surfaces", "أسطح النشر للصفحة الرئيسية")}</h3>
               <p className="text-sm text-muted mt-1">
                 These modules control the homepage hero and featured story blocks. Media can update visuals and copy here without touching code.
               </p>
@@ -1060,7 +1060,7 @@ export default function MediaDashboard() {
           {/* Handles settings */}
           <div className="max-w-lg">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Social Handles</h3>
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">{tr("Social Handles", "حسابات التواصل")}</h3>
               <button onClick={saveHandles} disabled={handlesSaving} className="btn-primary px-3 py-1.5 text-xs inline-flex items-center gap-1.5">
                 {handlesSaving ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
                 Save
@@ -1162,7 +1162,7 @@ export default function MediaDashboard() {
 
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Social Queue</h3>
+                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">{tr("Social Queue", "قائمة التواصل")}</h3>
                 <p className="text-xs text-muted mt-1">Use uploaded asset URLs to prepare posts, schedule publishing, and track what is live.</p>
               </div>
               <button onClick={() => setShowComposer((v) => !v)} className="btn-primary px-3 py-1.5 text-xs inline-flex items-center gap-1.5">
