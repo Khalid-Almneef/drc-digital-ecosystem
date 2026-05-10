@@ -223,7 +223,11 @@ export default function PRDashboard() {
     setLoading(true);
     try {
       const res = await fetch("/api/sponsors", { cache: "no-store" });
-      if (res.ok) setSponsors(await res.json());
+      if (res.ok) {
+        const body = await res.json();
+        const arr = Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
+        setSponsors(arr);
+      }
     } finally {
       setLoading(false);
     }

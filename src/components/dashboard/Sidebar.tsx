@@ -254,7 +254,7 @@ export function Sidebar() {
 
       {/* Desktop sidebar */}
       <aside
-        className={`sticky top-0 hidden h-screen shrink-0 border-r border-border bg-[linear-gradient(180deg,color-mix(in_srgb,var(--surface-elevated)_26%,transparent),transparent_22%),var(--surface)] transition-all duration-300 lg:flex lg:flex-col ${
+        className={`sticky top-0 z-30 hidden h-screen shrink-0 border-r border-border bg-[linear-gradient(180deg,color-mix(in_srgb,var(--surface-elevated)_26%,transparent),transparent_22%),var(--surface)] transition-all duration-300 lg:flex lg:flex-col ${
           collapsed ? "w-[68px]" : "w-[250px]"
         }`}
       >
