@@ -525,7 +525,7 @@ export default function HRDashboard() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-8">
         <StatCard icon={Users}     label={tr("Total Members", "إجمالي الأعضاء")}          value={membersLoading ? "…" : totalMembers}   onClick={() => setActiveTab("members")} />
         <StatCard icon={UserPlus}  label={tr("Pending Applications", "الطلبات المعلقة")}   value={appsLoading ? "…" : pendingApps}      onClick={() => setActiveTab("applications")} />
         <StatCard icon={UserCheck} label={tr("Active Members", "الأعضاء النشطين")}         value={membersLoading ? "…" : activeMembers} onClick={() => setActiveTab("members")} />
@@ -587,12 +587,12 @@ export default function HRDashboard() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Name</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Department</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Position</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Gender</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Public On Team</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Status</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Name", "الاسم")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Department", "القسم")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Position", "المنصب")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Gender", "الجنس")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Public On Team", "ظاهر في الفريق")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Status", "الحالة")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -797,7 +797,7 @@ export default function HRDashboard() {
                           type="text"
                           value={motmQuery}
                           onChange={(e) => setMotmQuery(e.target.value)}
-                          placeholder="Search members by name or department…"
+                          placeholder={tr("Search members by name or department…", "ابحث عن عضو بالاسم أو القسم…")}
                           className="surface-input w-full py-2.5 pl-9 pr-3 text-sm"
                         />
                       </div>
@@ -1026,13 +1026,13 @@ export default function HRDashboard() {
                           className="h-4 w-4 rounded border-border"
                         />
                       </th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Member</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Title</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Hours</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Source</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Date</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Status</th>
-                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">Actions</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Member", "العضو")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Title", "العنوان")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Hours", "الساعات")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Source", "المصدر")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Date", "التاريخ")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Status", "الحالة")}</th>
+                      <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Actions", "إجراءات")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1117,29 +1117,29 @@ export default function HRDashboard() {
           </div>
 
           <div className="panel-soft mb-5 p-5">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-4">Create Hour Task</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-4">{tr("Create Hour Task", "إنشاء مهمة ساعات")}</h4>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Title</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Title", "العنوان")}</label>
                 <input
                   value={hourTaskForm.title}
                   onChange={(e) => setHourTaskForm((prev) => ({ ...prev, title: e.target.value }))}
-                  placeholder="April workshop support"
+                  placeholder={tr("April workshop support", "دعم ورشة شهر أبريل")}
                   className="surface-input px-3 py-2 text-sm"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Description</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Description", "الوصف")}</label>
                 <textarea
                   value={hourTaskForm.description}
                   onChange={(e) => setHourTaskForm((prev) => ({ ...prev, description: e.target.value }))}
                   rows={3}
-                  placeholder="Explain who should register for this hour task."
+                  placeholder={tr("Explain who should register for this hour task.", "اشرح من يجب أن يسجّل لهذه المهمة.")}
                   className="surface-input resize-none px-3 py-2 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Hours</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Hours", "الساعات")}</label>
                 <input
                   type="number"
                   min="0.5"
@@ -1151,7 +1151,7 @@ export default function HRDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Participation Date</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Participation Date", "تاريخ المشاركة")}</label>
                 <input
                   type="date"
                   value={hourTaskForm.participationDate}
@@ -1168,7 +1168,7 @@ export default function HRDashboard() {
                 className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5"
               >
                 {hourTaskSaving ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
-                Create Task
+                {tr("Create Task", "إنشاء المهمة")}
               </button>
             </div>
           </div>
@@ -1178,7 +1178,7 @@ export default function HRDashboard() {
               <Loader2 size={24} className="animate-spin text-muted" />
             </div>
           ) : hourTasks.length === 0 ? (
-            <div className="glass-card p-10 text-center text-sm text-muted">No hour tasks created yet.</div>
+            <div className="glass-card p-10 text-center text-sm text-muted">{tr("No hour tasks created yet.", "لا توجد مهام ساعات بعد.")}</div>
           ) : (
             <div className="space-y-3">
               {hourTasks.map((task, index) => (
@@ -1193,13 +1193,13 @@ export default function HRDashboard() {
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-semibold text-foreground">{task.title}</p>
                       <span className={task.isActive ? "badge badge-success" : "badge"}>
-                        {task.isActive ? "Open" : "Closed"}
+                        {task.isActive ? tr("Open", "مفتوحة") : tr("Closed", "مغلقة")}
                       </span>
-                      <span className="badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20">{task.hours}h</span>
+                      <span className="badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20">{task.hours}{tr("h", "س")}</span>
                     </div>
                     <p className="mt-1 text-xs text-muted">
-                      {new Date(task.participationDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      {typeof task.registrationsCount === "number" ? ` · ${task.registrationsCount} registrations` : ""}
+                      {new Date(task.participationDate).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {typeof task.registrationsCount === "number" ? ` · ${task.registrationsCount} ${tr("registrations", "تسجيل")}` : ""}
                     </p>
                     {task.description && <p className="mt-2 text-sm text-muted max-w-2xl">{task.description}</p>}
                   </div>
@@ -1234,59 +1234,59 @@ export default function HRDashboard() {
             <div className="flex items-start gap-3">
               <Megaphone size={16} className="mt-0.5 text-primary" />
               <div>
-                <h3 className="text-sm font-semibold text-foreground">Announcement Request</h3>
+                <h3 className="text-sm font-semibold text-foreground">{tr("Announcement Request", "طلب إعلان")}</h3>
                 <p className="mt-1 text-xs text-muted">
-                  Send a request to Media for publishing HR communications like the monthly newsletter.
+                  {tr("Send a request to Media for publishing HR communications like the monthly newsletter.", "أرسل طلباً إلى فريق الإعلام لنشر منشورات الموارد البشرية كالنشرة الشهرية.")}
                 </p>
               </div>
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Title</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Title", "العنوان")}</label>
                 <input
                   value={requestTitle}
                   onChange={(e) => setRequestTitle(e.target.value)}
-                  placeholder="Monthly HR Newsletter — May"
+                  placeholder={tr("Monthly HR Newsletter — May", "نشرة الموارد البشرية الشهرية — مايو")}
                   className="surface-input px-3 py-2 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Request Type</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Request Type", "نوع الطلب")}</label>
                 <select
                   value={requestType}
                   onChange={(e) => setRequestType(e.target.value as AnnouncementRequestRow["requestType"])}
                   className="surface-input px-3 py-2 text-sm"
                 >
-                  <option value="monthly_newsletter">Monthly Newsletter</option>
-                  <option value="general">General Announcement</option>
+                  <option value="monthly_newsletter">{tr("Monthly Newsletter", "نشرة شهرية")}</option>
+                  <option value="general">{tr("General Announcement", "إعلان عام")}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Priority</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Priority", "الأولوية")}</label>
                 <select
                   value={requestPriority}
                   onChange={(e) => setRequestPriority(e.target.value as AnnouncementRequestRow["priority"])}
                   className="surface-input px-3 py-2 text-sm"
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
+                  <option value="low">{tr("Low", "منخفضة")}</option>
+                  <option value="medium">{tr("Medium", "متوسطة")}</option>
+                  <option value="high">{tr("High", "مرتفعة")}</option>
+                  <option value="critical">{tr("Critical", "حرجة")}</option>
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Request Details</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Request Details", "تفاصيل الطلب")}</label>
                 <textarea
                   value={requestBody}
                   onChange={(e) => setRequestBody(e.target.value)}
                   rows={4}
-                  placeholder="Outline the copy, deadline, and any HR points that must be included."
+                  placeholder={tr("Outline the copy, deadline, and any HR points that must be included.", "اشرح المحتوى والموعد النهائي وأي نقاط HR يجب تضمينها.")}
                   className="surface-input resize-none px-3 py-2 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">Desired Publish Date</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Desired Publish Date", "تاريخ النشر المطلوب")}</label>
                 <input
                   type="date"
                   value={requestDesiredDate}
@@ -1303,7 +1303,7 @@ export default function HRDashboard() {
                 className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5"
               >
                 {requestSaving ? <Loader2 size={11} className="animate-spin" /> : <Megaphone size={11} />}
-                Send Request
+                {tr("Send Request", "إرسال الطلب")}
               </button>
             </div>
           </div>
@@ -1375,14 +1375,14 @@ export default function HRDashboard() {
           <div className="glass-card p-5">
             <div className="flex items-center justify-between mb-1">
               <div>
-                <h3 className="text-sm font-semibold text-foreground">Accept New Members</h3>
-                <p className="text-xs text-muted mt-0.5">Controls whether the public Join page shows the application form.</p>
+                <h3 className="text-sm font-semibold text-foreground">{tr("Accept New Members", "قبول أعضاء جدد")}</h3>
+                <p className="text-xs text-muted mt-0.5">{tr("Controls whether the public Join page shows the application form.", "يتحكم في إظهار نموذج الانضمام بصفحة الانضمام العامة.")}</p>
               </div>
               <Toggle checked={accepting} onChange={toggleAccepting} />
             </div>
             <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
               <span className={`badge ${accepting ? "badge-success" : "badge-error"}`}>
-                {accepting ? "Open" : "Closed"}
+                {accepting ? tr("Open", "مفتوح") : tr("Closed", "مغلق")}
               </span>
               <a
                 href="/join"
@@ -1390,7 +1390,7 @@ export default function HRDashboard() {
                 rel="noopener noreferrer"
                 className="text-xs text-primary/70 hover:text-primary flex items-center gap-1 transition-colors"
               >
-                Preview public join page <ExternalLink size={11} />
+                {tr("Preview public join page", "معاينة صفحة الانضمام العامة")} <ExternalLink size={11} />
               </a>
             </div>
           </div>
@@ -1398,20 +1398,20 @@ export default function HRDashboard() {
           {/* Closed message */}
           <div className="glass-card p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-foreground">Closed Message</h3>
+              <h3 className="text-sm font-semibold text-foreground">{tr("Closed Message", "رسالة الإغلاق")}</h3>
               <button
                 onClick={saveMembership}
                 disabled={membershipSaving}
                 className="btn-primary px-3 py-1.5 text-xs inline-flex items-center gap-1.5"
               >
                 {membershipSaving ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
-                Save
+                {tr("Save", "حفظ")}
               </button>
             </div>
-            <p className="text-xs text-muted mb-4">Shown on the public join page when membership is closed.</p>
+            <p className="text-xs text-muted mb-4">{tr("Shown on the public join page when membership is closed.", "تظهر في صفحة الانضمام عند إغلاق العضوية.")}</p>
             <div className="space-y-3">
               <div>
-                <label className="block text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">English</label>
+                <label className="block text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">{tr("English", "الإنجليزية")}</label>
                 <textarea
                   value={closedEn}
                   onChange={(e) => setClosedEn(e.target.value)}
@@ -1421,7 +1421,7 @@ export default function HRDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">Arabic (العربية)</label>
+                <label className="block text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">{tr("Arabic", "العربية")}</label>
                 <textarea
                   value={closedAr}
                   onChange={(e) => setClosedAr(e.target.value)}
@@ -1438,7 +1438,7 @@ export default function HRDashboard() {
 
       {activeTab === "operations" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <DepartmentOperationsPanel departmentSlug="hr" title="HR budget, procurement, and department requests" />
+          <DepartmentOperationsPanel departmentSlug="hr" title={tr("HR budget, procurement, and department requests", "ميزانية HR والمشتريات وطلبات القسم")} />
         </motion.div>
       )}
 

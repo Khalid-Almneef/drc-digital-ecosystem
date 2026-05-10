@@ -307,7 +307,7 @@ export default function PRDashboard() {
         description={tr("Sponsorships, outreach, partnerships, and event promotion.", "الرعايات، التواصل، الشراكات، والترويج للفعاليات.")}
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <StatCard icon={Handshake} label={tr("Potential Sponsors", "رعاة محتملون")} value={metrics.potential}     onClick={() => setActiveTab("sponsors")} />
         <StatCard icon={Megaphone} label={tr("In Process", "قيد المتابعة")}        value={metrics.inProcess}     onClick={() => setActiveTab("sponsors")} />
         <StatCard icon={DollarSign} label={tr("Valid Sponsorship", "الرعاية المعتمدة")} value={`${metrics.validAmount.toLocaleString()} SAR`} onClick={() => setActiveTab("sponsors")} />
@@ -354,9 +354,9 @@ export default function PRDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
           <div className="space-y-3">
             {loading ? (
-              <div className="glass-card p-6 text-sm text-muted">Loading sponsors...</div>
+              <div className="glass-card p-6 text-sm text-muted">{tr("Loading sponsors…", "جارٍ تحميل الرعاة…")}</div>
             ) : sponsors.length === 0 ? (
-              <div className="glass-card p-6 text-sm text-muted">No sponsors yet.</div>
+              <div className="glass-card p-6 text-sm text-muted">{tr("No sponsors yet.", "لا يوجد رعاة بعد.")}</div>
             ) : sponsors.map((sponsor, i) => {
               const meta = statusMeta(sponsor.status);
               return (
@@ -378,10 +378,10 @@ export default function PRDashboard() {
                       </div>
                       <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted">
                         <span>{formatMoney(sponsor.amount, sponsor.currency)}</span>
-                        <span>{sponsor.contactEmail || sponsor.contactName || "No contact set"}</span>
-                        <span>{sponsor.lastContactedAt ? `Last contact ${sponsor.lastContactedAt.slice(0, 10)}` : "Not contacted"}</span>
+                        <span>{sponsor.contactEmail || sponsor.contactName || tr("No contact set", "لا توجد جهة اتصال")}</span>
+                        <span>{sponsor.lastContactedAt ? `${tr("Last contact", "آخر تواصل")} ${sponsor.lastContactedAt.slice(0, 10)}` : tr("Not contacted", "لم يُتواصل بعد")}</span>
                       </div>
-                      <p className="mt-3 text-sm text-muted line-clamp-2">{sponsor.nextAction || sponsor.notes || "No next action set."}</p>
+                      <p className="mt-3 text-sm text-muted line-clamp-2">{sponsor.nextAction || sponsor.notes || tr("No next action set.", "لا توجد خطوة تالية محددة.")}</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <select
@@ -393,11 +393,11 @@ export default function PRDashboard() {
                       </select>
                       <button type="button" onClick={() => startEditSponsor(sponsor)} className="btn-ghost h-9">
                         <FileText className="w-4 h-4" />
-                        Draft
+                        {tr("Draft", "مسودّة")}
                       </button>
                       <label className="btn-ghost h-9 cursor-pointer">
                         <Upload className="w-4 h-4" />
-                        {uploadingId === sponsor.sponsorId ? "Importing" : "Import PDF"}
+                        {uploadingId === sponsor.sponsorId ? tr("Importing", "جارٍ الاستيراد") : tr("Import PDF", "استيراد PDF")}
                         <input type="file" accept="application/pdf" className="sr-only" onChange={(event) => importProposalPdf(sponsor, event)} />
                       </label>
                       <button type="button" onClick={() => exportProposalPdf(sponsor)} className="btn-ghost h-9">

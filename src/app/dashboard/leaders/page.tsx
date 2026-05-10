@@ -89,23 +89,16 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: "var(--muted)",
 };
 
-const FINANCE_STATUS_TONE: Record<string, string> = {
-  pending: "badge badge-warning",
-  approved: "badge badge-primary",
-  purchasing: "badge bg-blue-500/10 text-blue-300 border-blue-500/20",
-  fulfilled: "badge badge-success",
-  rejected: "badge bg-red-500/10 text-red-300 border-red-500/20",
-};
-
-const SERVICE_STATUS_TONE: Record<string, string> = {
-  pending: "badge badge-warning",
-  assigned: "badge badge-primary",
-  in_progress: "badge bg-blue-500/10 text-blue-300 border-blue-500/20",
-  completed: "badge badge-success",
-  rejected: "badge bg-red-500/10 text-red-300 border-red-500/20",
-};
-
 const LEADERSHIP_POSITIONS = new Set(["dept_leader", "dept_vice_leader", "sub_leader"]);
+
+function MiniStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-xl border border-border bg-surface-elevated/40 p-2 text-center">
+      <p className="text-[9px] uppercase tracking-[0.14em] text-muted">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
 
 function formatMoney(value: number) {
   return `${(value / 1000).toFixed(1)}K SAR`;
@@ -371,7 +364,7 @@ export default function LeadersDashboard() {
         description={tr("Track committee load, requests, and operational signals across the club. Homepage sections now live in the Content dashboard.", "تابع ضغط اللجان والطلبات والإشارات التشغيلية على مستوى النادي. أقسام الصفحة الرئيسية صارت الآن داخل لوحة المحتوى.")}
       />
 
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard icon={Shield} label={tr("Committee Leaders", "قادة اللجان")} value={totalLeaders} />
         <StatCard icon={ClipboardList} label={tr("Open Service Requests", "طلبات الخدمات المفتوحة")} value={openServiceRequests} color="text-sky-300" />
         <StatCard icon={Users} label={tr("Pending Finance Requests", "طلبات المالية المعلقة")} value={pendingFinanceRequests} color="text-amber-300" />
@@ -405,102 +398,31 @@ export default function LeadersDashboard() {
                   className="glass-card p-5"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">{card.department.slug}</p>
-                      <h4 className="mt-2 text-lg font-semibold text-foreground">{card.department.name}</h4>
-                      <p className="mt-1 text-sm text-muted">Lead: {card.leaderName}</p>
-                    </div>
-                    <span className="badge bg-surface-elevated text-muted border-border">
-                      {card.activeMembers} members
-                    </span>
-                  </div>
-
-                  <div className="mt-4 grid gap-3 sm:grid-cols-4">
-                    <div className="rounded-2xl border border-border bg-surface-elevated/40 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Leadership</p>
-                      <p className="mt-2 text-xl font-semibold text-foreground">{card.leadershipMembers.length}</p>
-                      <p className="mt-1 text-xs text-muted">
-                        {card.viceLeaders.length} vice · {card.subLeaders.length} sub
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-surface-elevated/40 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Finance</p>
-                      <p className="mt-2 text-xl font-semibold text-foreground">{card.openFinance.length}</p>
-                      <p className="mt-1 text-xs text-muted">Open requests</p>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-surface-elevated/40 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Operations</p>
-                      <p className="mt-2 text-xl font-semibold text-foreground">{card.openService.length}</p>
-                      <p className="mt-1 text-xs text-muted">
-                        {card.outboundService.length} out · {card.inboxService.length} in
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-surface-elevated/40 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Budget</p>
-                      <p className="mt-2 text-xl font-semibold text-foreground">{formatMoney(card.department.remaining)}</p>
-                      <p className="mt-1 text-xs text-muted">Remaining</p>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary/80">{card.department.slug}</p>
+                      <h4 className="mt-1.5 truncate text-base font-semibold text-foreground">{card.department.name}</h4>
+                      <p className="mt-0.5 truncate text-xs text-muted">{card.leaderName} · {card.activeMembers} members</p>
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-3">
-                    <div className="rounded-2xl border border-border bg-surface/25 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Current Activity</p>
-                      {card.latestWork.length > 0 ? (
-                        <div className="mt-2 space-y-2">
-                          {card.latestWork.map((item) => (
-                            <p key={item} className="text-sm text-foreground">{item}</p>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-sm text-muted">No active queue items right now.</p>
-                      )}
-                    </div>
+                  <div className="mt-4 grid grid-cols-4 gap-2">
+                    <MiniStat label={tr("Leaders", "قادة")} value={card.leadershipMembers.length} />
+                    <MiniStat label={tr("Finance", "المالية")} value={card.openFinance.length} />
+                    <MiniStat label={tr("Ops", "العمليات")} value={card.openService.length} />
+                    <MiniStat label={tr("Budget", "الميزانية")} value={formatMoney(card.department.remaining)} />
+                  </div>
 
-                    <div className="rounded-2xl border border-border bg-surface/25 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Feedback / Notes</p>
-                      {card.feedback.length > 0 ? (
-                        <div className="mt-2 space-y-2">
-                          {card.feedback.slice(0, 2).map((note) => (
-                            <p key={note} className="text-sm text-muted">{note}</p>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-sm text-muted">No written feedback has been attached to the current queues.</p>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 text-xs">
-                      {card.openFinance.slice(0, 2).map((request) => (
-                        <span key={`finance-${request.requestId}`} className={FINANCE_STATUS_TONE[request.status]}>
-                          {request.status.replace("_", " ")} · {request.title}
-                        </span>
-                      ))}
-                      {card.openService.slice(0, 2).map((request) => (
-                        <span key={`service-${request.requestId}`} className={SERVICE_STATUS_TONE[request.status]}>
-                          {request.status.replace("_", " ")} · {request.title}
-                        </span>
-                      ))}
-                      {card.pendingAnnouncements.slice(0, 1).map((request) => (
-                        <span key={`announcement-${request.requestId}`} className="badge bg-primary/10 text-primary border-primary/20">
-                          media queue · {request.title}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="rounded-2xl border border-border bg-surface/25 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Linked Requests</p>
-                      {card.openService.length > 0 ? (
-                        <div className="mt-2 space-y-2">
-                          {card.openService.slice(0, 3).map((request) => (
-                            <p key={`linked-${request.requestId}`} className="text-sm text-muted">
-                              {request.sourceDepartmentName ?? request.sourceDepartmentSlug} {"->"} {request.targetDepartmentName ?? request.targetDepartmentSlug}: <span className="text-foreground">{request.title}</span>
-                            </p>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-sm text-muted">No active cross-department links.</p>
-                      )}
-                    </div>
+                  <div className="mt-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-muted">{tr("Active queue", "قائمة العمل")}</p>
+                    {card.latestWork.length > 0 ? (
+                      <ul className="mt-2 space-y-1.5">
+                        {card.latestWork.slice(0, 3).map((item) => (
+                          <li key={item} className="truncate text-sm text-foreground">{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-2 text-sm text-muted">{tr("Nothing in queue.", "لا يوجد عمل في قائمة الانتظار.")}</p>
+                    )}
                   </div>
                 </motion.div>
               ))}

@@ -41,8 +41,9 @@ const STATUS_TONE: Record<string, string> = {
   rejected: "bg-red-400/10 text-red-300 border-red-400/20",
 };
 
-function formatMoney(value: number) {
-  return `${value.toLocaleString("en-US", { maximumFractionDigits: 0 })} SAR`;
+function formatMoney(value: number, lang: "en" | "ar" = "en") {
+  const formatted = value.toLocaleString(lang === "ar" ? "ar-SA" : "en-US", { maximumFractionDigits: 0 });
+  return `${formatted} ${lang === "ar" ? "ر.س" : "SAR"}`;
 }
 
 export default function FinanceDashboard() {
@@ -175,18 +176,18 @@ export default function FinanceDashboard() {
                   <div>
                     <h4 className="text-lg font-semibold text-foreground">{department.name}</h4>
                     <p className="mt-1 text-sm text-muted">
-                      Remaining {formatMoney(department.remaining)} · Pending {department.pendingRequests}
+                      {tr("Remaining", "المتبقّي")} {formatMoney(department.remaining, lang)} · {tr("Pending", "قيد الانتظار")} {department.pendingRequests}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-muted">
-                      <span className="rounded-full border border-border px-3 py-1">Spent {formatMoney(department.spent)}</span>
-                      <span className="rounded-full border border-border px-3 py-1">Committed {formatMoney(department.committed)}</span>
-                      <span className="rounded-full border border-border px-3 py-1">Pending {formatMoney(department.pendingAmount)}</span>
+                      <span className="rounded-full border border-border px-3 py-1">{tr("Spent", "المصروف")} {formatMoney(department.spent, lang)}</span>
+                      <span className="rounded-full border border-border px-3 py-1">{tr("Committed", "ملتزَم به")} {formatMoney(department.committed, lang)}</span>
+                      <span className="rounded-full border border-border px-3 py-1">{tr("Pending", "قيد الانتظار")} {formatMoney(department.pendingAmount, lang)}</span>
                     </div>
                   </div>
 
                   <div className="grid gap-3 sm:min-w-[18rem] sm:grid-cols-2">
                     <div>
-                      <label className={labelCls}>Allocated budget</label>
+                      <label className={labelCls}>{tr("Allocated budget", "الميزانية المخصّصة")}</label>
                       <input
                         type="number"
                         min="0"
@@ -205,7 +206,7 @@ export default function FinanceDashboard() {
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className={labelCls}>Distribution note</label>
+                      <label className={labelCls}>{tr("Distribution note", "ملاحظة التوزيع")}</label>
                       <input
                         value={allocationDrafts[department.slug]?.note ?? ""}
                         onChange={(event) =>
@@ -217,7 +218,7 @@ export default function FinanceDashboard() {
                             },
                           }))
                         }
-                        placeholder="Optional note for why the budget changed"
+                        placeholder={tr("Optional note for why the budget changed", "ملاحظة اختيارية لسبب التغيير")}
                         className={inputCls}
                       />
                     </div>
@@ -228,7 +229,7 @@ export default function FinanceDashboard() {
                         className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-xs disabled:opacity-60"
                       >
                         {savingAllocation[department.slug] ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-                        Save allocation
+                        {tr("Save allocation", "حفظ التخصيص")}
                       </button>
                     </div>
                   </div>
@@ -241,10 +242,10 @@ export default function FinanceDashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">Procurement Queue</p>
-              <h3 className="mt-2 text-xl font-semibold text-foreground">Assign and approve requests</h3>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">{tr("Procurement Queue", "قائمة المشتريات")}</p>
+              <h3 className="mt-2 text-xl font-semibold text-foreground">{tr("Assign and approve requests", "إسناد الطلبات واعتمادها")}</h3>
             </div>
-            <p className="text-sm text-muted">{pendingRequests.length} active</p>
+            <p className="text-sm text-muted">{pendingRequests.length} {tr("active", "نشطة")}</p>
           </div>
 
           {loading ? (
@@ -254,7 +255,7 @@ export default function FinanceDashboard() {
               ))}
             </div>
           ) : requests.length === 0 ? (
-            <div className="glass-card p-5 text-sm text-muted">No purchase requests have been submitted yet.</div>
+            <div className="glass-card p-5 text-sm text-muted">{tr("No purchase requests have been submitted yet.", "لا توجد طلبات شراء مقدّمة بعد.")}</div>
           ) : (
             requests.map((request, index) => (
               <motion.div
@@ -273,24 +274,24 @@ export default function FinanceDashboard() {
                       </span>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-muted">
-                      {request.description || "No extra request context was provided."}
+                      {request.description || tr("No extra request context was provided.", "لم تُضف ملاحظات إضافية للطلب.")}
                     </p>
                   </div>
                   <div className="rounded-2xl border border-border bg-surface/40 px-3 py-2 text-right">
-                    <p className="text-sm font-semibold text-foreground">{formatMoney(request.approvedAmount ?? request.amountRequested)}</p>
+                    <p className="text-sm font-semibold text-foreground">{formatMoney(request.approvedAmount ?? request.amountRequested, lang)}</p>
                     <p className="mt-1 text-[11px] text-muted">{request.category}</p>
                   </div>
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
                   <span>{request.departmentSlug}</span>
-                  <span>Requested by {request.requestedByName}</span>
-                  <span>Need by {request.neededBy || "No deadline"}</span>
+                  <span>{tr("Requested by", "تقدّم به")} {request.requestedByName}</span>
+                  <span>{tr("Need by", "الموعد")} {request.neededBy || tr("No deadline", "بدون موعد محدّد")}</span>
                 </div>
 
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className={labelCls}>Status</label>
+                    <label className={labelCls}>{tr("Status", "الحالة")}</label>
                     <select
                       value={requestDrafts[request.requestId]?.status ?? request.status}
                       onChange={(event) =>
@@ -309,15 +310,15 @@ export default function FinanceDashboard() {
                       }
                       className={inputCls}
                     >
-                      <option value="pending">Pending</option>
-                      <option value="approved">Approved</option>
-                      <option value="purchasing">Purchasing</option>
-                      <option value="fulfilled">Fulfilled</option>
-                      <option value="rejected">Rejected</option>
+                      <option value="pending">{tr("Pending", "قيد الانتظار")}</option>
+                      <option value="approved">{tr("Approved", "معتمد")}</option>
+                      <option value="purchasing">{tr("Purchasing", "قيد الشراء")}</option>
+                      <option value="fulfilled">{tr("Fulfilled", "تم التسليم")}</option>
+                      <option value="rejected">{tr("Rejected", "مرفوض")}</option>
                     </select>
                   </div>
                   <div>
-                    <label className={labelCls}>Approved amount</label>
+                    <label className={labelCls}>{tr("Approved amount", "المبلغ المعتمد")}</label>
                     <input
                       type="number"
                       min="0"
@@ -341,7 +342,7 @@ export default function FinanceDashboard() {
                     />
                   </div>
                   <div>
-                    <label className={labelCls}>Assigned buyer</label>
+                    <label className={labelCls}>{tr("Assigned buyer", "المسؤول عن الشراء")}</label>
                     <input
                       value={requestDrafts[request.requestId]?.assignedToName ?? ""}
                       onChange={(event) =>
@@ -358,12 +359,12 @@ export default function FinanceDashboard() {
                           },
                         }))
                       }
-                      placeholder="Who is handling the purchase?"
+                      placeholder={tr("Who is handling the purchase?", "من سيتولّى الشراء؟")}
                       className={inputCls}
                     />
                   </div>
                   <div>
-                    <label className={labelCls}>Finance note</label>
+                    <label className={labelCls}>{tr("Finance note", "ملاحظة مالية")}</label>
                     <input
                       value={requestDrafts[request.requestId]?.financeNote ?? ""}
                       onChange={(event) =>
@@ -380,7 +381,7 @@ export default function FinanceDashboard() {
                           },
                         }))
                       }
-                      placeholder="Optional finance context"
+                      placeholder={tr("Optional finance context", "ملاحظة مالية اختيارية")}
                       className={inputCls}
                     />
                   </div>
@@ -393,12 +394,12 @@ export default function FinanceDashboard() {
                     className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-xs disabled:opacity-60"
                   >
                     {savingRequest[request.requestId] ? <Loader2 size={13} className="animate-spin" /> : <ShoppingBag size={13} />}
-                    Update request
+                    {tr("Update request", "تحديث الطلب")}
                   </button>
                   {request.assignedToName ? (
                     <span className="inline-flex items-center gap-1 text-xs text-muted">
                       <Check size={12} className="text-primary" />
-                      Assigned to {request.assignedToName}
+                      {tr("Assigned to", "مُسنَد إلى")} {request.assignedToName}
                     </span>
                   ) : null}
                 </div>

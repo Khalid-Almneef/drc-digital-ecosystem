@@ -103,6 +103,8 @@ const EMPTY_FORM = {
 interface CreateModalProps { onClose: () => void; onCreated: () => void }
 
 function CreateModal({ onClose, onCreated }: CreateModalProps) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [f, setF] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -161,7 +163,7 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors">
           <X size={18} />
         </button>
-        <h2 className="text-lg font-bold text-foreground mb-6">Create Live Workshop</h2>
+        <h2 className="text-lg font-bold text-foreground mb-6">{tr("Create Live Workshop", "إنشاء ورشة مباشرة")}</h2>
 
         {error && (
           <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 mb-4">{error}</p>
@@ -170,58 +172,58 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Title (EN) *</label>
-              <input required value={f.title} onChange={set("title")} placeholder="Workshop title" className={inputCls} />
+              <label className={labelCls}>{tr("Title (EN) *", "العنوان (EN) *")}</label>
+              <input required value={f.title} onChange={set("title")} placeholder={tr("Workshop title", "عنوان الورشة")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Title (AR)</label>
+              <label className={labelCls}>{tr("Title (AR)", "العنوان (AR)")}</label>
               <input value={f.titleAr} onChange={set("titleAr")} placeholder="عنوان الورشة" dir="rtl" className={inputCls} />
             </div>
             <div className="col-span-2">
-              <label className={labelCls}>Description</label>
-              <textarea value={f.description} onChange={set("description")} rows={2} placeholder="What will attendees learn?" className={`${inputCls} resize-none`} />
+              <label className={labelCls}>{tr("Description", "الوصف")}</label>
+              <textarea value={f.description} onChange={set("description")} rows={2} placeholder={tr("What will attendees learn?", "ماذا سيتعلم الحضور؟")} className={`${inputCls} resize-none`} />
             </div>
             <div>
-              <label className={labelCls}>Presenter</label>
-              <input value={f.presenter} onChange={set("presenter")} placeholder="e.g. Abdulaziz Al-Byood" className={inputCls} />
+              <label className={labelCls}>{tr("Presenter", "المُقدِّم")}</label>
+              <input value={f.presenter} onChange={set("presenter")} placeholder={tr("Presenter name", "اسم المُقدِّم")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Date & Time *</label>
+              <label className={labelCls}>{tr("Date & Time *", "التاريخ والوقت *")}</label>
               <input required type="datetime-local" value={f.scheduledAt} onChange={set("scheduledAt")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Duration (minutes)</label>
+              <label className={labelCls}>{tr("Duration (minutes)", "المدة (بالدقائق)")}</label>
               <input type="number" min={1} value={f.durationMin} onChange={set("durationMin")} placeholder="90" className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Location / Room</label>
-              <input value={f.location} onChange={set("location")} placeholder="e.g. Room 204, Zoom" className={inputCls} />
+              <label className={labelCls}>{tr("Location / Room", "المكان / القاعة")}</label>
+              <input value={f.location} onChange={set("location")} placeholder={tr("e.g. Room 204, Zoom", "مثل: قاعة 204، Zoom")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Meeting URL</label>
+              <label className={labelCls}>{tr("Meeting URL", "رابط الاجتماع")}</label>
               <input type="url" value={f.meetingUrl} onChange={set("meetingUrl")} placeholder="https://..." className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Max Registrants</label>
-              <input type="number" min={1} value={f.maxRegistrants} onChange={set("maxRegistrants")} placeholder="Leave empty for unlimited" className={inputCls} />
+              <label className={labelCls}>{tr("Max Registrants", "الحد الأقصى للمسجّلين")}</label>
+              <input type="number" min={1} value={f.maxRegistrants} onChange={set("maxRegistrants")} placeholder={tr("Leave empty for unlimited", "اتركه فارغاً للسعة المفتوحة")} className={inputCls} />
             </div>
           </div>
 
           <div className="flex gap-6 pt-1">
             <label className="flex items-center gap-2.5 cursor-pointer">
               <Toggle checked={f.isPublished} onChange={() => setCheck("isPublished")} />
-              <span className="text-sm text-foreground">Publish (visible to public)</span>
+              <span className="text-sm text-foreground">{tr("Publish (visible to public)", "نشر (يظهر للعموم)")}</span>
             </label>
             <label className="flex items-center gap-2.5 cursor-pointer">
               <Toggle checked={f.registrationOpen} onChange={() => setCheck("registrationOpen")} />
-              <span className="text-sm text-foreground">Open registration</span>
+              <span className="text-sm text-foreground">{tr("Open registration", "تسجيل مفتوح")}</span>
             </label>
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">Cancel</button>
+            <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
             <button type="submit" disabled={saving} className="btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-60">
-              {saving ? "Creating…" : "Create Workshop"}
+              {saving ? tr("Creating…", "جارٍ الإنشاء…") : tr("Create Workshop", "إنشاء الورشة")}
             </button>
           </div>
         </form>
@@ -243,6 +245,8 @@ interface Registration {
 }
 
 function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => void }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const { data: regs = [], isLoading: loading } = useApi<Registration[]>(
     `/api/live-workshops/${workshopId}/registrations`,
   );
@@ -261,20 +265,20 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
         className="w-full max-w-2xl glass-card relative max-h-[85vh] flex flex-col"
       >
         <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
-          <h2 className="text-base font-bold text-foreground">Registrations</h2>
+          <h2 className="text-base font-bold text-foreground">{tr("Registrations", "التسجيلات")}</h2>
           <button onClick={onClose} className="text-muted hover:text-foreground transition-colors"><X size={16} /></button>
         </div>
 
         <div className="overflow-y-auto flex-1">
           {loading ? (
-            <div className="p-8 text-center text-sm text-muted">Loading…</div>
+            <div className="p-8 text-center text-sm text-muted">{tr("Loading…", "جارٍ التحميل…")}</div>
           ) : regs.length === 0 ? (
-            <div className="p-8 text-center text-sm text-muted">No registrations yet.</div>
+            <div className="p-8 text-center text-sm text-muted">{tr("No registrations yet.", "لا توجد تسجيلات بعد.")}</div>
           ) : (
             <table className="w-full text-xs">
               <thead className="border-b border-border">
                 <tr className="text-[10px] uppercase tracking-wider text-muted">
-                  {["Name", "Email", "Uni ID", "Dept", "Registered"].map(h => (
+                  {[tr("Name", "الاسم"), tr("Email", "البريد"), tr("Uni ID", "الرقم الجامعي"), tr("Dept", "القسم"), tr("Registered", "تاريخ التسجيل")].map(h => (
                     <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -287,7 +291,7 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
                     <td className="px-4 py-2.5 text-muted">{r.universityId ?? "—"}</td>
                     <td className="px-4 py-2.5 text-muted">{r.department ?? "—"}</td>
                     <td className="px-4 py-2.5 text-muted">
-                      {new Date(r.registeredAt).toLocaleDateString()}
+                      {new Date(r.registeredAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}
                     </td>
                   </tr>
                 ))}
@@ -297,7 +301,7 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
         </div>
 
         <div className="p-4 border-t border-border shrink-0">
-          <p className="text-xs text-muted">{regs.length} total registrant{regs.length !== 1 ? "s" : ""}</p>
+          <p className="text-xs text-muted">{regs.length} {tr(regs.length === 1 ? "registrant" : "registrants", "مسجَّل")}</p>
         </div>
       </motion.div>
     </motion.div>
@@ -307,6 +311,8 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
 // ─── Live Workshops tab ───────────────────────────────────────────────────────
 
 function LiveWorkshopsTab() {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const { data: workshops = [], isLoading: loading, mutate: load } = useApi<LiveWorkshop[]>("/api/live-workshops");
   const [showCreate, setShowCreate] = useState(false);
   const [viewRegsId, setViewRegsId] = useState<number | null>(null);
@@ -319,18 +325,18 @@ function LiveWorkshopsTab() {
       await api.patch(`/api/live-workshops/${w.liveWorkshopId}`, { [field]: !w[field] });
       void load();
     } catch {
-      toast.error("Failed to update workshop. Please try again.");
+      toast.error(tr("Failed to update workshop. Please try again.", "تعذّر تحديث الورشة. حاول مرة أخرى."));
     }
     setToggling(t => ({ ...t, [key]: false }));
   };
 
   const del = async (id: number) => {
-    if (!confirm("Delete this live workshop? This cannot be undone.")) return;
+    if (!confirm(tr("Delete this live workshop? This cannot be undone.", "حذف هذه الورشة المباشرة؟ لا يمكن التراجع."))) return;
     try {
       await api.delete(`/api/live-workshops/${id}`);
       void load();
     } catch {
-      toast.error("Delete failed. Please try again.");
+      toast.error(tr("Delete failed. Please try again.", "فشل الحذف. حاول مرة أخرى."));
     }
   };
 
@@ -344,23 +350,23 @@ function LiveWorkshopsTab() {
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="glass-card p-4 text-center">
           <p className="text-2xl font-bold text-foreground">{upcoming.length}</p>
-          <p className="text-[11px] text-muted mt-0.5">Upcoming</p>
+          <p className="text-[11px] text-muted mt-0.5">{tr("Upcoming", "القادمة")}</p>
         </div>
         <div className="glass-card p-4 text-center">
           <p className="text-2xl font-bold text-foreground">{workshops.length}</p>
-          <p className="text-[11px] text-muted mt-0.5">Total Sessions</p>
+          <p className="text-[11px] text-muted mt-0.5">{tr("Total Sessions", "إجمالي الجلسات")}</p>
         </div>
         <div className="glass-card p-4 text-center">
           <p className="text-2xl font-bold text-primary">{totalRegs}</p>
-          <p className="text-[11px] text-muted mt-0.5">Total Registrations</p>
+          <p className="text-[11px] text-muted mt-0.5">{tr("Total Registrations", "إجمالي التسجيلات")}</p>
         </div>
       </div>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-muted uppercase tracking-wider">Live Sessions</h3>
+        <h3 className="text-sm font-semibold text-muted uppercase tracking-wider">{tr("Live Sessions", "الجلسات المباشرة")}</h3>
         <button onClick={() => setShowCreate(true)} className="btn-primary px-4 py-2 text-xs flex items-center gap-1.5">
-          <Plus size={13} /> Create
+          <Plus size={13} /> {tr("Create", "إنشاء")}
         </button>
       </div>
 
@@ -371,7 +377,7 @@ function LiveWorkshopsTab() {
         </div>
       ) : workshops.length === 0 ? (
         <div className="glass-card p-12 text-center text-sm text-muted">
-          No live workshops yet. Create one to get started.
+          {tr("No live workshops yet. Create one to get started.", "لا توجد ورش مباشرة بعد. أنشئ واحدة للبدء.")}
         </div>
       ) : (
         <div className="space-y-3">
@@ -398,13 +404,13 @@ function LiveWorkshopsTab() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <p className="text-sm font-semibold text-foreground truncate">{w.title}</p>
-                      {past_ && <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-elevated text-muted border border-border shrink-0">Past</span>}
+                      {past_ && <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-elevated text-muted border border-border shrink-0">{tr("Past", "منتهية")}</span>}
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-muted">
                       <span className="flex items-center gap-1"><Calendar size={10} />{fmt(w.scheduledAt)}</span>
                       {w.presenter && <span>{w.presenter}</span>}
                       {w.location && <span className="flex items-center gap-1"><MapPin size={10} />{w.location}</span>}
-                      {w.durationMin && <span className="flex items-center gap-1"><Clock size={10} />{w.durationMin} min</span>}
+                      {w.durationMin && <span className="flex items-center gap-1"><Clock size={10} />{w.durationMin} {tr("min", "د")}</span>}
                     </div>
                   </div>
 
@@ -422,7 +428,7 @@ function LiveWorkshopsTab() {
 
                     {/* Registration open toggle */}
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted uppercase tracking-wider hidden sm:block">Reg</span>
+                      <span className="text-[10px] text-muted uppercase tracking-wider hidden sm:block">{tr("Reg", "تسجيل")}</span>
                       <Toggle
                         checked={w.registrationOpen}
                         onChange={() => toggle(w, "registrationOpen")}
@@ -432,7 +438,7 @@ function LiveWorkshopsTab() {
 
                     {/* Published toggle */}
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted uppercase tracking-wider hidden sm:block">Pub</span>
+                      <span className="text-[10px] text-muted uppercase tracking-wider hidden sm:block">{tr("Pub", "نشر")}</span>
                       <Toggle
                         checked={w.isPublished}
                         onChange={() => toggle(w, "isPublished")}
@@ -473,6 +479,8 @@ const EMPTY_RECORDED = {
 };
 
 function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [f, setF] = useState(EMPTY_RECORDED);
   const [sessions, setSessions] = useState([{ title: "", titleAr: "", description: "", durationMin: "", googleDriveUrl: "" }]);
   const [saving, setSaving] = useState(false);
@@ -523,40 +531,40 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 16 }} transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }} className="w-full max-w-3xl glass-card p-8 relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors"><X size={18} /></button>
-        <h2 className="text-lg font-bold text-foreground mb-2">Add Google Drive Workshop</h2>
-        <p className="mb-6 text-sm text-muted">Create one workshop library and attach each recorded session as a separate Drive link.</p>
+        <h2 className="text-lg font-bold text-foreground mb-2">{tr("Add Google Drive Workshop", "إضافة ورشة من Google Drive")}</h2>
+        <p className="mb-6 text-sm text-muted">{tr("Create one workshop library and attach each recorded session as a separate Drive link.", "أنشئ مكتبة ورشة واحدة وأضف كل جلسة مسجَّلة كرابط Drive منفصل.")}</p>
         {error && <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 mb-4">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className={labelCls}>Workshop Title *</label>
-              <input required value={f.title} onChange={set("title")} placeholder="ROS2 Foundations" className={inputCls} />
+              <label className={labelCls}>{tr("Workshop Title *", "عنوان الورشة *")}</label>
+              <input required value={f.title} onChange={set("title")} placeholder={tr("Workshop title", "عنوان الورشة")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Arabic Title</label>
+              <label className={labelCls}>{tr("Arabic Title", "العنوان بالعربي")}</label>
               <input value={f.titleAr} onChange={set("titleAr")} placeholder="عنوان الورشة" dir="rtl" className={inputCls} />
             </div>
             <div className="md:col-span-2">
-              <label className={labelCls}>Description</label>
-              <textarea value={f.description} onChange={set("description")} rows={2} placeholder="What members will learn across the sessions." className={`${inputCls} resize-none`} />
+              <label className={labelCls}>{tr("Description", "الوصف")}</label>
+              <textarea value={f.description} onChange={set("description")} rows={2} placeholder={tr("What members will learn across the sessions.", "ماذا سيتعلم الأعضاء خلال الجلسات.")} className={`${inputCls} resize-none`} />
             </div>
             <div>
-              <label className={labelCls}>Drive Folder URL</label>
+              <label className={labelCls}>{tr("Drive Folder URL", "رابط مجلد Drive")}</label>
               <input type="url" value={f.googleDriveFolderUrl} onChange={set("googleDriveFolderUrl")} placeholder="https://drive.google.com/drive/folders/..." className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Category</label>
+              <label className={labelCls}>{tr("Category", "التصنيف")}</label>
               <select value={f.category} onChange={set("category")} className={inputCls}>
                 {["Software", "Drones", "Robotics", "AI", "Fabrication", "Racing"].map((category) => <option key={category} value={category}>{category}</option>)}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Presenter</label>
-              <input value={f.presenter} onChange={set("presenter")} placeholder="Presenter name" className={inputCls} />
+              <label className={labelCls}>{tr("Presenter", "المُقدِّم")}</label>
+              <input value={f.presenter} onChange={set("presenter")} placeholder={tr("Presenter name", "اسم المُقدِّم")} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Recorded Date</label>
+              <label className={labelCls}>{tr("Recorded Date", "تاريخ التسجيل")}</label>
               <input type="date" value={f.recordedDate} onChange={set("recordedDate")} className={inputCls} />
             </div>
           </div>
@@ -564,20 +572,20 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
           <div className="rounded-2xl border border-border bg-surface-elevated/30 p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-sm font-semibold text-foreground">Sessions</h3>
-                <p className="mt-1 text-xs text-muted">Add every Google Drive recording in the order members should watch it.</p>
+                <h3 className="text-sm font-semibold text-foreground">{tr("Sessions", "الجلسات")}</h3>
+                <p className="mt-1 text-xs text-muted">{tr("Add every Google Drive recording in the order members should watch it.", "أضف كل تسجيل Drive بالترتيب الذي يجب أن يشاهده الأعضاء.")}</p>
               </div>
               <button type="button" onClick={() => setSessions((prev) => [...prev, { title: "", titleAr: "", description: "", durationMin: "", googleDriveUrl: "" }])} className="btn-secondary inline-flex items-center gap-1.5 px-3 py-2 text-xs">
-                <Plus size={12} /> Session
+                <Plus size={12} /> {tr("Session", "جلسة")}
               </button>
             </div>
             <div className="space-y-3">
               {sessions.map((session, index) => (
                 <div key={index} className="grid gap-3 rounded-xl border border-border bg-background/30 p-3 md:grid-cols-[1fr_1fr_auto]">
-                  <input required value={session.title} onChange={(event) => setSessions((prev) => prev.map((item, i) => i === index ? { ...item, title: event.target.value } : item))} placeholder={`Session ${index + 1} title`} className={inputCls} />
-                  <input required type="url" value={session.googleDriveUrl} onChange={(event) => setSessions((prev) => prev.map((item, i) => i === index ? { ...item, googleDriveUrl: event.target.value } : item))} placeholder="Google Drive video URL" className={inputCls} />
-                  <input type="number" min={1} value={session.durationMin} onChange={(event) => setSessions((prev) => prev.map((item, i) => i === index ? { ...item, durationMin: event.target.value } : item))} placeholder="Min" className={`${inputCls} md:w-24`} />
-                  <textarea value={session.description} onChange={(event) => setSessions((prev) => prev.map((item, i) => i === index ? { ...item, description: event.target.value } : item))} rows={2} placeholder="Optional session note" className={`${inputCls} resize-none md:col-span-2`} />
+                  <input required value={session.title} onChange={(event) => setSessions((prev) => prev.map((item, i) => i === index ? { ...item, title: event.target.value } : item))} placeholder={tr(`Session ${index + 1} title`, `عنوان الجلسة ${index + 1}`)} className={inputCls} />
+                  <input required type="url" value={session.googleDriveUrl} onChange={(event) => setSessions((prev) => prev.map((item, i) => i === index ? { ...item, googleDriveUrl: event.target.value } : item))} placeholder={tr("Google Drive video URL", "رابط فيديو Google Drive")} className={inputCls} />
+                  <input type="number" min={1} value={session.durationMin} onChange={(event) => setSessions((prev) => prev.map((item, i) => i === index ? { ...item, durationMin: event.target.value } : item))} placeholder={tr("Min", "د")} className={`${inputCls} md:w-24`} />
+                  <textarea value={session.description} onChange={(event) => setSessions((prev) => prev.map((item, i) => i === index ? { ...item, description: event.target.value } : item))} rows={2} placeholder={tr("Optional session note", "ملاحظة اختيارية للجلسة")} className={`${inputCls} resize-none md:col-span-2`} />
                   <button type="button" onClick={() => setSessions((prev) => prev.filter((_, i) => i !== index))} disabled={sessions.length === 1} className="min-h-10 rounded-lg border border-border px-3 text-muted hover:text-red-400 disabled:opacity-40">
                     <Trash2 size={14} />
                   </button>
@@ -588,12 +596,12 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
 
           <label className="flex items-center gap-2.5 cursor-pointer">
             <Toggle checked={f.isPublished} onChange={() => setF((prev) => ({ ...prev, isPublished: !prev.isPublished }))} />
-            <span className="text-sm text-foreground">Publish to public workshops page</span>
+            <span className="text-sm text-foreground">{tr("Publish to public workshops page", "نشر في صفحة الورش العامة")}</span>
           </label>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-60">{saving ? "Saving..." : "Save Workshop"}</button>
+            <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
+            <button type="submit" disabled={saving} className="btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-60">{saving ? tr("Saving…", "جارٍ الحفظ…") : tr("Save Workshop", "حفظ الورشة")}</button>
           </div>
         </form>
       </motion.div>
@@ -602,6 +610,8 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
 }
 
 function RecordedWorkshopsTab() {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const { data: workshops = [], isLoading: loading, mutate: load } = useApi<RecordedWorkshop[]>("/api/workshops");
   const [showCreate, setShowCreate] = useState(false);
 
@@ -611,7 +621,7 @@ function RecordedWorkshopsTab() {
   }
 
   async function del(workshopId: number) {
-    if (!confirm("Delete this recorded workshop and its sessions?")) return;
+    if (!confirm(tr("Delete this recorded workshop and its sessions?", "حذف هذه الورشة المسجَّلة وجميع جلساتها؟"))) return;
     await api.delete(`/api/workshops/${workshopId}`);
     void load();
   }
@@ -619,23 +629,23 @@ function RecordedWorkshopsTab() {
   return (
     <>
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <div className="glass-card p-4 text-center"><p className="text-2xl font-bold text-foreground">{workshops.length}</p><p className="mt-0.5 text-[11px] text-muted">Workshop Libraries</p></div>
-        <div className="glass-card p-4 text-center"><p className="text-2xl font-bold text-primary">{workshops.reduce((sum, workshop) => sum + (workshop.sessions?.length ?? 0), 0)}</p><p className="mt-0.5 text-[11px] text-muted">Drive Sessions</p></div>
-        <div className="glass-card p-4 text-center"><p className="text-2xl font-bold text-foreground">{workshops.filter((workshop) => workshop.isPublished).length}</p><p className="mt-0.5 text-[11px] text-muted">Published</p></div>
+        <div className="glass-card p-4 text-center"><p className="text-2xl font-bold text-foreground">{workshops.length}</p><p className="mt-0.5 text-[11px] text-muted">{tr("Workshop Libraries", "مكتبات الورش")}</p></div>
+        <div className="glass-card p-4 text-center"><p className="text-2xl font-bold text-primary">{workshops.reduce((sum, workshop) => sum + (workshop.sessions?.length ?? 0), 0)}</p><p className="mt-0.5 text-[11px] text-muted">{tr("Drive Sessions", "جلسات Drive")}</p></div>
+        <div className="glass-card p-4 text-center"><p className="text-2xl font-bold text-foreground">{workshops.filter((workshop) => workshop.isPublished).length}</p><p className="mt-0.5 text-[11px] text-muted">{tr("Published", "منشور")}</p></div>
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-muted uppercase tracking-wider">Member Development Library</h3>
-          <p className="mt-1 text-xs text-muted">Recorded workshops are organized by workshop, then session, with Google Drive links.</p>
+          <h3 className="text-sm font-semibold text-muted uppercase tracking-wider">{tr("Member Development Library", "مكتبة تطوير الأعضاء")}</h3>
+          <p className="mt-1 text-xs text-muted">{tr("Recorded workshops are organized by workshop, then session, with Google Drive links.", "الورش المسجَّلة منظَّمة حسب الورشة ثم الجلسة، مع روابط Google Drive.")}</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs"><Plus size={13} /> Add Workshop</button>
+        <button onClick={() => setShowCreate(true)} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs"><Plus size={13} /> {tr("Add Workshop", "إضافة ورشة")}</button>
       </div>
 
       {loading ? (
         <div className="space-y-3">{[0, 1, 2].map((i) => <div key={i} className="glass-card h-24 animate-pulse" />)}</div>
       ) : workshops.length === 0 ? (
-        <div className="glass-card p-12 text-center text-sm text-muted">No recorded workshop libraries yet.</div>
+        <div className="glass-card p-12 text-center text-sm text-muted">{tr("No recorded workshop libraries yet.", "لا توجد مكتبات ورش مسجَّلة بعد.")}</div>
       ) : (
         <div className="space-y-3">
           {workshops.map((workshop, index) => (
@@ -644,14 +654,14 @@ function RecordedWorkshopsTab() {
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <h4 className="text-sm font-semibold text-foreground">{workshop.title}</h4>
-                    <span className="badge bg-surface-elevated text-muted border-border">{workshop.category ?? "Workshop"}</span>
-                    <span className={workshop.isPublished ? "badge badge-success" : "badge"}>{workshop.isPublished ? "published" : "draft"}</span>
+                    <span className="badge bg-surface-elevated text-muted border-border">{workshop.category ?? tr("Workshop", "ورشة")}</span>
+                    <span className={workshop.isPublished ? "badge badge-success" : "badge"}>{workshop.isPublished ? tr("published", "منشور") : tr("draft", "مسودّة")}</span>
                   </div>
-                  <p className="text-xs leading-5 text-muted">{workshop.description ?? "No description added."}</p>
+                  <p className="text-xs leading-5 text-muted">{workshop.description ?? tr("No description added.", "لم يُضف وصف.")}</p>
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted">
-                    <span className="inline-flex items-center gap-1"><ListVideo size={11} />{workshop.sessions?.length ?? 0} sessions</span>
+                    <span className="inline-flex items-center gap-1"><ListVideo size={11} />{workshop.sessions?.length ?? 0} {tr("sessions", "جلسات")}</span>
                     {workshop.presenter && <span>{workshop.presenter}</span>}
-                    {workshop.recordedDate && <span>{new Date(workshop.recordedDate).toLocaleDateString()}</span>}
+                    {workshop.recordedDate && <span>{new Date(workshop.recordedDate).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}</span>}
                   </div>
                   <div className="mt-3 grid gap-2 md:grid-cols-2">
                     {(workshop.sessions ?? []).slice(0, 4).map((session) => (
@@ -663,7 +673,7 @@ function RecordedWorkshopsTab() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  {workshop.googleDriveFolderUrl && <a href={workshop.googleDriveFolderUrl} target="_blank" rel="noreferrer" className="btn-secondary inline-flex items-center gap-1.5 px-3 py-2 text-xs"><FolderOpen size={13} /> Folder</a>}
+                  {workshop.googleDriveFolderUrl && <a href={workshop.googleDriveFolderUrl} target="_blank" rel="noreferrer" className="btn-secondary inline-flex items-center gap-1.5 px-3 py-2 text-xs"><FolderOpen size={13} /> {tr("Folder", "المجلد")}</a>}
                   <Toggle checked={workshop.isPublished} onChange={() => void togglePublished(workshop)} />
                   <button onClick={() => void del(workshop.workshopId)} className="min-h-10 rounded-lg border border-border px-3 text-muted hover:text-red-400"><Trash2 size={14} /></button>
                 </div>
@@ -688,6 +698,8 @@ const companyProspects = [
 ] as const;
 
 function CompanyVisitsTab() {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [sending, setSending] = useState<string | null>(null);
   const [sent, setSent] = useState<Record<string, boolean>>({});
 
@@ -714,8 +726,8 @@ function CompanyVisitsTab() {
         <div className="flex items-start gap-3">
           <Building2 size={17} className="mt-0.5 text-primary" />
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Company Visit Prospects</h3>
-            <p className="mt-1 text-xs leading-5 text-muted">Development identifies technical companies that can help members see real engineering environments. PR receives the coordination request and owns outreach.</p>
+            <h3 className="text-sm font-semibold text-foreground">{tr("Company Visit Prospects", "الشركات المرشَّحة للزيارة")}</h3>
+            <p className="mt-1 text-xs leading-5 text-muted">{tr("Development identifies technical companies that can help members see real engineering environments. PR receives the coordination request and owns outreach.", "قسم التطوير يحدّد شركات تقنية تتيح للأعضاء رؤية بيئات هندسية حقيقية. قسم العلاقات العامة يتسلَّم طلب التنسيق ويتولّى التواصل.")}</p>
           </div>
         </div>
       </div>
@@ -727,13 +739,13 @@ function CompanyVisitsTab() {
               <div>
                 <h4 className="text-sm font-semibold text-foreground">{prospect.company}</h4>
                 <p className="mt-2 text-xs leading-5 text-muted">{prospect.focus}</p>
-                <p className="mt-3 text-[11px] text-muted">Contact route: {prospect.contact}</p>
+                <p className="mt-3 text-[11px] text-muted">{tr("Contact route", "طريق التواصل")}: {prospect.contact}</p>
               </div>
               <span className={prospect.priority === "high" ? "badge badge-warning" : "badge badge-primary"}>{prospect.priority}</span>
             </div>
             <button onClick={() => void requestVisit(prospect)} disabled={sending === prospect.company || sent[prospect.company]} className="btn-primary mt-4 inline-flex min-h-10 items-center gap-2 px-4 py-2 text-xs disabled:opacity-60">
               <Send size={12} />
-              {sent[prospect.company] ? "Sent to PR" : sending === prospect.company ? "Sending..." : "Request PR Visit"}
+              {sent[prospect.company] ? tr("Sent to PR", "أُرسل إلى العلاقات العامة") : sending === prospect.company ? tr("Sending…", "جارٍ الإرسال…") : tr("Request PR Visit", "اطلب زيارة من العلاقات العامة")}
             </button>
           </motion.div>
         ))}
@@ -1073,7 +1085,7 @@ export default function DevelopmentDashboard() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <StatCard icon={Code}         label={tr("Active Projects", "المشاريع النشطة")}       value={stats.activeProjects}      onClick={() => setActiveView("projects")} />
         <StatCard icon={GitBranch}    label={tr("Open Tasks", "المهام المفتوحة")}            value={stats.openTasks}            onClick={() => setActiveView("board")} />
         <StatCard icon={CheckCircle2} label={tr("Completed This Month", "المكتمل هذا الشهر")}  value={stats.completedThisMonth}  onClick={() => setActiveView("board")} />

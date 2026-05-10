@@ -651,7 +651,7 @@ export default function MediaDashboard() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <StatCard icon={Inbox}    label={tr("Pending Review", "قيد المراجعة")}        value={submissions.length} onClick={() => setTab("submissions")} />
         <StatCard icon={Check}    label={tr("Approved This Month", "اعتُمدت هذا الشهر")} value={doneThisMonth}     onClick={() => setTab("submissions")} />
         <StatCard icon={ImageIcon} label={tr("Library Assets", "أصول المكتبة")}        value={assets.length}     onClick={() => setTab("library")} />
@@ -698,7 +698,7 @@ export default function MediaDashboard() {
                       <p className="text-xs font-medium text-foreground truncate">{t.title}</p>
                       <p className="text-[10px] text-muted">{t.assigneeName ?? "Unassigned"} · {t.submittedAt ? fmtDate(t.submittedAt) : "—"}</p>
                     </div>
-                    <button onClick={() => setTab("submissions")} className="btn-primary px-2 py-1 text-[10px] shrink-0">Review</button>
+                    <button onClick={() => setTab("submissions")} className="btn-primary px-2 py-1 text-[10px] shrink-0">{tr("Review", "مراجعة")}</button>
                   </motion.div>
                 ))}
                 {submissions.length > 5 && (
@@ -827,7 +827,7 @@ export default function MediaDashboard() {
               <input
                 value={uploadLabel}
                 onChange={(e) => setUploadLabel(e.target.value)}
-                placeholder="Label (optional)"
+                placeholder={tr("Label (optional)", "تسمية (اختياري)")}
                 className="px-2 py-1 text-xs rounded-lg bg-surface-elevated border border-border text-foreground placeholder:text-muted/40 focus:outline-none w-40"
               />
               <button
@@ -909,37 +909,37 @@ export default function MediaDashboard() {
             {showCreate && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                 className="glass-card p-4 mb-4 space-y-3 overflow-hidden">
-                <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Task title *"
+                <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder={tr("Task title *", "عنوان المهمة *")}
                   className="w-full text-sm bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50" />
-                <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="Description (optional)" rows={2}
+                <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder={tr("Description (optional)", "الوصف (اختياري)")} rows={2}
                   className="w-full text-xs bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50 resize-none" />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <select value={newAssignee} onChange={(e) => setNewAssignee(e.target.value ? Number(e.target.value) : "")}
                     className="text-xs bg-surface-elevated border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50 col-span-2 sm:col-span-1">
-                    <option value="">Assignee…</option>
+                    <option value="">{tr("Assignee…", "المسؤول…")}</option>
                     {members.map((m) => <option key={m.memberId} value={m.memberId}>{m.fullName}</option>)}
                   </select>
                   <select value={newPriority} onChange={(e) => setNewPriority(e.target.value as typeof newPriority)}
                     className="text-xs bg-surface-elevated border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50">
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
+                    <option value="low">{tr("Low", "منخفضة")}</option>
+                    <option value="medium">{tr("Medium", "متوسطة")}</option>
+                    <option value="high">{tr("High", "مرتفعة")}</option>
+                    <option value="urgent">{tr("Urgent", "عاجلة")}</option>
                   </select>
                   <input type="date" value={newDue} onChange={(e) => setNewDue(e.target.value)}
                     className="text-xs bg-surface-elevated border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50"
-                    title="Due date" />
+                    title={tr("Due date", "تاريخ الاستحقاق")} />
                   <input type="number" min={0} step={0.5} value={newCredits} onChange={(e) => setNewCredits(e.target.value)}
-                    placeholder="Credit hrs"
+                    placeholder={tr("Credit hrs", "ساعات معتمدة")}
                     className="text-xs bg-surface-elevated border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50" />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={createTask} disabled={taskSaving || !newTitle.trim()}
                     className="btn-primary px-3 py-1.5 text-xs flex-1 inline-flex items-center justify-center gap-1.5">
                     {taskSaving && <Loader2 size={11} className="animate-spin" />}
-                    Create
+                    {tr("Create", "إنشاء")}
                   </button>
-                  <button onClick={() => setShowCreate(false)} className="btn-secondary px-3 py-1.5 text-xs flex-1">Cancel</button>
+                  <button onClick={() => setShowCreate(false)} className="btn-secondary px-3 py-1.5 text-xs flex-1">{tr("Cancel", "إلغاء")}</button>
                 </div>
               </motion.div>
             )}
@@ -949,7 +949,7 @@ export default function MediaDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {(["todo", "in_progress", "review"] as const).map((status) => {
               const colTasks = tasks.filter((t) => t.status === status);
-              const statusLabel = status === "in_progress" ? "In Progress" : status === "todo" ? "To Do" : "In Review";
+              const statusLabel = status === "in_progress" ? tr("In Progress", "قيد التنفيذ") : status === "todo" ? tr("To Do", "قائمة المهام") : tr("In Review", "قيد المراجعة");
               return (
                 <div key={status}>
                   <div className="flex items-center gap-2 mb-3">
@@ -991,7 +991,7 @@ export default function MediaDashboard() {
                       </div>
                     ))}
                     {colTasks.length === 0 && (
-                      <p className="text-[10px] text-muted/50 text-center py-4 border border-dashed border-border rounded-lg">Empty</p>
+                      <p className="text-[10px] text-muted/50 text-center py-4 border border-dashed border-border rounded-lg">{tr("Empty", "فارغة")}</p>
                     )}
                   </div>
                 </div>
@@ -1183,20 +1183,20 @@ export default function MediaDashboard() {
                     <input
                       value={socialForm.title}
                       onChange={(e) => setSocialForm((prev) => ({ ...prev, title: e.target.value }))}
-                      placeholder="Post title *"
+                      placeholder={tr("Post title *", "عنوان المنشور *")}
                       className="w-full text-sm bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50"
                     />
                     <input
                       value={socialForm.fileUrl}
                       onChange={(e) => setSocialForm((prev) => ({ ...prev, fileUrl: e.target.value }))}
-                      placeholder="Asset URL from library or content tab"
+                      placeholder={tr("Asset URL from library or content tab", "رابط الأصل من المكتبة أو تبويب المحتوى")}
                       className="w-full text-sm bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50"
                     />
                   </div>
                   <textarea
                     value={socialForm.description}
                     onChange={(e) => setSocialForm((prev) => ({ ...prev, description: e.target.value }))}
-                    placeholder="Caption, post summary, or publishing notes"
+                    placeholder={tr("Caption, post summary, or publishing notes", "تعليق، ملخص المنشور، أو ملاحظات النشر")}
                     rows={2}
                     className="w-full text-xs bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50 resize-none"
                   />
@@ -1239,7 +1239,7 @@ export default function MediaDashboard() {
                       onChange={(e) => setSocialForm((prev) => ({ ...prev, assignedTo: e.target.value }))}
                       className="text-xs bg-surface-elevated border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50"
                     >
-                      <option value="">Assignee…</option>
+                      <option value="">{tr("Assignee…", "المسؤول…")}</option>
                       {members.map((member) => (
                         <option key={member.memberId} value={member.memberId}>{member.fullName}</option>
                       ))}
@@ -1248,9 +1248,9 @@ export default function MediaDashboard() {
                   <div className="flex gap-2">
                     <button onClick={createSocialPost} disabled={socialSaving || !socialForm.title.trim()} className="btn-primary px-3 py-1.5 text-xs flex-1 inline-flex items-center justify-center gap-1.5">
                       {socialSaving ? <Loader2 size={11} className="animate-spin" /> : <Send size={11} />}
-                      Create Queue Item
+                      {tr("Create Queue Item", "إضافة للقائمة")}
                     </button>
-                    <button onClick={() => setShowComposer(false)} className="btn-secondary px-3 py-1.5 text-xs flex-1">Cancel</button>
+                    <button onClick={() => setShowComposer(false)} className="btn-secondary px-3 py-1.5 text-xs flex-1">{tr("Cancel", "إلغاء")}</button>
                   </div>
                 </motion.div>
               )}

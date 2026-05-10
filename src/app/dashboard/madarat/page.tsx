@@ -161,6 +161,8 @@ function fmtDateTime(iso: string) {
 }
 
 function RegistrationsModal({ session, onClose }: { session: MadaratSessionRow; onClose: () => void }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const { data, isLoading: loading } = useApi<MadaratRegistration[]>(
     `/api/madarat/sessions/${session.sessionId}/registrations`,
   );
@@ -184,7 +186,7 @@ function RegistrationsModal({ session, onClose }: { session: MadaratSessionRow; 
       >
         <div className="border-b border-border p-5">
           <p className="text-sm font-semibold text-foreground">{session.title}</p>
-          <p className="mt-1 text-xs text-muted">Registrations for {session.intervieweeName}</p>
+          <p className="mt-1 text-xs text-muted">{tr("Registrations for", "تسجيلات لـ")} {session.intervieweeName}</p>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -193,16 +195,16 @@ function RegistrationsModal({ session, onClose }: { session: MadaratSessionRow; 
               <Loader2 size={20} className="animate-spin text-muted" />
             </div>
           ) : rows.length === 0 ? (
-            <div className="p-8 text-center text-sm text-muted">No registrations yet.</div>
+            <div className="p-8 text-center text-sm text-muted">{tr("No registrations yet.", "لا توجد تسجيلات بعد.")}</div>
           ) : (
             <table className="w-full text-left text-xs">
               <thead className="border-b border-border text-[10px] uppercase tracking-wider text-muted">
                 <tr>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Gender</th>
-                  <th className="px-4 py-3">Department</th>
-                  <th className="px-4 py-3">Registered</th>
+                  <th className="px-4 py-3">{tr("Name", "الاسم")}</th>
+                  <th className="px-4 py-3">{tr("Email", "البريد")}</th>
+                  <th className="px-4 py-3">{tr("Gender", "الجنس")}</th>
+                  <th className="px-4 py-3">{tr("Department", "القسم")}</th>
+                  <th className="px-4 py-3">{tr("Registered", "تاريخ التسجيل")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -221,7 +223,7 @@ function RegistrationsModal({ session, onClose }: { session: MadaratSessionRow; 
         </div>
 
         <div className="border-t border-border p-4 text-right">
-          <button onClick={onClose} className="btn-secondary px-4 py-2 text-sm">Close</button>
+          <button onClick={onClose} className="btn-secondary px-4 py-2 text-sm">{tr("Close", "إغلاق")}</button>
         </div>
       </motion.div>
     </motion.div>
@@ -243,6 +245,8 @@ function CreateSessionModal({
   onToggle: (key: "registrationOpen" | "isPublished") => void;
   onSubmit: () => void;
 }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const inputCls = "dashboard-field";
   const selectCls = "dashboard-select";
   const labelCls = "mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-muted";
@@ -265,78 +269,78 @@ function CreateSessionModal({
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-foreground">Create Madarat Session</h3>
-            <p className="mt-1 text-sm text-muted">Use Madarat for standard interviews and Madariya for gender-specific alumni hosting sessions.</p>
+            <h3 className="text-lg font-semibold text-foreground">{tr("Create Madarat Session", "إنشاء جلسة مدارات")}</h3>
+            <p className="mt-1 text-sm text-muted">{tr("Use Madarat for standard interviews and Madariya for gender-specific alumni hosting sessions.", "استخدم مدارات للمقابلات العامة، ومدارية لجلسات استضافة الخريجين المخصصة حسب الجنس.")}</p>
           </div>
-          <button onClick={onClose} className="btn-secondary px-3 py-2 text-xs">Close</button>
+          <button onClick={onClose} className="btn-secondary px-3 py-2 text-xs">{tr("Close", "إغلاق")}</button>
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           <div>
-            <label className={labelCls}>Session Title</label>
-            <input value={form.title} onChange={(event) => onChange({ title: event.target.value })} className={inputCls} placeholder="Career conversation with..." />
+            <label className={labelCls}>{tr("Session Title", "عنوان الجلسة")}</label>
+            <input value={form.title} onChange={(event) => onChange({ title: event.target.value })} className={inputCls} placeholder={tr("Career conversation with…", "حوار مهني مع…")} />
           </div>
           <div>
-            <label className={labelCls}>Program Type</label>
+            <label className={labelCls}>{tr("Program Type", "نوع البرنامج")}</label>
             <select value={form.programType} onChange={(event) => onChange({ programType: event.target.value as ProgramType })} className={selectCls}>
-              <option value="madarat">Madarat</option>
-              <option value="madariya_males">Madariya (Males)</option>
-              <option value="madariya_females">Madariya (Females)</option>
+              <option value="madarat">{tr("Madarat", "مدارات")}</option>
+              <option value="madariya_males">{tr("Madariya (Males)", "مدارية (رجال)")}</option>
+              <option value="madariya_females">{tr("Madariya (Females)", "مدارية (نساء)")}</option>
             </select>
           </div>
           <div>
-            <label className={labelCls}>Interviewee</label>
-            <input value={form.intervieweeName} onChange={(event) => onChange({ intervieweeName: event.target.value })} className={inputCls} placeholder="Guest name" />
+            <label className={labelCls}>{tr("Interviewee", "الضيف")}</label>
+            <input value={form.intervieweeName} onChange={(event) => onChange({ intervieweeName: event.target.value })} className={inputCls} placeholder={tr("Guest name", "اسم الضيف")} />
           </div>
           <div>
-            <label className={labelCls}>Interviewer</label>
-            <input value={form.interviewerName} onChange={(event) => onChange({ interviewerName: event.target.value })} className={inputCls} placeholder="Host or interviewer name" />
+            <label className={labelCls}>{tr("Interviewer", "المُحاوِر")}</label>
+            <input value={form.interviewerName} onChange={(event) => onChange({ interviewerName: event.target.value })} className={inputCls} placeholder={tr("Host or interviewer name", "اسم المُقدِّم أو المُحاوِر")} />
           </div>
           <div>
-            <label className={labelCls}>Interviewee Role</label>
-            <input value={form.intervieweeRole} onChange={(event) => onChange({ intervieweeRole: event.target.value })} className={inputCls} placeholder="Role, company, or alumni context" />
+            <label className={labelCls}>{tr("Interviewee Role", "دور الضيف")}</label>
+            <input value={form.intervieweeRole} onChange={(event) => onChange({ intervieweeRole: event.target.value })} className={inputCls} placeholder={tr("Role, company, or alumni context", "المنصب، الشركة، أو خلفية الخريج")} />
           </div>
           <div>
-            <label className={labelCls}>Date & Time</label>
+            <label className={labelCls}>{tr("Date & Time", "التاريخ والوقت")}</label>
             <input type="datetime-local" value={form.scheduledAt} onChange={(event) => onChange({ scheduledAt: event.target.value })} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Duration (minutes)</label>
+            <label className={labelCls}>{tr("Duration (minutes)", "المدة (بالدقائق)")}</label>
             <input type="number" min="1" value={form.durationMin} onChange={(event) => onChange({ durationMin: event.target.value })} className={inputCls} placeholder="60" />
           </div>
           <div>
-            <label className={labelCls}>Location</label>
-            <input value={form.location} onChange={(event) => onChange({ location: event.target.value })} className={inputCls} placeholder="Hall, room, or online" />
+            <label className={labelCls}>{tr("Location", "المكان")}</label>
+            <input value={form.location} onChange={(event) => onChange({ location: event.target.value })} className={inputCls} placeholder={tr("Hall, room, or online", "قاعة، غرفة، أو عن بُعد")} />
           </div>
           <div>
-            <label className={labelCls}>Meeting URL</label>
+            <label className={labelCls}>{tr("Meeting URL", "رابط الاجتماع")}</label>
             <input value={form.meetingUrl} onChange={(event) => onChange({ meetingUrl: event.target.value })} className={inputCls} placeholder="https://..." />
           </div>
           <div>
-            <label className={labelCls}>Max Registrants</label>
-            <input type="number" min="1" value={form.maxRegistrants} onChange={(event) => onChange({ maxRegistrants: event.target.value })} className={inputCls} placeholder="Leave empty for unlimited" />
+            <label className={labelCls}>{tr("Max Registrants", "الحد الأقصى للمسجّلين")}</label>
+            <input type="number" min="1" value={form.maxRegistrants} onChange={(event) => onChange({ maxRegistrants: event.target.value })} className={inputCls} placeholder={tr("Leave empty for unlimited", "اتركه فارغاً للسعة المفتوحة")} />
           </div>
           <div className="md:col-span-2">
-            <label className={labelCls}>Description</label>
-            <textarea value={form.description} onChange={(event) => onChange({ description: event.target.value })} rows={3} className={`${inputCls} resize-none`} placeholder="What is this session about?" />
+            <label className={labelCls}>{tr("Description", "الوصف")}</label>
+            <textarea value={form.description} onChange={(event) => onChange({ description: event.target.value })} rows={3} className={`${inputCls} resize-none`} placeholder={tr("What is this session about?", "عن أي شيء هذه الجلسة؟")} />
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-6">
           <label className="flex items-center gap-2.5 text-sm text-foreground">
             <Toggle checked={form.isPublished} onChange={() => onToggle("isPublished")} />
-            Publish session
+            {tr("Publish session", "نشر الجلسة")}
           </label>
           <label className="flex items-center gap-2.5 text-sm text-foreground">
             <Toggle checked={form.registrationOpen} onChange={() => onToggle("registrationOpen")} />
-            Open registration
+            {tr("Open registration", "تسجيل مفتوح")}
           </label>
         </div>
 
         <div className="mt-5 flex justify-end">
           <button onClick={onSubmit} disabled={saving} className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
             {saving ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
-            Create Session
+            {tr("Create Session", "إنشاء الجلسة")}
           </button>
         </div>
       </motion.div>
@@ -555,7 +559,7 @@ export default function MadaratDashboard() {
         description={tr("Track interviewees, audience registration for Madarat sessions, and cross-department delivery work.", "تابع الضيوف، تسجيل الجمهور لجلسات مدارات، ومهام التنفيذ بين الأقسام.")}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <StatCard icon={Mic2} label={tr("Upcoming Interviewees", "الضيوف القادمين")} value={upcomingSessions.length} />
         <StatCard icon={CalendarDays} label={tr("Previous Sessions", "الجلسات السابقة")} value={pastSessions.length} />
         <StatCard icon={Users} label={tr("Audience Registrations", "تسجيلات الجمهور")} value={totalRegistrations} color="text-cyan-300" />

@@ -446,6 +446,18 @@ export default function InnovationDashboard() {
   const [archiveKey, setArchiveKey] = useState(0);
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
 
+  const { data: innovationProjects = [] } = useApi<{ projectId: number; status: string; departmentSlug: string | null }[]>(
+    "/api/projects?scope=all",
+  );
+  const innoProjects = innovationProjects.filter((p) => p.departmentSlug === "innovation");
+  const activeProjects = innoProjects.filter((p) => p.status === "active" || p.status === "in_progress").length;
+  const completedProjects = innoProjects.filter((p) => p.status === "completed").length;
+
+  const { data: innovationApplications = [] } = useApi<ProjectApplicationRow[]>(
+    "/api/innovation/applications?scope=open",
+  );
+  const openApplications = innovationApplications.length;
+
   return (
     <div>
       <DashboardHeader
@@ -454,11 +466,11 @@ export default function InnovationDashboard() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={Lightbulb} label={tr("Active Prototypes", "النماذج النشطة")} value={4} />
-        <StatCard icon={Wrench}    label={tr("Builds Completed", "البناءات المكتملة")}  value={12} change="+2" />
-        <StatCard icon={Cpu}       label={tr("Components in Stock", "المكونات المتوفرة")} value={156} />
-        <StatCard icon={Box}       label={tr("Lab Equipment", "معدات المعمل")}     value={8} />
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <StatCard icon={Lightbulb} label={tr("Active Projects", "المشاريع النشطة")} value={activeProjects} onClick={() => setActiveView("projects")} />
+        <StatCard icon={Wrench}    label={tr("Completed Projects", "المشاريع المكتملة")} value={completedProjects} onClick={() => setActiveView("projects")} />
+        <StatCard icon={Cpu}       label={tr("Open Applications", "الطلبات المفتوحة")} value={openApplications} onClick={() => setActiveView("applications")} />
+        <StatCard icon={Box}       label={tr("Total Projects", "إجمالي المشاريع")} value={innoProjects.length} onClick={() => setActiveView("projects")} />
       </div>
 
       {/* Bulk-import past events / activities */}
