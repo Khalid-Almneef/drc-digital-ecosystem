@@ -21,6 +21,7 @@ import { MemberLink } from "@/components/dashboard/MemberLink";
 import { MotmLeaderboardPanel } from "@/components/dashboard/MotmLeaderboardPanel";
 import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import { FormsManager } from "@/components/dashboard/FormsManager";
+import { AlumniManager } from "@/components/dashboard/AlumniManager";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -133,7 +134,7 @@ const sourceTypeLabel: Record<HourRow["sourceType"], string> = {
 export default function HRDashboard() {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "changeRequests" | "membership" | "operations">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "changeRequests" | "membership" | "operations" | "alumni">("members");
 
   // ── Members ──
   const { data: members = [], isLoading: membersLoading, mutate: loadMembers } = useApi<Member[]>("/api/members");
@@ -507,6 +508,7 @@ export default function HRDashboard() {
     changeRequests: tr("Change Requests", "طلبات التغيير"),
     membership: tr("Membership", "العضوية"),
     operations: tr("Operations", "التشغيل"),
+    alumni: tr("Edit Alumni", "تعديل الخريجين"),
   };
 
   const requestStatusClass: Record<AnnouncementRequestRow["status"], string> = {
@@ -536,7 +538,7 @@ export default function HRDashboard() {
 
       {/* Tabs */}
       <div className="tab-rail mb-6 w-fit" role="tablist" aria-label={tr("HR sections", "أقسام الموارد")}>
-        {(["members", "applications", "forms", "motm", "hours", "hourTasks", "performance", "announcements", "changeRequests", "membership", "operations"] as const).map((tab) => (
+        {(["members", "applications", "forms", "motm", "hours", "hourTasks", "performance", "announcements", "changeRequests", "membership", "operations", "alumni"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -1439,6 +1441,12 @@ export default function HRDashboard() {
       {activeTab === "operations" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           <DepartmentOperationsPanel departmentSlug="hr" title={tr("HR budget, procurement, and department requests", "ميزانية HR والمشتريات وطلبات القسم")} />
+        </motion.div>
+      )}
+
+      {activeTab === "alumni" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+          <AlumniManager tr={tr} />
         </motion.div>
       )}
 

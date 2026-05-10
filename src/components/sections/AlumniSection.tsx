@@ -6,8 +6,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { api } from "@/lib/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { displayMemberName, translateMajor } from "@/lib/format-name";
-import Image from "next/image";
-import { ArrowLeft, ArrowRight, Building2, Quote, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, X } from "lucide-react";
 
 // Social icons custom SVGs to avoid build errors
 const Github = (props: any) => (
@@ -150,6 +149,23 @@ function AlumniCard({
 }) {
   const displayName = displayMemberName(alumnus.fullName, alumnus.fullNameAr, lang as "en" | "ar");
   const displayQuote = lang === "ar" && alumnus.quoteAr ? alumnus.quoteAr : alumnus.quote;
+  // Tap vs drag: track pointerdown position so a finger that scrolls the
+  // horizontal slider doesn't accidentally open the modal. Only treat the
+  // gesture as a tap when the finger barely moves and lifts within 400ms.
+  const downRef = useRef<{ x: number; y: number; t: number } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    downRef.current = { x: e.clientX, y: e.clientY, t: Date.now() };
+  };
+  const handlePointerUp = (e: React.PointerEvent) => {
+    const start = downRef.current;
+    downRef.current = null;
+    if (!start) return;
+    const dx = Math.abs(e.clientX - start.x);
+    const dy = Math.abs(e.clientY - start.y);
+    const dt = Date.now() - start.t;
+    if (dx < 8 && dy < 8 && dt < 400) onView();
+  };
 
   return (
     <motion.div
@@ -157,59 +173,45 @@ function AlumniCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-      className="group flex h-64 w-[calc(100%-1rem)] sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-2.5rem)/3)] xl:w-[calc((100%-3.75rem)/4)] shrink-0 snap-start cursor-pointer flex-col rounded-2xl border-2 border-primary/15 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--surface)_96%,transparent),color-mix(in_srgb,var(--surface-elevated)_92%,transparent))] shadow-[0_12px_40px_rgba(2,10,24,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_16px_52px_rgba(0,217,172,0.12)]"
-      onClick={onView}
+      className="group flex h-56 w-[calc(100%-1rem)] sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-2.5rem)/3)] xl:w-[calc((100%-3.75rem)/4)] shrink-0 snap-start cursor-pointer flex-col rounded-2xl border-2 border-primary/15 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--surface)_96%,transparent),color-mix(in_srgb,var(--surface-elevated)_92%,transparent))] shadow-[0_12px_40px_rgba(2,10,24,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_16px_52px_rgba(0,217,172,0.12)] [touch-action:pan-y_pan-x]"
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={() => { downRef.current = null; }}
     >
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="relative h-12 w-12 overflow-hidden rounded-full border border-primary/15 bg-surface-elevated sm:h-16 sm:w-16">
-              {alumnus.avatarUrl ? (
-                <Image 
-                  src={alumnus.avatarUrl} 
-                  alt={displayName} 
-                  fill 
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/5 text-primary/20">
-                  <Quote size={20} />
-                </div>
-              )}
-            </div>
-            <div className="min-w-0">
-              <h4 className="truncate text-xl font-semibold text-foreground transition-colors group-hover:text-primary sm:text-2xl">
-                {displayName}
-              </h4>
-              <p className="mt-1 truncate text-xs font-medium text-muted sm:text-sm">
-                {alumnus.departmentName}
-              </p>
-            </div>
+          <div className="min-w-0 flex-1">
+            <h4 className="truncate text-xl font-semibold text-foreground transition-colors group-hover:text-primary sm:text-2xl">
+              {displayName}
+            </h4>
+            <p className="mt-1 truncate text-xs font-medium text-muted sm:text-sm">
+              {alumnus.departmentName}
+            </p>
           </div>
 
           {alumnus.linkedinUrl ? (
-            <div className="flex min-h-11 min-w-11 items-center justify-center rounded-[999px] bg-primary/25 p-1 shadow-[inset_0_1px_2px_rgba(255,255,255,0.28)] backdrop-blur-md">
-              <a
-                href={alumnus.linkedinUrl}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(event) => event.stopPropagation()}
-                className="flex items-center justify-center rounded-full bg-primary px-2.5 py-2 text-background shadow-[inset_0_2px_4px_rgba(255,255,255,0.24),inset_0_-2px_4px_rgba(0,0,0,0.22)] transition-transform hover:scale-105"
-                aria-label={`${displayName} LinkedIn`}
-              >
-                <Linkedin className="h-4 w-4" />
-              </a>
-            </div>
+            <a
+              href={alumnus.linkedinUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              onPointerDown={(event) => event.stopPropagation()}
+              onPointerUp={(event) => event.stopPropagation()}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary transition-all hover:scale-105 hover:bg-primary/25"
+              aria-label={`${displayName} LinkedIn`}
+            >
+              <Linkedin className="h-4 w-4" />
+            </a>
           ) : null}
         </div>
 
-        <div className="mt-5 flex-1">
+        <div className="mt-4 flex-1">
           <p className="text-sm leading-7 text-muted sm:text-base">
             {displayQuote || alumnus.bio || (lang === "ar" ? "لا يوجد اقتباس أو نبذة متاحة." : "No public quote available yet.")}
           </p>
         </div>
 
-        <div className="mx-auto mt-4 flex w-3/4 flex-col border-t border-border/60 pt-3">
+        <div className="mx-auto mt-3 flex w-3/4 flex-col border-t border-border/60 pt-3">
           <p className="text-center text-base font-semibold text-muted sm:text-lg">
             {alumnus.graduationYear || "DRC Alumni"}
           </p>
@@ -251,29 +253,10 @@ function AlumniModal({ alumnus, lang, onClose }: { alumnus: AlumniMember; lang: 
         </button>
 
         <div className="p-8 sm:p-12">
-          <div className="grid gap-10 sm:grid-cols-[180px_1fr] items-start">
-            <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-              <div className="relative group mb-6">
-                <div className="absolute inset-0 bg-primary/20 blur-[30px] rounded-full" />
-                <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden border-2 border-primary/20 bg-surface-elevated">
-                  {alumnus.avatarUrl ? (
-                    <Image 
-                      src={alumnus.avatarUrl} 
-                      alt={displayName} 
-                      fill 
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-primary/5 text-primary/20">
-                      <Building2 size={48} />
-                    </div>
-                  )}
-                </div>
-              </div>
-
+          <div className="space-y-8">
+            <div className="flex flex-col items-start text-left">
               <h3 className="text-2xl font-bold text-foreground mb-2">{displayName}</h3>
-              <p className="text-primary font-bold mb-6 text-sm uppercase tracking-widest">{alumnus.departmentName}</p>
-
+              <p className="text-primary font-bold mb-4 text-sm uppercase tracking-widest">{alumnus.departmentName}</p>
               <div className="flex gap-3">
                 {alumnus.linkedinUrl && (
                   <a href={alumnus.linkedinUrl} target="_blank" className="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-elevated border border-border text-foreground hover:border-primary/40 hover:text-primary transition-all">
