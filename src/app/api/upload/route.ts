@@ -7,11 +7,15 @@ import { findMockMember, getMockStore, isMockMode, nextMockId } from "@/lib/mock
 
 export const runtime = "nodejs";
 
+// SVG is intentionally excluded: it's an XML format that runs script when
+// loaded directly in a browser via the blob origin, which makes it a stored-
+// XSS primitive even though our CSP blocks inline scripts on drcksu.com.
 const ALLOWED_MIMES = new Set([
-  "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+  "image/jpeg", "image/png", "image/gif", "image/webp",
   "video/mp4", "video/webm", "video/quicktime",
   "application/pdf",
 ]);
+const BLOCKED_IMAGE_MIMES = new Set(["image/svg+xml", "image/svg"]);
 const MAX_IMAGE_MB = Number(process.env.UPLOAD_MAX_IMAGE_MB ?? "15");
 const MAX_VIDEO_MB = Number(process.env.UPLOAD_MAX_VIDEO_MB ?? "100");
 
@@ -38,6 +42,7 @@ export const POST = handle(async (req) => {
   const label = (formData.get("label") as string | null) ?? null;
 
   if (!(file instanceof File)) return err(400, "No file provided");
+  if (BLOCKED_IMAGE_MIMES.has(file.type)) return err(415, "Unsupported image type");
   if (!ALLOWED_MIMES.has(file.type)) return err(400, `Unsupported file type: ${file.type}`);
 
   const isVideo = file.type.startsWith("video/");
@@ -47,6 +52,17 @@ export const POST = handle(async (req) => {
   }
 
   let buffer: Buffer = Buffer.from(await file.arrayBuffer());
+
+  // Defence-in-depth: sniff the first 512 bytes for an SVG/XML signature even
+  // when the declared mime is something benign (e.g. application/octet-stream
+  // or a forged image/png). SVG is a stored-XSS vector on the public blob
+  // origin, so we refuse it regardless of how it was labelled.
+  {
+    const head = buffer.subarray(0, 512).toString("utf8").trimStart().toLowerCase();
+    if (head.startsWith("<?xml") || head.startsWith("<svg")) {
+      return err(415, "Unsupported image type");
+    }
+  }
   let mime = file.type;
   let ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
 
