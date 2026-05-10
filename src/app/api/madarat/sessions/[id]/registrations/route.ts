@@ -23,21 +23,21 @@ export const GET = handle(async (_req, ctx) => {
   }
 
   const { rows } = await query(
-    `SELECT registration_id AS "registrationId",
-            session_id AS "sessionId",
-            full_name AS "fullName",
-            email,
+    `SELECT msr.registration_id AS "registrationId",
+            msr.session_id AS "sessionId",
+            msr.full_name AS "fullName",
+            msr.email AS "email",
             preg.gender,
-            university_id AS "universityId",
-            phone,
-            department,
-            notes,
-            registered_at AS "registeredAt"
-       FROM madarat_session_registrations
-       LEFT JOIN users ureg ON LOWER(ureg.email) = LOWER(madarat_session_registrations.email)
+            msr.university_id AS "universityId",
+            msr.phone,
+            msr.department,
+            msr.notes,
+            msr.registered_at AS "registeredAt"
+       FROM madarat_session_registrations msr
+       LEFT JOIN users ureg ON LOWER(ureg.email) = LOWER(msr.email)
        LEFT JOIN profiles preg ON preg.member_id = ureg.member_id
-      WHERE session_id = $1
-      ORDER BY registered_at ASC`,
+      WHERE msr.session_id = $1
+      ORDER BY msr.registered_at ASC`,
     [sessionId],
   );
   return ok(rows);

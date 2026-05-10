@@ -38,7 +38,7 @@ export function MadaratRegistrationModal({ event, onClose }: { event: MadaratEve
     setMessage(null);
     try {
       await api.post(`/api/madarat/sessions/${sessionId}/registrations`, form);
-      setMessage({ kind: "ok", text: tr("You're registered. We'll follow up by email.", "تم تسجيلك. سنتواصل معك عبر البريد الإلكتروني.") });
+      setMessage({ kind: "ok", text: tr("You've secured a seat for this session.", "تم تأكيد مقعدك في هذه الجلسة.") });
     } catch (error) {
       const errorMsg = (error as { message?: string } | null)?.message;
       setMessage({ kind: "error", text: errorMsg || tr("Registration failed. Please try again.", "فشل التسجيل. حاول مرة أخرى.") });
