@@ -140,23 +140,26 @@ function PrivacyToggle({
   description: string;
 }) {
   return (
-    <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-border bg-surface/40 p-3 transition-colors hover:border-primary/25">
+    <div
+      role="switch"
+      aria-checked={checked}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          onChange(!checked);
+        }
+      }}
+      onClick={() => onChange(!checked)}
+      className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-border bg-surface/40 p-3 transition-colors hover:border-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    >
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-foreground">{title}</p>
         <p className="mt-1 text-xs leading-5 text-muted">{description}</p>
       </div>
       <span
-        role="switch"
-        aria-checked={checked}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === " " || e.key === "Enter") {
-            e.preventDefault();
-            onChange(!checked);
-          }
-        }}
-        onClick={() => onChange(!checked)}
-        className={`relative mt-0.5 inline-flex h-6 w-10 shrink-0 items-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+        aria-hidden="true"
+        className={`relative mt-0.5 inline-flex h-6 w-10 shrink-0 items-center rounded-full border transition-colors ${
           checked ? "border-primary/40 bg-primary/30" : "border-border bg-surface"
         }`}
       >
@@ -166,14 +169,7 @@ function PrivacyToggle({
           }`}
         />
       </span>
-      <input
-        type="checkbox"
-        className="sr-only"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        tabIndex={-1}
-      />
-    </label>
+    </div>
   );
 }
 
@@ -255,10 +251,10 @@ export default function ProfilePage() {
         githubUrl: form.githubUrl,
         graduationYear: form.graduationYear ? Number(form.graduationYear) : undefined,
         gender: form.gender || undefined,
-        isPublicOnTeam: form.isPublicOnTeam,
+        isPublicOnTeam: true,
         isEmailPublic: form.isEmailPublic,
         isLinkedinPublic: form.isLinkedinPublic,
-        isPhonePublic: form.isPhonePublic,
+        isPhonePublic: false,
         isGithubPublic: form.isGithubPublic,
       });
       toast.success(tr("Profile saved", "تم حفظ الملف"));
@@ -483,15 +479,6 @@ export default function ProfilePage() {
             </p>
             <div className="space-y-2.5">
               <PrivacyToggle
-                checked={form.isPublicOnTeam}
-                onChange={(v) => setForm((c) => ({ ...c, isPublicOnTeam: v }))}
-                title={tr("Show me on the public team page", "أظهرني على صفحة الفريق العامة")}
-                description={tr(
-                  "Leaders are always shown. Members appear only if this is on.",
-                  "القادة يظهرون دائمًا. الأعضاء يظهرون عند تشغيل هذا الخيار فقط.",
-                )}
-              />
-              <PrivacyToggle
                 checked={form.isEmailPublic}
                 onChange={(v) => setForm((c) => ({ ...c, isEmailPublic: v }))}
                 title={tr("Show my email", "إظهار بريدي الإلكتروني")}
@@ -502,12 +489,6 @@ export default function ProfilePage() {
                 onChange={(v) => setForm((c) => ({ ...c, isLinkedinPublic: v }))}
                 title={tr("Show my LinkedIn", "إظهار حساب لينكدإن")}
                 description={tr("Hidden if your URL field is blank.", "يخفى إذا كان حقل الرابط فارغًا.")}
-              />
-              <PrivacyToggle
-                checked={form.isPhonePublic}
-                onChange={(v) => setForm((c) => ({ ...c, isPhonePublic: v }))}
-                title={tr("Show my phone number", "إظهار رقم الجوال")}
-                description={tr("Off by default. Phones aren't usually expected on a public team page.", "معطّل افتراضيًا. لا يتوقع عادة عرض رقم الجوال علنًا.")}
               />
               <PrivacyToggle
                 checked={form.isGithubPublic}
