@@ -96,9 +96,25 @@ export const PATCH = handle(async (req, ctx) => {
   const targetId = Number(id);
   const isSelf = s.memberId === targetId;
   const isAdmin = s.position === "president" || s.position === "vice_president";
+  // M-02: customRole / customRoleAr is the title that renders on the public
+  // team page. Only club admins (president/VP) and HR leadership
+  // (dept_leader/dept_vice_leader/sub_leader of HR) may write it — never the
+  // member themself, otherwise anyone can self-promote to "President" on /team.
+  const isHrLead =
+    (s.position === "dept_leader" ||
+      s.position === "dept_vice_leader" ||
+      s.position === "sub_leader") &&
+    s.departmentSlug === "hr";
+  const canEditRoleLabel = isAdmin || isHrLead;
   if (!isSelf && !isAdmin) return err(403, "Forbidden");
 
   const body = await parseBody(req, Patch);
+  if (
+    (body.customRole !== undefined || body.customRoleAr !== undefined) &&
+    !canEditRoleLabel
+  ) {
+    return err(403, "Only HR or admins can change the role label.");
+  }
   if (isMockMode()) {
     const target = findMockMember(targetId);
     if (!target) return err(404, "Not found");
