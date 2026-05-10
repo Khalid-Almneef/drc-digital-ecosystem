@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Code, GitBranch, CheckCircle2, Zap, Radio,
   Plus, X, Users, Calendar, Clock, MapPin, Trash2, Eye,
-  FolderOpen, ListVideo, ExternalLink, Building2, Send,
+  FolderOpen, ListVideo, ExternalLink, Building2, Send, Loader2,
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -555,9 +555,7 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
             </div>
             <div>
               <label className={labelCls}>{tr("Category", "التصنيف")}</label>
-              <select value={f.category} onChange={set("category")} className={inputCls}>
-                {["Software", "Drones", "Robotics", "AI", "Fabrication", "Racing"].map((category) => <option key={category} value={category}>{category}</option>)}
-              </select>
+              <input value={f.category} onChange={set("category")} placeholder={tr("e.g. Software, Drones, Robotics", "مثل: برمجة، طائرات، روبوتات")} className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>{tr("Presenter", "المُقدِّم")}</label>
@@ -690,65 +688,134 @@ function RecordedWorkshopsTab() {
   );
 }
 
-const companyProspects = [
-  { company: "Aramco Digital", focus: "Autonomy, robotics platforms, engineering careers", contact: "Innovation and emerging tech teams", priority: "high" },
-  { company: "SABIC", focus: "Industrial automation, safety systems, applied robotics", contact: "University relations or talent outreach", priority: "medium" },
-  { company: "Elm Company", focus: "Digital services, product engineering, smart-city systems", contact: "Early careers partnerships", priority: "medium" },
-  { company: "STC Solutions", focus: "IoT, networks, cloud systems for robotics operations", contact: "Technical partnerships", priority: "low" },
-] as const;
-
 function CompanyVisitsTab() {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [sending, setSending] = useState<string | null>(null);
-  const [sent, setSent] = useState<Record<string, boolean>>({});
+  const [company, setCompany] = useState("");
+  const [focus, setFocus] = useState("");
+  const [contactRoute, setContactRoute] = useState("");
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [submitting, setSubmitting] = useState(false);
 
-  async function requestVisit(prospect: typeof companyProspects[number]) {
-    setSending(prospect.company);
+  const { data: visits = [], isLoading: loadingVisits, mutate: loadVisits } = useApi<ServiceRequestRow[]>(
+    "/api/service-requests?scope=outbox&requestType=company_visit&sourceDepartment=development",
+  );
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!company.trim() || !focus.trim()) {
+      toast.error(tr("Company name and focus are required.", "اسم الشركة ومجال التركيز مطلوبان."));
+      return;
+    }
+    setSubmitting(true);
     try {
       await api.post("/api/service-requests", {
         requestType: "company_visit",
         targetDepartmentSlug: "pr",
-        title: `Company visit request - ${prospect.company}`,
-        description: `Development recommends coordinating a member development visit with ${prospect.company}. Focus: ${prospect.focus}. Suggested contact route: ${prospect.contact}.`,
-        priority: prospect.priority,
+        title: `${tr("Company visit request", "طلب زيارة شركة")} - ${company.trim()}`,
+        description: [
+          `${tr("Company", "الشركة")}: ${company.trim()}`,
+          `${tr("Focus", "مجال التركيز")}: ${focus.trim()}`,
+          contactRoute.trim() ? `${tr("Suggested contact route", "طريق التواصل المقترح")}: ${contactRoute.trim()}` : null,
+        ].filter(Boolean).join("\n"),
+        priority,
         attachmentUrls: [],
       });
-      setSent((prev) => ({ ...prev, [prospect.company]: true }));
+      toast.success(tr("Visit request sent to PR.", "أُرسل طلب الزيارة إلى العلاقات العامة."));
+      setCompany("");
+      setFocus("");
+      setContactRoute("");
+      setPriority("medium");
+      void loadVisits();
+    } catch {
+      toast.error(tr("Could not send. Please try again.", "تعذّر الإرسال. حاول مرة أخرى."));
     } finally {
-      setSending(null);
+      setSubmitting(false);
     }
   }
+
+  const statusTone: Record<ServiceRequestRow["status"], string> = {
+    pending: "badge badge-warning",
+    assigned: "badge badge-primary",
+    in_progress: "badge bg-blue-500/10 text-blue-300 border-blue-500/20",
+    completed: "badge badge-success",
+    rejected: "badge bg-red-500/10 text-red-300 border-red-500/20",
+  };
 
   return (
     <div className="space-y-5">
       <div className="glass-card p-5">
-        <div className="flex items-start gap-3">
+        <div className="mb-4 flex items-start gap-3">
           <Building2 size={17} className="mt-0.5 text-primary" />
           <div>
-            <h3 className="text-sm font-semibold text-foreground">{tr("Company Visit Prospects", "الشركات المرشَّحة للزيارة")}</h3>
-            <p className="mt-1 text-xs leading-5 text-muted">{tr("Development identifies technical companies that can help members see real engineering environments. PR receives the coordination request and owns outreach.", "قسم التطوير يحدّد شركات تقنية تتيح للأعضاء رؤية بيئات هندسية حقيقية. قسم العلاقات العامة يتسلَّم طلب التنسيق ويتولّى التواصل.")}</p>
+            <h3 className="text-sm font-semibold text-foreground">{tr("Request a Company Visit", "اطلب زيارة شركة")}</h3>
+            <p className="mt-1 text-xs leading-5 text-muted">{tr("Submit companies you want members to visit. PR will receive the request and own outreach. Track status below.", "أرسل الشركات التي تريد زيارتها مع الأعضاء. قسم العلاقات العامة يستلم الطلب ويتولّى التنسيق. تابع الحالة أدناه.")}</p>
           </div>
         </div>
+
+        <form onSubmit={submit} className="grid gap-3 md:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-muted">{tr("Company *", "اسم الشركة *")}</label>
+            <input value={company} onChange={(e) => setCompany(e.target.value)} className="dashboard-field" placeholder={tr("e.g. Aramco Digital", "مثل: أرامكو الرقمية")} />
+          </div>
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-muted">{tr("Priority", "الأولوية")}</label>
+            <select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)} className="dashboard-select">
+              <option value="low">{tr("Low", "منخفضة")}</option>
+              <option value="medium">{tr("Medium", "متوسطة")}</option>
+              <option value="high">{tr("High", "مرتفعة")}</option>
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-muted">{tr("Focus area *", "مجال التركيز *")}</label>
+            <textarea value={focus} onChange={(e) => setFocus(e.target.value)} rows={2} className="dashboard-field resize-none" placeholder={tr("What members would learn from the visit", "ما الذي سيتعلمه الأعضاء من الزيارة")} />
+          </div>
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-muted">{tr("Suggested contact route", "طريق التواصل المقترح")}</label>
+            <input value={contactRoute} onChange={(e) => setContactRoute(e.target.value)} className="dashboard-field" placeholder={tr("e.g. University relations team, talent outreach", "مثل: فريق علاقات الجامعات، التواصل مع المواهب")} />
+          </div>
+          <div className="md:col-span-2">
+            <button type="submit" disabled={submitting} className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-xs">
+              {submitting ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+              {tr("Send to PR", "إرسال إلى العلاقات العامة")}
+            </button>
+          </div>
+        </form>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {companyProspects.map((prospect, index) => (
-          <motion.div key={prospect.company} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }} className="glass-card p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">{prospect.company}</h4>
-                <p className="mt-2 text-xs leading-5 text-muted">{prospect.focus}</p>
-                <p className="mt-3 text-[11px] text-muted">{tr("Contact route", "طريق التواصل")}: {prospect.contact}</p>
+      <div>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">{tr("Tracking", "متابعة الطلبات")}</h3>
+        {loadingVisits ? (
+          <div className="glass-card flex min-h-[120px] items-center justify-center"><Loader2 size={18} className="animate-spin text-muted" /></div>
+        ) : visits.length === 0 ? (
+          <div className="glass-card p-6 text-center text-sm text-muted">{tr("No visit requests yet. Submit one above.", "لا توجد طلبات زيارة بعد. أرسل طلباً من الأعلى.")}</div>
+        ) : (
+          <div className="space-y-2">
+            {visits.map((req) => (
+              <div key={req.requestId} className="glass-card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-foreground">{req.title}</p>
+                      <span className={statusTone[req.status]}>{req.status.replace("_", " ")}</span>
+                      <span className={req.priority === "high" ? "badge badge-warning" : req.priority === "medium" ? "badge badge-primary" : "badge"}>{req.priority}</span>
+                    </div>
+                    {req.description && <p className="mt-2 whitespace-pre-line text-xs leading-5 text-muted">{req.description}</p>}
+                    {req.assigneeNote && (
+                      <p className="mt-2 rounded-lg border border-border bg-surface-elevated/30 px-3 py-2 text-xs leading-5 text-muted">
+                        <span className="font-medium text-foreground">{tr("PR note", "ملاحظة العلاقات العامة")}:</span> {req.assigneeNote}
+                      </p>
+                    )}
+                    <p className="mt-2 text-[11px] text-muted">
+                      {new Date(req.requestedAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}
+                      {req.assigneeName ? ` · ${tr("handled by", "يتولّاه")} ${req.assigneeName}` : ""}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <span className={prospect.priority === "high" ? "badge badge-warning" : "badge badge-primary"}>{prospect.priority}</span>
-            </div>
-            <button onClick={() => void requestVisit(prospect)} disabled={sending === prospect.company || sent[prospect.company]} className="btn-primary mt-4 inline-flex min-h-10 items-center gap-2 px-4 py-2 text-xs disabled:opacity-60">
-              <Send size={12} />
-              {sent[prospect.company] ? tr("Sent to PR", "أُرسل إلى العلاقات العامة") : sending === prospect.company ? tr("Sending…", "جارٍ الإرسال…") : tr("Request PR Visit", "اطلب زيارة من العلاقات العامة")}
-            </button>
-          </motion.div>
-        ))}
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
