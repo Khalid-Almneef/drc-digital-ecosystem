@@ -18,6 +18,7 @@ const Body = z.object({
   maxRegistrants: z.number().int().positive().optional(),
   registrationOpen: z.boolean().default(false),
   isPublished: z.boolean().default(false),
+  visibility: z.enum(["public", "club_only"]).default("public"),
 });
 
 export const GET = handle(async () => {
@@ -59,6 +60,7 @@ export const GET = handle(async () => {
             ms.max_registrants AS "maxRegistrants",
             ms.registration_open AS "registrationOpen",
             ms.is_published AS "isPublished",
+            ms.visibility,
             ms.created_by AS "createdBy",
             ms.created_at AS "createdAt",
             p.full_name AS "createdByName",
@@ -107,8 +109,8 @@ export const POST = handle(async (req) => {
   const { rows } = await query<{ session_id: number }>(
     `INSERT INTO madarat_sessions
        (title, description, interviewee_name, interviewer_name, interviewee_role, program_type, scheduled_at,
-        duration_min, location, meeting_url, max_registrants, registration_open, is_published, created_by)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+        duration_min, location, meeting_url, max_registrants, registration_open, is_published, visibility, created_by)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
      RETURNING session_id`,
     [
       body.title,
@@ -124,6 +126,7 @@ export const POST = handle(async (req) => {
       body.maxRegistrants ?? null,
       body.registrationOpen,
       body.isPublished,
+      body.visibility,
       session.memberId,
     ],
   );

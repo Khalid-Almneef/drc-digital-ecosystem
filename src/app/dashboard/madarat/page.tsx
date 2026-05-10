@@ -44,6 +44,7 @@ interface MadaratSessionRow {
   maxRegistrants: number | null;
   registrationOpen: boolean;
   isPublished: boolean;
+  visibility: "public" | "club_only";
   createdAt: string;
   registrationCount: number;
   maleCount: number;
@@ -101,6 +102,7 @@ const SESSION_FORM = {
   maxRegistrants: "",
   registrationOpen: false,
   isPublished: false,
+  visibility: "public" as "public" | "club_only",
 };
 
 const TASK_FORM = {
@@ -329,6 +331,17 @@ function CreateSessionModal({
             <Toggle checked={form.registrationOpen} onChange={() => onToggle("registrationOpen")} />
             {tr("Open registration", "تسجيل مفتوح")}
           </label>
+          <label className="flex items-center gap-2.5 text-sm text-foreground">
+            <span className="text-xs text-muted">{tr("Who can register?", "من يمكنه التسجيل؟")}</span>
+            <select
+              value={form.visibility}
+              onChange={(event) => onChange({ visibility: event.target.value as "public" | "club_only" })}
+              className={selectCls}
+            >
+              <option value="public">{tr("Anyone (public)", "أي شخص (عام)")}</option>
+              <option value="club_only">{tr("Club members only", "أعضاء النادي فقط")}</option>
+            </select>
+          </label>
         </div>
 
         <div className="mt-5 flex justify-end">
@@ -418,6 +431,7 @@ export default function MadaratDashboard() {
         maxRegistrants: sessionForm.maxRegistrants ? Number(sessionForm.maxRegistrants) : undefined,
         registrationOpen: sessionForm.registrationOpen,
         isPublished: sessionForm.isPublished,
+        visibility: sessionForm.visibility,
       });
       setSessionForm(SESSION_FORM);
       setCreateSessionOpen(false);

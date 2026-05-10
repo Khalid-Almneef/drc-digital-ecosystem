@@ -13,6 +13,9 @@ interface PublicEventRow {
   endTime: string | null;
   location: string | null;
   seatsAvailable: number | null;
+  registrationKind?: "madarat" | null;
+  registrationOpen?: boolean | null;
+  visibility?: "public" | "club_only" | null;
 }
 
 export const GET = handle(async () => {
@@ -84,7 +87,10 @@ export const GET = handle(async () => {
               ms.location,
               CASE WHEN ms.max_registrants IS NULL THEN NULL
                    ELSE GREATEST(ms.max_registrants - COALESCE((SELECT COUNT(*)::int FROM madarat_session_registrations r WHERE r.session_id = ms.session_id), 0), 0)
-              END AS "seatsAvailable"
+              END AS "seatsAvailable",
+              'madarat'::text AS "registrationKind",
+              ms.registration_open AS "registrationOpen",
+              ms.visibility
          FROM madarat_sessions ms
         WHERE ms.is_published = TRUE AND ms.scheduled_at >= NOW()
         ORDER BY ms.scheduled_at ASC`,
