@@ -196,6 +196,9 @@ export function ThemeProvider({
     const primaryBright = mix(palette.primary, "#ffffff", theme === "light" ? 0.18 : 0.22);
     const secondaryLight = mix(palette.secondary, "#ffffff", theme === "light" ? 0.14 : 0.18);
     const borderHighlight = mix(palette.primary, "#ffffff", 0.28);
+    const primaryRgb = hexToRgb(palette.primary);
+    const secondaryRgb = hexToRgb(palette.secondary);
+    const rgba = (rgb: { r: number; g: number; b: number }, a: number) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`;
 
     root.classList.add("theme-switching");
     root.setAttribute("data-theme", theme);
@@ -205,7 +208,10 @@ export function ThemeProvider({
     root.style.setProperty("--secondary", palette.secondary);
     root.style.setProperty("--secondary-light", secondaryLight);
     root.style.setProperty("--accent", palette.accent);
+    root.style.setProperty("--border", rgba(primaryRgb, theme === "light" ? 0.1 : 0.08));
     root.style.setProperty("--border-highlight", `${borderHighlight}55`);
+    root.style.setProperty("--hud-line", rgba(primaryRgb, theme === "light" ? 0.1 : 0.12));
+    root.style.setProperty("--prop-wash", rgba(theme === "light" ? secondaryRgb : primaryRgb, theme === "light" ? 0.05 : 0.06));
     root.style.setProperty("--accent-glow", theme === "light" ? `${palette.accent}22` : `${palette.accent}1f`);
     root.style.setProperty("--cursor-glow-primary", theme === "light" ? `${palette.primary}2e` : `${palette.primary}1f`);
     root.style.setProperty("--cursor-glow-secondary", theme === "light" ? `${palette.secondary}22` : `${palette.secondary}18`);

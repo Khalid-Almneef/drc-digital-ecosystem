@@ -159,6 +159,7 @@ function PrivacyToggle({
       </div>
       <span
         aria-hidden="true"
+        dir="ltr"
         className={`relative mt-0.5 inline-flex h-6 w-10 shrink-0 items-center rounded-full border transition-colors ${
           checked ? "border-primary/40 bg-primary/30" : "border-border bg-surface"
         }`}
