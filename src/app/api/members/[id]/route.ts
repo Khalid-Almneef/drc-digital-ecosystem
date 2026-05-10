@@ -187,15 +187,18 @@ export const PATCH = handle(async (req, ctx) => {
 });
 
 export const DELETE = handle(async (_req, ctx) => {
+  // CRITICAL (C-04): auth must run BEFORE the mock-mode branch. Previously
+  // a misconfigured mock-mode deploy let any unauthenticated visitor
+  // deactivate any member (including the president), locking the entire
+  // admin team out.
+  await requireAdmin();
+  const { id } = await ctx.params;
   if (isMockMode()) {
-    const { id } = await ctx.params;
     const member = findMockMember(Number(id));
     if (!member) return err(404, "Not found");
     member.isActive = false;
     return ok({ success: true });
   }
-  await requireAdmin();
-  const { id } = await ctx.params;
   await query(`UPDATE users SET is_active = FALSE WHERE member_id = $1`, [id]);
   return ok({ success: true });
 });
