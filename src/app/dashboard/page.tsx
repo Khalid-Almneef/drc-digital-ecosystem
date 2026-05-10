@@ -714,23 +714,23 @@ export default function DashboardOverview() {
           <Panel eyebrow={tr("Recognition", "التقدير")} title={tr("Endorsements and progress", "التزكيات والتقدم")} icon={Award}>
             <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
               <div>
-                <div className="mb-4 grid grid-cols-3 gap-3">
+                <div className="mb-5 grid grid-cols-3 gap-3">
                   {[
                     { label: tr("Points", "النقاط"), value: endorsementSummary.endorsementPoints, cls: "text-primary" },
                     { label: tr("Received", "استلمتها"), value: endorsementSummary.endorsementsReceived, cls: "text-emerald-400" },
                     { label: tr("Given", "أرسلتها"), value: endorsementSummary.endorsementsGiven, cls: "text-amber-300" },
                   ].map(({ label, value, cls }) => (
-                    <div key={label} className="rounded-xl border border-border bg-surface-elevated/50 p-3 text-center">
-                      <p className={`text-xl font-bold ${cls}`}>{value}</p>
+                    <div key={label} className="rounded-xl border border-border bg-surface-elevated/50 px-3 py-2.5 text-center">
+                      <p className={`text-lg font-bold leading-tight ${cls}`}>{value}</p>
                       <p className="mt-0.5 text-[10px] text-muted">{label}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="rounded-[1.1rem] border border-primary/15 bg-surface/45 p-4">
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <label className="space-y-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                      {tr("Member", "العضو")}
+                <div className="rounded-[1.1rem] border border-primary/15 bg-surface/45 p-5 space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">{tr("Member", "العضو")}</span>
                       <select value={endorsementForm.endorseeMemberId} onChange={(event) => setEndorsementForm((form) => ({ ...form, endorseeMemberId: event.target.value, projectId: "" }))} className="dashboard-field min-h-11 w-full px-3 py-2 text-sm">
                         <option value="">{tr("Choose a member", "اختر عضو")}</option>
                         {endorsementMembers.map((member) => (
@@ -738,8 +738,8 @@ export default function DashboardOverview() {
                         ))}
                       </select>
                     </label>
-                    <label className="space-y-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                      {tr("Reason", "السبب")}
+                    <label className="block">
+                      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">{tr("Reason", "السبب")}</span>
                       <select value={endorsementForm.contextType} onChange={(event) => setEndorsementForm((form) => ({ ...form, contextType: event.target.value as "worked_together" | "project_together", projectId: "" }))} className="dashboard-field min-h-11 w-full px-3 py-2 text-sm">
                         <option value="worked_together">{tr("We worked together", "اشتغلنا مع بعض")}</option>
                         <option value="project_together">{tr("Same project", "نفس المشروع")}</option>
@@ -747,16 +747,16 @@ export default function DashboardOverview() {
                     </label>
                   </div>
                   {endorsementForm.contextType === "project_together" ? (
-                    <label className="mt-3 block space-y-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                      {tr("Shared Project", "المشروع المشترك")}
+                    <label className="block">
+                      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">{tr("Shared Project", "المشروع المشترك")}</span>
                       <select value={endorsementForm.projectId} onChange={(event) => setEndorsementForm((form) => ({ ...form, projectId: event.target.value }))} disabled={!selectedEndorsee || selectedSharedProjects.length === 0} className="dashboard-field min-h-11 w-full px-3 py-2 text-sm disabled:opacity-50">
                         <option value="">{!selectedEndorsee ? tr("Choose a member first", "اختر عضو أولًا") : selectedSharedProjects.length === 0 ? tr("No shared projects found", "لا توجد مشاريع مشتركة") : tr("Choose a shared project", "اختر مشروع مشترك")}</option>
                         {selectedSharedProjects.map((project) => <option key={project.projectId} value={project.projectId}>{project.title}</option>)}
                       </select>
                     </label>
                   ) : null}
-                  <label className="mt-3 block space-y-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                    {tr("Quick Note", "ملاحظة سريعة")}
+                  <label className="block">
+                    <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">{tr("Quick Note", "ملاحظة سريعة")}</span>
                     <textarea value={endorsementForm.note} onChange={(event) => setEndorsementForm((form) => ({ ...form, note: event.target.value.slice(0, 280) }))} rows={3} className="dashboard-field w-full resize-none px-3 py-2 text-sm" placeholder={tr("What did they contribute?", "وش كانت مساهمتهم؟")} />
                   </label>
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
