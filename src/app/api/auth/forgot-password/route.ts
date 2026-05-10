@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handle, ok, parseBody } from "@/lib/api";
 import { query, queryOne } from "@/lib/db";
 import { randomToken, sha256 } from "@/lib/auth";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, renderEmail } from "@/lib/email";
 
 const Body = z.object({ email: z.string().email() });
 
@@ -29,13 +29,23 @@ export const POST = handle(async (req) => {
       process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
       "http://localhost:3000";
+    const resetUrl = `${appUrl}/reset-password?token=${plain}`;
     try {
       await sendEmail({
         to: email,
         subject: "Reset your DRC password",
-        html: `<p>Click to reset your password (expires in 1 hour):</p>
-               <p><a href="${appUrl}/reset-password?token=${plain}">Reset password</a></p>`,
-        text: `${appUrl}/reset-password?token=${plain}`,
+        html: renderEmail({
+          siteUrl: appUrl,
+          preheader: "Reset your DRC password — link expires in 1 hour.",
+          heading: "Reset your password",
+          intro:
+            "We received a request to reset the password for your DRC account. Click the button below to choose a new password. This link expires in 1 hour.",
+          ctaLabel: "Reset password",
+          ctaUrl: resetUrl,
+          footerNote:
+            "If you didn't request this, you can safely ignore this email — your password will stay the same.",
+        }),
+        text: `Reset your DRC password (expires in 1 hour):\n${resetUrl}\n\nIf you didn't request this, ignore this email.`,
       });
     } catch (err) {
       // Surface email-send failures in Vercel logs without leaking that

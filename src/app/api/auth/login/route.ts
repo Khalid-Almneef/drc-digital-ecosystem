@@ -9,7 +9,7 @@ import {
   sha256,
   verifyPassword,
 } from "@/lib/auth";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, renderEmail } from "@/lib/email";
 import { getMockStore, isMockMode, MOCK_DEMO_USERS, mockSessionFromKey } from "@/lib/mock-store";
 
 function resolveAppUrl(): string {
@@ -34,14 +34,22 @@ async function sendSetupEmail(memberId: number, email: string) {
     [memberId, sha256(plain)],
   );
   const appUrl = resolveAppUrl();
+  const setupUrl = `${appUrl}/reset-password?token=${plain}`;
   await sendEmail({
     to: email,
-    subject: "Set up your DRC account",
-    html: `<p>Welcome to DRC. Your HR team has registered your account.</p>
-           <p>Set your password to finish signing in (link expires in 24 hours):</p>
-           <p><a href="${appUrl}/reset-password?token=${plain}">Set password</a></p>
-           <p>If you did not expect this email, you can ignore it.</p>`,
-    text: `Set your DRC password: ${appUrl}/reset-password?token=${plain}`,
+    subject: "Welcome to DRC — set up your account",
+    html: renderEmail({
+      siteUrl: appUrl,
+      preheader: "Your DRC account is ready. Set a password to sign in.",
+      heading: "Welcome to DRC",
+      intro:
+        "Your account at the Drones & Robotics Club has been created by HR. Set a password to finish signing in. This link is valid for 24 hours.",
+      ctaLabel: "Set your password",
+      ctaUrl: setupUrl,
+      footerNote:
+        "If you weren't expecting this email, you can safely ignore it — no account changes will be made.",
+    }),
+    text: `Welcome to DRC. Set your password (valid for 24 hours):\n${setupUrl}`,
   });
 }
 
@@ -103,13 +111,22 @@ export const POST = handle(async (req) => {
         [user.memberId, sha256(plain), { deviceToken: newDeviceToken, ua: req.headers.get("user-agent") ?? null }],
       );
     });
+    const confirmUrl = `${appUrl}/api/auth/confirm-device?token=${plain}`;
+    const ua = req.headers.get("user-agent") ?? "an unknown device";
     await sendEmail({
       to: user.email,
-      subject: "Confirm this device to sign in",
-      html: `<p>To finish signing in, confirm this device:</p>
-             <p><a href="${appUrl}/api/auth/confirm-device?token=${plain}">Confirm device</a></p>
-             <p>Link expires in 30 minutes.</p>`,
-      text: `Confirm: ${appUrl}/api/auth/confirm-device?token=${plain}`,
+      subject: "Confirm your sign-in to DRC",
+      html: renderEmail({
+        siteUrl: appUrl,
+        preheader: "Confirm this device to finish signing in to your DRC account.",
+        heading: "Confirm your sign-in",
+        intro: `Someone signed in to your DRC account from ${ua}. Confirm this device to finish signing in. This link expires in 30 minutes.`,
+        ctaLabel: "Confirm this device",
+        ctaUrl: confirmUrl,
+        footerNote:
+          "If this wasn't you, ignore this email and consider resetting your password.",
+      }),
+      text: `Confirm this device to finish signing in to DRC (expires in 30 minutes):\n${confirmUrl}\n\nIf this wasn't you, ignore this email.`,
     });
     return ok({ requiresDeviceConfirmation: true });
   }
