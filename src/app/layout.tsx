@@ -18,7 +18,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://drc.club";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "DRC — Drones & Robotics Club", template: "%s | DRC" },
+  title: { default: "Drones & Robotics Club", template: "%s · Drones & Robotics Club" },
   description: "Engineer the future of flight — student-led drones and robotics club.",
   keywords: ["drones", "robotics", "club", "DRC", "innovation", "engineering", "students"],
   authors: [{ name: "Drones & Robotics Club" }],
@@ -27,23 +27,22 @@ export const metadata: Metadata = {
     languages: { en: "/", ar: "/?lang=ar" },
   },
   openGraph: {
-    title: "DRC — Drones & Robotics Club",
+    title: "Drones & Robotics Club",
     description: "Engineer the future of flight — student-led drones and robotics club.",
     type: "website",
     url: SITE_URL,
-    siteName: "DRC",
+    siteName: "Drones & Robotics Club",
     locale: "en_US",
     alternateLocale: "ar_SA",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "DRC — Drones & Robotics Club" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Drones & Robotics Club" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DRC — Drones & Robotics Club",
+    title: "Drones & Robotics Club",
     description: "Engineer the future of flight.",
     images: ["/og-image.png"],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
-  icons: { icon: "/favicon.ico" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
