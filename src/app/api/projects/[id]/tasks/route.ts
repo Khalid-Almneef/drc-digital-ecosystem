@@ -1,8 +1,29 @@
 import { z } from "zod";
-import { handle, ok, parseBody } from "@/lib/api";
-import { query } from "@/lib/db";
+import { handle, ok, err, parseBody } from "@/lib/api";
+import { query, queryOne } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { isClubLead, canManageDept, ownsResource } from "@/lib/authz";
 import { findMockMember, getMockStore, isMockMode, nextMockId } from "@/lib/mock-store";
+
+async function gateProject(
+  s: Awaited<ReturnType<typeof requireSession>>,
+  projectId: string,
+): Promise<Response | null> {
+  if (isClubLead(s)) return null;
+  if (isMockMode()) {
+    const project = getMockStore().projects.find((p) => p.projectId === Number(projectId));
+    if (!project) return err(404, "Not found");
+    if (canManageDept(s, project.departmentId) || ownsResource(s, project.leadMemberId)) return null;
+    return err(403, "Forbidden");
+  }
+  const row = await queryOne<{ departmentId: number | null; leadMemberId: number | null }>(
+    `SELECT department_id AS "departmentId", lead_member_id AS "leadMemberId" FROM projects WHERE project_id = $1`,
+    [projectId],
+  );
+  if (!row) return err(404, "Not found");
+  if (canManageDept(s, row.departmentId) || ownsResource(s, row.leadMemberId)) return null;
+  return err(403, "Forbidden");
+}
 
 export const GET = handle(async (_req, ctx) => {
   await requireSession();
@@ -48,6 +69,8 @@ const Post = z.object({
 export const POST = handle(async (req, ctx) => {
   const s = await requireSession();
   const { id } = await ctx.params;
+  const gate = await gateProject(s, id);
+  if (gate) return gate;
   const b = await parseBody(req, Post);
   if (isMockMode()) {
     const store = getMockStore();

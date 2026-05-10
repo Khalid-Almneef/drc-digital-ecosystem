@@ -1,8 +1,38 @@
 import { z } from "zod";
-import { handle, ok, parseBody } from "@/lib/api";
-import { query } from "@/lib/db";
+import { handle, ok, err, parseBody } from "@/lib/api";
+import { query, queryOne } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { isClubLead, canManageDept, ownsResource } from "@/lib/authz";
 import { getMockStore, isMockMode } from "@/lib/mock-store";
+
+/**
+ * Deliverables belong to a project; mutating one requires club admin, the
+ * project's dept lead, or the project lead themselves. (C-02 sweep.)
+ */
+async function gateDeliverable(
+  s: Awaited<ReturnType<typeof requireSession>>,
+  deliverableId: string,
+): Promise<Response | null> {
+  if (isClubLead(s)) return null;
+  if (isMockMode()) {
+    const store = getMockStore();
+    const d = store.deliverables.find((d) => d.deliverableId === Number(deliverableId));
+    if (!d) return err(404, "Not found");
+    const project = store.projects.find((p) => p.projectId === d.projectId);
+    if (!project) return err(404, "Not found");
+    if (canManageDept(s, project.departmentId) || ownsResource(s, project.leadMemberId)) return null;
+    return err(403, "Forbidden");
+  }
+  const row = await queryOne<{ departmentId: number | null; leadMemberId: number | null }>(
+    `SELECT p.department_id AS "departmentId", p.lead_member_id AS "leadMemberId"
+       FROM deliverables d JOIN projects p ON p.project_id = d.project_id
+      WHERE d.deliverable_id = $1`,
+    [deliverableId],
+  );
+  if (!row) return err(404, "Not found");
+  if (canManageDept(s, row.departmentId) || ownsResource(s, row.leadMemberId)) return null;
+  return err(403, "Forbidden");
+}
 
 const Patch = z.object({
   title: z.string().optional(),
@@ -13,9 +43,11 @@ const Patch = z.object({
 });
 
 export const PATCH = handle(async (req, ctx) => {
-  await requireSession();
+  const s = await requireSession();
   const { id } = await ctx.params;
   const b = await parseBody(req, Patch);
+  const gate = await gateDeliverable(s, id);
+  if (gate) return gate;
   if (isMockMode()) {
     const deliverable = getMockStore().deliverables.find((d) => d.deliverableId === Number(id));
     if (!deliverable) return ok({ success: true });
@@ -59,8 +91,10 @@ export const PATCH = handle(async (req, ctx) => {
 });
 
 export const DELETE = handle(async (_req, ctx) => {
-  await requireSession();
+  const s = await requireSession();
   const { id } = await ctx.params;
+  const gate = await gateDeliverable(s, id);
+  if (gate) return gate;
   if (isMockMode()) {
     const store = getMockStore();
     store.deliverables = store.deliverables.filter((d) => d.deliverableId !== Number(id));

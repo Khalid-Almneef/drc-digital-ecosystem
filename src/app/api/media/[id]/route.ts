@@ -1,8 +1,16 @@
 import { z } from "zod";
-import { handle, ok, parseBody } from "@/lib/api";
+import { handle, ok, err, parseBody } from "@/lib/api";
 import { query } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { isClubLead, canManageDeptBySlug } from "@/lib/authz";
 import { getMockStore, isMockMode } from "@/lib/mock-store";
+
+// Media-content rows are managed by media department leadership (and admins).
+// Plain members and other-department leads cannot edit or delete arbitrary
+// media items (C-02 sweep).
+function canManageMedia(s: { position: string; departmentSlug: string | null }) {
+  return isClubLead(s as never) || canManageDeptBySlug(s as never, "media");
+}
 
 const Patch = z.object({
   title: z.string().optional(),
@@ -15,7 +23,8 @@ const Patch = z.object({
 });
 
 export const PATCH = handle(async (req, ctx) => {
-  await requireSession();
+  const s = await requireSession();
+  if (!canManageMedia(s)) return err(403, "Forbidden");
   const { id } = await ctx.params;
   const b = await parseBody(req, Patch);
   if (isMockMode()) {
@@ -49,7 +58,8 @@ export const PATCH = handle(async (req, ctx) => {
 });
 
 export const DELETE = handle(async (_req, ctx) => {
-  await requireSession();
+  const s = await requireSession();
+  if (!canManageMedia(s)) return err(403, "Forbidden");
   const { id } = await ctx.params;
   if (isMockMode()) {
     const store = getMockStore();

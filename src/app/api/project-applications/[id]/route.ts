@@ -2,6 +2,7 @@ import { z } from "zod";
 import { err, handle, ok, parseBody } from "@/lib/api";
 import { query, queryOne } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { isClubLead, canManageDept, ownsResource } from "@/lib/authz";
 import { getMockStore, isMockMode } from "@/lib/mock-store";
 import { emitNotification } from "@/lib/notifications";
 
@@ -13,7 +14,7 @@ const Patch = z.object({
 });
 
 export const PATCH = handle(async (req, ctx) => {
-  await requireSession();
+  const s = await requireSession();
   const { id } = await ctx.params;
   const applicationId = Number(id);
   const body = await parseBody(req, Patch);
@@ -22,6 +23,15 @@ export const PATCH = handle(async (req, ctx) => {
     const store = getMockStore();
     const application = store.projectApplications.find((a) => a.applicationId === applicationId);
     if (!application) return err(404, "Application not found");
+    // Only club admins, the project's dept lead, or the project lead may
+    // accept/reject applications (C-02). Plain members must not decide.
+    const project = store.projects.find((p) => p.projectId === application.projectId);
+    if (
+      !isClubLead(s) &&
+      !(project && (canManageDept(s, project.departmentId) || ownsResource(s, project.leadMemberId)))
+    ) {
+      return err(403, "Forbidden");
+    }
     application.status = body.status;
     if (body.status === "accepted") {
       const exists = store.projectMembers.find(
@@ -36,7 +46,6 @@ export const PATCH = handle(async (req, ctx) => {
         });
       }
     }
-    const project = store.projects.find((p) => p.projectId === application.projectId);
     await emitNotification({
       recipientId: application.memberId,
       category: "project_application_decision",
@@ -51,17 +60,29 @@ export const PATCH = handle(async (req, ctx) => {
     return ok({ success: true });
   }
 
-  const application = await queryOne<{ projectId: number; memberId: number; role: string; projectTitle: string }>(
+  const application = await queryOne<{
+    projectId: number; memberId: number; role: string; projectTitle: string;
+    departmentId: number | null; leadMemberId: number | null;
+  }>(
     `SELECT a.project_id AS "projectId",
             a.member_id  AS "memberId",
             a.role,
-            p.title      AS "projectTitle"
+            p.title      AS "projectTitle",
+            p.department_id  AS "departmentId",
+            p.lead_member_id AS "leadMemberId"
        FROM project_applications a
        JOIN projects p ON p.project_id = a.project_id
       WHERE a.application_id = $1`,
     [applicationId],
   );
   if (!application) return err(404, "Application not found");
+  if (
+    !isClubLead(s) &&
+    !canManageDept(s, application.departmentId) &&
+    !ownsResource(s, application.leadMemberId)
+  ) {
+    return err(403, "Forbidden");
+  }
 
   await query(
     `UPDATE project_applications SET status = $1, updated_at = NOW() WHERE application_id = $2`,

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { handle, ok, parseBody, err } from "@/lib/api";
 import { query, queryOne } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { isClubLead, isAnyLead, canManageDept, ownsResource } from "@/lib/authz";
 import { departmentById, findMockMember, getMockStore, isMockMode, nextMockId } from "@/lib/mock-store";
 import { submitChangeRequest } from "@/lib/change-requests";
 
@@ -98,6 +99,44 @@ export const PATCH = handle(async (req, ctx) => {
       session.departmentSlug === "media";
     if (!isAdmin && !isMediaLead) {
       return err(403, "Only the media team can publish projects.");
+    }
+  }
+
+  // All other project mutations require club admin, the owning department's
+  // leadership, or the project lead. This closes the C-02 IDOR where any
+  // signed-in member could rewrite project title/status/leadMemberId or
+  // mark a project completed (auto-crediting volunteer hours).
+  if (!isClubLead(session)) {
+    if (!isAnyLead(session)) {
+      // Project leads (plain members) may still edit their own project. Look
+      // up the row to check ownership before refusing.
+      if (!isMockMode()) {
+        const owner = await queryOne<{ leadMemberId: number | null; departmentId: number | null }>(
+          `SELECT lead_member_id AS "leadMemberId", department_id AS "departmentId" FROM projects WHERE project_id = $1`,
+          [id],
+        );
+        if (!owner) return err(404, "Not found");
+        if (!ownsResource(session, owner.leadMemberId)) return err(403, "Forbidden");
+      } else {
+        const project = getMockStore().projects.find((p) => p.projectId === Number(id));
+        if (!project) return err(404, "Not found");
+        if (project.leadMemberId !== session.memberId) return err(403, "Forbidden");
+      }
+    } else {
+      // dept_leader / dept_vice_leader: must lead the project's department.
+      const owner = isMockMode()
+        ? (() => {
+            const p = getMockStore().projects.find((p) => p.projectId === Number(id));
+            return p ? { departmentId: p.departmentId, leadMemberId: p.leadMemberId } : null;
+          })()
+        : await queryOne<{ departmentId: number | null; leadMemberId: number | null }>(
+            `SELECT department_id AS "departmentId", lead_member_id AS "leadMemberId" FROM projects WHERE project_id = $1`,
+            [id],
+          );
+      if (!owner) return err(404, "Not found");
+      if (!canManageDept(session, owner.departmentId) && !ownsResource(session, owner.leadMemberId)) {
+        return err(403, "Forbidden");
+      }
     }
   }
 
