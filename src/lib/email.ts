@@ -46,10 +46,10 @@ export function renderEmail({
   footerNote,
 }: TemplateArgs): string {
   const year = new Date().getFullYear();
+  const logoUrl = `${siteUrl}/logo-email.png`;
   // Single-column transactional template, light surface, brand teal accent.
-  // Avoids dark backgrounds (clients invert them inconsistently) and external
-  // images (logo blocked when remote images are off). Wordmark is rendered
-  // as text inside a brand-tinted pill so it always shows.
+  // Uses official DRC horizontal logo on a light card so it reads correctly
+  // when remote images are allowed; falls back to alt text otherwise.
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -66,17 +66,10 @@ export function renderEmail({
         <td align="center" style="padding:32px 16px;">
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;">
             <tr>
-              <td style="padding:0 0 24px 0;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td style="background:#0f766e;border-radius:8px;padding:8px 14px;">
-                      <span style="display:inline-block;font-size:14px;font-weight:700;letter-spacing:0.18em;color:#ffffff;">DRC</span>
-                    </td>
-                    <td style="padding-left:12px;font-size:13px;font-weight:600;color:#374151;">
-                      Drones &amp; Robotics Club
-                    </td>
-                  </tr>
-                </table>
+              <td align="center" style="padding:0 0 24px 0;">
+                <a href="${escapeAttr(siteUrl)}" style="text-decoration:none;color:#0b1220;">
+                  <img src="${escapeAttr(logoUrl)}" alt="Drones &amp; Robotics Club — نادي الدرونز والروبوت" width="320" style="display:block;width:320px;max-width:80%;height:auto;border:0;outline:none;text-decoration:none;" />
+                </a>
               </td>
             </tr>
             <tr>
