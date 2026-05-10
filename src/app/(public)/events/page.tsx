@@ -106,6 +106,8 @@ export default function EventsPage() {
         description={t("events.hero.desc")}
       />
 
+      <OpenApplicationsStrip />
+
       {/* ═══ UPCOMING EVENTS ═══ */}
       <section className="relative py-24 px-6">
         <div className="mx-auto max-w-7xl">
@@ -272,5 +274,60 @@ export default function EventsPage() {
 
       <PublicCustomSegments page="events" />
     </div>
+  );
+}
+
+interface PublicForm {
+  formId: number;
+  title: string;
+  description: string | null;
+  closesAt: string | null;
+}
+
+function OpenApplicationsStrip() {
+  const [forms, setForms] = useState<PublicForm[]>([]);
+  const { lang } = useLang();
+  useEffect(() => {
+    api.get<PublicForm[]>("/api/forms/public")
+      .then((data) => setForms(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+  if (forms.length === 0) return null;
+  return (
+    <section className="relative px-6 pt-12">
+      <div className="mx-auto max-w-7xl">
+        <div className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-6 sm:p-8">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">
+                {lang === "ar" ? "طلبات مفتوحة" : "Open applications"}
+              </p>
+              <h3 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
+                {lang === "ar" ? "تقدّم الآن" : "Apply now"}
+              </h3>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {forms.map((f) => (
+              <Link
+                key={f.formId}
+                href={`/forms/${f.formId}`}
+                className="group rounded-2xl border border-border bg-surface/30 p-4 transition-colors hover:border-primary/40 hover:bg-surface-elevated/50"
+              >
+                <p className="text-sm font-semibold text-foreground group-hover:text-primary">{f.title}</p>
+                {f.description && (
+                  <p className="mt-1 line-clamp-2 text-xs text-muted">{f.description}</p>
+                )}
+                {f.closesAt && (
+                  <p className="mt-2 text-[11px] text-muted">
+                    {lang === "ar" ? "يُغلق في" : "Closes"} {new Date(f.closesAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { month: "short", day: "numeric" })}
+                  </p>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

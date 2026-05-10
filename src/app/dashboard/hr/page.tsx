@@ -20,6 +20,7 @@ import { api } from "@/lib/client";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { MotmLeaderboardPanel } from "@/components/dashboard/MotmLeaderboardPanel";
 import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
+import { FormsManager } from "@/components/dashboard/FormsManager";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -132,7 +133,7 @@ const sourceTypeLabel: Record<HourRow["sourceType"], string> = {
 export default function HRDashboard() {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [activeTab, setActiveTab] = useState<"members" | "applications" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "changeRequests" | "membership" | "operations">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "changeRequests" | "membership" | "operations">("members");
 
   // ── Members ──
   const { data: members = [], isLoading: membersLoading, mutate: loadMembers } = useApi<Member[]>("/api/members");
@@ -497,6 +498,7 @@ export default function HRDashboard() {
   const TAB_LABELS: Record<string, string> = {
     members: tr("Members", "الأعضاء"),
     applications: tr("Applications", "الطلبات"),
+    forms: tr("Forms", "النماذج"),
     motm: tr("MOTM", "MOTM"),
     hours: tr("Hours", "الساعات"),
     hourTasks: tr("Hour Tasks", "مهام الساعات"),
@@ -534,7 +536,7 @@ export default function HRDashboard() {
 
       {/* Tabs */}
       <div className="tab-rail mb-6 w-fit" role="tablist" aria-label={tr("HR sections", "أقسام الموارد")}>
-        {(["members", "applications", "motm", "hours", "hourTasks", "performance", "announcements", "changeRequests", "membership", "operations"] as const).map((tab) => (
+        {(["members", "applications", "forms", "motm", "hours", "hourTasks", "performance", "announcements", "changeRequests", "membership", "operations"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -710,6 +712,13 @@ export default function HRDashboard() {
               ))}
             </div>
           )}
+        </motion.div>
+      )}
+
+      {/* ── Forms Tab ── */}
+      {activeTab === "forms" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+          <FormsManager tr={tr} />
         </motion.div>
       )}
 
