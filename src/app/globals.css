@@ -96,7 +96,7 @@ html {
   color-scheme: dark;
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 229, 184, 0.2) transparent;
+  scrollbar-color: color-mix(in srgb, var(--primary) 28%, transparent) transparent;
 }
 
 html[data-theme="light"] {
@@ -116,7 +116,7 @@ body {
 }
 
 ::selection {
-  background: rgba(0, 229, 184, 0.2);
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
   color: var(--foreground);
 }
 
@@ -141,11 +141,11 @@ html[data-theme="light"] .shimmer {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 229, 184, 0.15);
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 229, 184, 0.3);
+  background: color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 /* ── Typography ── */
@@ -299,7 +299,7 @@ h2, h3 {
 .card-feature:hover {
   background: color-mix(in srgb, var(--surface-elevated) 94%, transparent);
   border-color: var(--border-highlight);
-  box-shadow: 0 0 60px rgba(0, 217, 172, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 60px color-mix(in srgb, var(--primary) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transform: translateY(-2px);
 }
 
@@ -338,7 +338,7 @@ h2, h3 {
     filter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 10px 24px rgba(0, 217, 172, 0.18),
+    0 10px 24px color-mix(in srgb, var(--primary) 18%, transparent),
     0 6px 18px rgba(0, 0, 0, 0.22);
 }
 
@@ -347,7 +347,7 @@ h2, h3 {
   filter: saturate(1.05) brightness(1.02);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    0 14px 32px rgba(0, 217, 172, 0.24),
+    0 14px 32px color-mix(in srgb, var(--primary) 24%, transparent),
     0 10px 24px rgba(0, 0, 0, 0.26);
 }
 
@@ -507,10 +507,10 @@ html[data-theme="light"] .noise::before {
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 20px rgba(0, 229, 184, 0.1);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 14%, transparent);
   }
   to {
-    box-shadow: 0 0 40px rgba(0, 229, 184, 0.2);
+    box-shadow: 0 0 40px color-mix(in srgb, var(--primary) 28%, transparent);
   }
 }
 
@@ -590,7 +590,7 @@ html[data-theme="light"] .noise::before {
   background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, transparent), color-mix(in srgb, var(--secondary) 16%, transparent));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 12px 24px rgba(0, 217, 172, 0.1);
+    0 12px 24px color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .filter-chip {
@@ -829,7 +829,7 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid #00e5b8;
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

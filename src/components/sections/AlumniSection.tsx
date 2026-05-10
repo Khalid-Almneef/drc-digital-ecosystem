@@ -173,7 +173,7 @@ function AlumniCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-      className="group flex h-56 w-[calc(100%-1rem)] sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-2.5rem)/3)] xl:w-[calc((100%-3.75rem)/4)] shrink-0 snap-start cursor-pointer flex-col rounded-2xl border-2 border-primary/15 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--surface)_96%,transparent),color-mix(in_srgb,var(--surface-elevated)_92%,transparent))] shadow-[0_12px_40px_rgba(2,10,24,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_16px_52px_rgba(0,217,172,0.12)] [touch-action:pan-y_pan-x]"
+      className="group flex h-56 w-[calc(100%-1rem)] sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-2.5rem)/3)] xl:w-[calc((100%-3.75rem)/4)] shrink-0 snap-start cursor-pointer flex-col rounded-2xl border-2 border-primary/15 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--surface)_96%,transparent),color-mix(in_srgb,var(--surface-elevated)_92%,transparent))] shadow-[0_12px_40px_rgba(2,10,24,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_16px_52px_color-mix(in_srgb,var(--primary)_12%,transparent)] [touch-action:pan-y_pan-x]"
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerCancel={() => { downRef.current = null; }}

@@ -64,8 +64,8 @@ export const Navigation = () => {
                 height={28}
                 className={`transition-transform duration-300 group-hover:scale-105 ${
                   theme === 'light'
-                    ? 'drop-shadow-[0_2px_8px_rgba(0,36,156,0.15)]'
-                    : 'drop-shadow-[0_0_8px_rgba(0,217,172,0.3)]'
+                    ? 'drop-shadow-[0_2px_8px_color-mix(in_srgb,var(--secondary)_15%,transparent)]'
+                    : 'drop-shadow-[0_0_8px_color-mix(in_srgb,var(--primary)_30%,transparent)]'
                 }`}
               />
             </div>

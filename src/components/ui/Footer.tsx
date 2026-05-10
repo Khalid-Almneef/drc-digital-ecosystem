@@ -80,7 +80,7 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-5">
-              <Logo width={44} height={44} className="drop-shadow-[0_0_12px_rgba(0,217,172,0.3)]" />
+              <Logo width={44} height={44} className="drop-shadow-[0_0_12px_color-mix(in_srgb,var(--primary)_30%,transparent)]" />
               <div>
                 <span className="font-bold text-lg text-foreground tracking-tight">{t("footer.brand.name")}</span>
                 <span className="block text-xs text-muted">{t("footer.brand.subtitle")}</span>

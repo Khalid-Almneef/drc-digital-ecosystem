@@ -213,7 +213,7 @@ function ArchiveCollection({
               type="button"
               className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
                 activeFilter === filter.key
-                  ? "border-primary/30 bg-primary/10 text-primary shadow-[0_10px_24px_rgba(0,217,172,0.12)]"
+                  ? "border-primary/30 bg-primary/10 text-primary shadow-[0_10px_24px_color-mix(in_srgb,var(--primary)_12%,transparent)]"
                   : "border-border bg-surface-elevated text-muted hover:border-primary/20 hover:text-foreground"
               }`}
               data-active={activeFilter === filter.key}

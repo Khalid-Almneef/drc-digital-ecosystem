@@ -16,14 +16,14 @@ export function DroneHero({ className = "" }: { className?: string }) {
       {/* Ambient glow */}
       <defs>
         <radialGradient id="droneGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgba(0,229,184,0.12)" />
-          <stop offset="50%" stopColor="rgba(0,229,184,0.04)" />
+          <stop offset="0%" stopColor="color-mix(in srgb, var(--primary) 12%, transparent)" />
+          <stop offset="50%" stopColor="color-mix(in srgb, var(--primary) 4%, transparent)" />
           <stop offset="100%" stopColor="transparent" />
         </radialGradient>
         <linearGradient id="armGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="rgba(0,229,184,0.25)" />
-          <stop offset="50%" stopColor="rgba(0,229,184,0.08)" />
-          <stop offset="100%" stopColor="rgba(0,229,184,0.25)" />
+          <stop offset="0%" stopColor="color-mix(in srgb, var(--primary) 25%, transparent)" />
+          <stop offset="50%" stopColor="color-mix(in srgb, var(--primary) 8%, transparent)" />
+          <stop offset="100%" stopColor="color-mix(in srgb, var(--primary) 25%, transparent)" />
         </linearGradient>
         <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="rgba(10,30,55,0.9)" />
@@ -40,7 +40,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
       {/* Connection lines to subsystems */}
       <motion.path
         d="M 60 140 L 120 140"
-        stroke="rgba(0,229,184,0.15)"
+        stroke="color-mix(in srgb, var(--primary) 15%, transparent)"
         strokeWidth="1"
         strokeDasharray="4 4"
         initial={{ pathLength: 0 }}
@@ -49,7 +49,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
       />
       <motion.path
         d="M 340 140 L 280 140"
-        stroke="rgba(0,229,184,0.15)"
+        stroke="color-mix(in srgb, var(--primary) 15%, transparent)"
         strokeWidth="1"
         strokeDasharray="4 4"
         initial={{ pathLength: 0 }}
@@ -58,7 +58,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
       />
       <motion.path
         d="M 200 60 L 200 100"
-        stroke="rgba(0,229,184,0.15)"
+        stroke="color-mix(in srgb, var(--primary) 15%, transparent)"
         strokeWidth="1"
         strokeDasharray="4 4"
         initial={{ pathLength: 0 }}
@@ -67,7 +67,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
       />
       <motion.path
         d="M 200 220 L 200 180"
-        stroke="rgba(0,229,184,0.15)"
+        stroke="color-mix(in srgb, var(--primary) 15%, transparent)"
         strokeWidth="1"
         strokeDasharray="4 4"
         initial={{ pathLength: 0 }}
@@ -124,10 +124,10 @@ export function DroneHero({ className = "" }: { className?: string }) {
         { cx: 300, cy: 200 },
       ].map((m, i) => (
         <motion.g key={i}>
-          <circle cx={m.cx} cy={m.cy} r="14" fill="rgba(0,229,184,0.08)" stroke="rgba(0,229,184,0.2)" strokeWidth="1.5" />
+          <circle cx={m.cx} cy={m.cy} r="14" fill="color-mix(in srgb, var(--primary) 8%, transparent)" stroke="color-mix(in srgb, var(--primary) 20%, transparent)" strokeWidth="1.5" />
           <motion.circle
             cx={m.cx} cy={m.cy} r="8"
-            fill="rgba(0,229,184,0.15)"
+            fill="color-mix(in srgb, var(--primary) 15%, transparent)"
             animate={{ opacity: [0.3, 0.7, 0.3] }}
             transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
           />
@@ -146,7 +146,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
           cx={m.cx} cy={m.cy}
           rx="22" ry="6"
           fill="none"
-          stroke="rgba(0,229,184,0.12)"
+          stroke="color-mix(in srgb, var(--primary) 12%, transparent)"
           strokeWidth="1"
           animate={{ rotate: 360 }}
           transition={{ duration: 0.15 + i * 0.02, repeat: Infinity, ease: "linear" }}
@@ -159,7 +159,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
         cx="200" cy="140"
         rx="55" ry="35"
         fill="url(#bodyGrad)"
-        stroke="rgba(0,229,184,0.15)"
+        stroke="color-mix(in srgb, var(--primary) 15%, transparent)"
         strokeWidth="1.5"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -171,8 +171,8 @@ export function DroneHero({ className = "" }: { className?: string }) {
       <motion.ellipse
         cx="200" cy="132"
         rx="35" ry="18"
-        fill="rgba(0,229,184,0.04)"
-        stroke="rgba(0,229,184,0.12)"
+        fill="color-mix(in srgb, var(--primary) 4%, transparent)"
+        stroke="color-mix(in srgb, var(--primary) 12%, transparent)"
         strokeWidth="1"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -185,9 +185,9 @@ export function DroneHero({ className = "" }: { className?: string }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 1 }}
       >
-        <circle cx="200" cy="165" r="10" fill="rgba(5,12,25,0.9)" stroke="rgba(0,229,184,0.2)" strokeWidth="1" />
-        <circle cx="200" cy="165" r="5" fill="rgba(0,229,184,0.2)" />
-        <circle cx="200" cy="165" r="2.5" fill="#00e5b8" />
+        <circle cx="200" cy="165" r="10" fill="rgba(5,12,25,0.9)" stroke="color-mix(in srgb, var(--primary) 20%, transparent)" strokeWidth="1" />
+        <circle cx="200" cy="165" r="5" fill="color-mix(in srgb, var(--primary) 20%, transparent)" />
+        <circle cx="200" cy="165" r="2.5" fill="var(--primary)" />
       </motion.g>
 
       {/* Status LEDs */}
@@ -199,7 +199,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
       />
       <motion.circle
         cx="225" cy="125" r="2.5"
-        fill="#00e5b8"
+        fill="var(--primary)"
         animate={{ opacity: [0.3, 1, 0.3] }}
         transition={{ duration: 1.2, repeat: Infinity }}
       />
@@ -207,7 +207,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
       {/* Telemetry lines on body */}
       <motion.path
         d="M 170 140 L 230 140"
-        stroke="rgba(0,229,184,0.1)"
+        stroke="color-mix(in srgb, var(--primary) 10%, transparent)"
         strokeWidth="1"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
@@ -215,7 +215,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
       />
       <motion.path
         d="M 175 148 L 225 148"
-        stroke="rgba(0,229,184,0.08)"
+        stroke="color-mix(in srgb, var(--primary) 8%, transparent)"
         strokeWidth="1"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
@@ -232,7 +232,7 @@ export function DroneHero({ className = "" }: { className?: string }) {
         <motion.path
           key={`bracket-${i}`}
           d={b.d}
-          stroke="rgba(0,229,184,0.2)"
+          stroke="color-mix(in srgb, var(--primary) 20%, transparent)"
           strokeWidth="1"
           fill="none"
           initial={{ pathLength: 0 }}

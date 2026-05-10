@@ -110,7 +110,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Logo alt="DRC" width={64} height={64} className="mx-auto drop-shadow-[0_0_20px_rgba(0,217,172,0.25)]" />
+            <Logo alt="DRC" width={64} height={64} className="mx-auto drop-shadow-[0_0_20px_color-mix(in_srgb,var(--primary)_25%,transparent)]" />
           </Link>
           <h1 className="text-2xl font-bold text-foreground">{t("login.title")}</h1>
           <p className="text-sm text-muted mt-2">{t("login.subtitle")}</p>

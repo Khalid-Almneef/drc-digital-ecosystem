@@ -132,7 +132,7 @@ export function Sidebar() {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className={`border-b border-border/80 px-4 py-5 ${collapsed ? "flex justify-center" : "flex items-center gap-3"}`}>
-        <Logo alt="DRC" width={32} height={32} className="shrink-0 drop-shadow-[0_0_8px_rgba(0,217,172,0.2)]" />
+        <Logo alt="DRC" width={32} height={32} className="shrink-0 drop-shadow-[0_0_8px_color-mix(in_srgb,var(--primary)_20%,transparent)]" />
         {!collapsed && (
           <div className="min-w-0">
             <span className="font-bold text-sm text-foreground">{dashboardTitle}</span>

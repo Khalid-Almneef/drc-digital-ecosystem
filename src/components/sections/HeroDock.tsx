@@ -57,7 +57,7 @@ export function HeroDock({ heroSignals, homeStats, leadBanner, secondaryBanners,
 
             <div className="mb-7">
               <div className="relative inline-flex">
-                <Logo width={78} height={78} className="drop-shadow-[0_0_24px_rgba(0,217,172,0.18)]" priority />
+                <Logo width={78} height={78} className="drop-shadow-[0_0_24px_color-mix(in_srgb,var(--primary)_18%,transparent)]" priority />
                 <div className="absolute inset-0 rounded-full bg-primary/10 blur-[28px]" />
               </div>
             </div>
