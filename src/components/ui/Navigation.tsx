@@ -28,7 +28,7 @@ export const Navigation = () => {
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
   const { theme } = useTheme();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export const Navigation = () => {
               />
             </div>
             <span className="hidden text-sm font-bold tracking-tight text-foreground sm:block lg:text-base xl:text-lg">
-              Drones &amp; Robotics Club
+              {lang === "ar" ? "نادي الدرونز والروبوت" : "Drones & Robotics Club"}
             </span>
           </Link>
 
