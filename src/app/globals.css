@@ -324,8 +324,13 @@ h2, h3 {
 }
 
 /* ── Buttons ── */
+button, a[role="button"] {
+  touch-action: manipulation;
+}
+
 .btn-primary {
   min-height: 2.75rem;
+  touch-action: manipulation;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dim) 100%);
   color: var(--primary-fg);
   border: 1px solid color-mix(in srgb, var(--primary-dim) 78%, transparent);
@@ -646,6 +651,7 @@ html[data-theme="light"] .noise::before {
 
 .dashboard-field {
   width: 100%;
+  min-height: 2.75rem;
   border-radius: 0.95rem;
   border: 1px solid color-mix(in srgb, var(--border) 88%, rgba(255, 255, 255, 0.03));
   background: color-mix(in srgb, var(--surface-elevated) 84%, transparent);

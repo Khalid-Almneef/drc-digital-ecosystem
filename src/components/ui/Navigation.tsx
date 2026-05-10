@@ -48,13 +48,13 @@ export const Navigation = () => {
         initial={{ y: -28, opacity: 0.75 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 [padding-top:env(safe-area-inset-top)] ${
           isScrolled
             ? "glass py-3 shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
             : "bg-transparent py-5"
         }`}
       >
-        <div className="mx-auto max-w-7xl px-6 flex items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6">
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-3">
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-primary/25 shadow-[0_0_14px_color-mix(in_srgb,var(--primary)_15%,transparent)] transition-all duration-300 group-hover:shadow-[0_0_20px_color-mix(in_srgb,var(--primary)_25%,transparent)]" style={{ background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, transparent), color-mix(in srgb, var(--secondary) 14%, transparent))" }}>

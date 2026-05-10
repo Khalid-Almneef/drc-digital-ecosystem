@@ -50,8 +50,8 @@ export function MadaratRegistrationModal({ event, onClose }: { event: MadaratEve
   const fieldCls = "w-full rounded-lg border border-border bg-surface/40 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-primary/40";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-background shadow-xl">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-3 sm:items-center sm:p-4" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl sm:rounded-2xl">
         <div className="border-b border-border px-5 py-4">
           <h3 className="text-base font-semibold text-foreground">{tr("Register", "التسجيل")} — {event.title}</h3>
           <p className="mt-1 text-xs text-muted">
@@ -60,7 +60,7 @@ export function MadaratRegistrationModal({ event, onClose }: { event: MadaratEve
               : tr("We share your contact info with the Madarat organizers only.", "نشارك بياناتك مع منظّمي مدارات فقط.")}
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-3 px-5 py-4 sm:grid-cols-2">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto px-5 py-4 sm:grid-cols-2">
           <label className="text-xs text-muted sm:col-span-2">{tr("Full name", "الاسم الكامل")}
             <input className={fieldCls} value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
           </label>
