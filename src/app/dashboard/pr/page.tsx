@@ -347,9 +347,9 @@ export default function PRDashboard() {
           ))}
         </div>
         {activeTab === "sponsors" && (
-          <button type="button" onClick={startNewSponsor} className="btn-primary w-fit">
-            <Plus className="w-4 h-4" />
-            {tr("Potential Sponsor", "راع محتمل")}
+          <button type="button" onClick={startNewSponsor} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs">
+            <Plus className="w-3.5 h-3.5" />
+            {tr("Add Potential Sponsor", "إضافة راع محتمل")}
           </button>
         )}
       </div>
