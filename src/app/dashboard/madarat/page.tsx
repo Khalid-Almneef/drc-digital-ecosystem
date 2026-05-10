@@ -430,8 +430,9 @@ export default function MadaratDashboard() {
       setCreateSessionOpen(false);
       toast.success(tr("Session created", "تم إنشاء الجلسة"));
       loadSessions();
-    } catch {
-      toast.error(tr("Create failed. Please try again.", "فشل الإنشاء. حاول مرة أخرى."));
+    } catch (error) {
+      const message = (error as { message?: string } | null)?.message;
+      toast.error(message || tr("Create failed. Please try again.", "فشل الإنشاء. حاول مرة أخرى."));
     } finally {
       setSessionSaving(false);
     }

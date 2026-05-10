@@ -14,7 +14,7 @@ const Body = z.object({
   scheduledAt: z.string().datetime(),
   durationMin: z.number().int().positive().optional(),
   location: z.string().optional(),
-  meetingUrl: z.string().url().optional().or(z.literal("")),
+  meetingUrl: z.string().max(2048).optional().or(z.literal("")),
   maxRegistrants: z.number().int().positive().optional(),
   registrationOpen: z.boolean().default(false),
   isPublished: z.boolean().default(false),
