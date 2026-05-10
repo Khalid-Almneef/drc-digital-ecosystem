@@ -12,6 +12,15 @@ import {
 import { sendEmail } from "@/lib/email";
 import { getMockStore, isMockMode, MOCK_DEMO_USERS, mockSessionFromKey } from "@/lib/mock-store";
 
+function resolveAppUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+    "http://localhost:3000"
+  );
+}
+
 const Body = z.object({
   email: z.string().email(),
   password: z.string().min(1),
@@ -24,7 +33,7 @@ async function sendSetupEmail(memberId: number, email: string) {
      VALUES ($1, $2, 'password_reset', NOW() + INTERVAL '24 hours')`,
     [memberId, sha256(plain)],
   );
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = resolveAppUrl();
   await sendEmail({
     to: email,
     subject: "Set up your DRC account",
@@ -85,7 +94,7 @@ export const POST = handle(async (req) => {
 
   if (!knownDevice) {
     const plain = randomToken(24);
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const appUrl = resolveAppUrl();
     const newDeviceToken = randomToken(24);
     await withTx(async (c) => {
       await c.query(
