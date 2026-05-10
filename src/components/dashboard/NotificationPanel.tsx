@@ -118,7 +118,7 @@ export function NotificationPanel({ collapsed = false }: { collapsed?: boolean }
   }
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className="relative z-[60]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -148,7 +148,7 @@ export function NotificationPanel({ collapsed = false }: { collapsed?: boolean }
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className={`absolute z-50 ${collapsed ? "start-full ms-2 top-0" : "start-0 end-0 top-full mt-2"} w-[320px] max-w-[90vw] rounded-2xl border border-border bg-surface shadow-[0_24px_60px_rgba(2,10,24,0.28)]`}
+            className={`absolute z-[100] ${collapsed ? "start-full ms-2 top-0" : "start-0 top-full mt-2"} w-[320px] max-w-[90vw] rounded-2xl border border-border bg-surface shadow-[0_24px_60px_rgba(2,10,24,0.28)]`}
           >
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <p className="text-sm font-semibold text-foreground">{tr("Notifications", "الإشعارات")}</p>

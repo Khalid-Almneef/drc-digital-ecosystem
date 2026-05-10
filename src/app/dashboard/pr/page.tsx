@@ -568,8 +568,9 @@ function VisitIdeasInbox() {
     fetch(`/api/service-requests?scope=inbox&requestType=company_visit&targetDepartment=pr`, { cache: "no-store" })
       .then(async (res) => {
         if (!res.ok) return [] as VisitIdeaRow[];
-        const data = (await res.json()) as VisitIdeaRow[];
-        return Array.isArray(data) ? data : [];
+        const body = (await res.json()) as { data?: VisitIdeaRow[] } | VisitIdeaRow[];
+        const arr = Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
+        return arr;
       })
       .then((data) => setRows(data.filter((r) => r.status === statusFilter)))
       .catch(() => setRows([]))
