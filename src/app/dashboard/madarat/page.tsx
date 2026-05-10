@@ -316,23 +316,8 @@ function CreateSessionModal({
             <label className={labelCls}>{tr("Max Registrants", "الحد الأقصى للمسجّلين")}</label>
             <input type="number" min="1" value={form.maxRegistrants} onChange={(event) => onChange({ maxRegistrants: event.target.value })} className={inputCls} placeholder={tr("Leave empty for unlimited", "اتركه فارغاً للسعة المفتوحة")} />
           </div>
-          <div className="md:col-span-2">
-            <label className={labelCls}>{tr("Description", "الوصف")}</label>
-            <textarea value={form.description} onChange={(event) => onChange({ description: event.target.value })} rows={3} className={`${inputCls} resize-none`} placeholder={tr("What is this session about?", "عن أي شيء هذه الجلسة؟")} />
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-6">
-          <label className="flex items-center gap-2.5 text-sm text-foreground">
-            <Toggle checked={form.isPublished} onChange={() => onToggle("isPublished")} />
-            {tr("Publish session", "نشر الجلسة")}
-          </label>
-          <label className="flex items-center gap-2.5 text-sm text-foreground">
-            <Toggle checked={form.registrationOpen} onChange={() => onToggle("registrationOpen")} />
-            {tr("Open registration", "تسجيل مفتوح")}
-          </label>
-          <label className="flex items-center gap-2.5 text-sm text-foreground">
-            <span className="text-xs text-muted">{tr("Who can register?", "من يمكنه التسجيل؟")}</span>
+          <div>
+            <label className={labelCls}>{tr("Who Can Register?", "من يمكنه التسجيل؟")}</label>
             <select
               value={form.visibility}
               onChange={(event) => onChange({ visibility: event.target.value as "public" | "club_only" })}
@@ -341,6 +326,21 @@ function CreateSessionModal({
               <option value="public">{tr("Anyone (public)", "أي شخص (عام)")}</option>
               <option value="club_only">{tr("Club members only", "أعضاء النادي فقط")}</option>
             </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className={labelCls}>{tr("Description", "الوصف")}</label>
+            <textarea value={form.description} onChange={(event) => onChange({ description: event.target.value })} rows={3} className={`${inputCls} resize-none`} placeholder={tr("What is this session about?", "عن أي شيء هذه الجلسة؟")} />
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-3">
+          <label className="inline-flex items-center gap-2.5 text-sm text-foreground">
+            <Toggle checked={form.isPublished} onChange={() => onToggle("isPublished")} />
+            {tr("Publish session", "نشر الجلسة")}
+          </label>
+          <label className="inline-flex items-center gap-2.5 text-sm text-foreground">
+            <Toggle checked={form.registrationOpen} onChange={() => onToggle("registrationOpen")} />
+            {tr("Open registration", "تسجيل مفتوح")}
           </label>
         </div>
 
