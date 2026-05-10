@@ -16,34 +16,44 @@ const spaceGrotesk = Space_Grotesk({
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://drc.club";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: { default: "Drones & Robotics Club", template: "%s · Drones & Robotics Club" },
-  description: "Engineer the future of flight — student-led drones and robotics club.",
-  keywords: ["drones", "robotics", "club", "DRC", "innovation", "engineering", "students"],
-  authors: [{ name: "Drones & Robotics Club" }],
-  alternates: {
-    canonical: "/",
-    languages: { en: "/", ar: "/?lang=ar" },
-  },
-  openGraph: {
-    title: "Drones & Robotics Club",
-    description: "Engineer the future of flight — student-led drones and robotics club.",
-    type: "website",
-    url: SITE_URL,
-    siteName: "Drones & Robotics Club",
-    locale: "en_US",
-    alternateLocale: "ar_SA",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Drones & Robotics Club" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Drones & Robotics Club",
-    description: "Engineer the future of flight.",
-    images: ["/og-image.png"],
-  },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const lang = cookieStore.get("drc-lang")?.value === "ar" ? "ar" : "en";
+  const isAr = lang === "ar";
+  const name = isAr ? "نادي الدرونز والروبوت" : "Drones & Robotics Club";
+  const desc = isAr
+    ? "نهندس مستقبل الطيران — نادي طلابي للدرونز والروبوتات."
+    : "Engineer the future of flight — student-led drones and robotics club.";
+  const shortDesc = isAr ? "نهندس مستقبل الطيران." : "Engineer the future of flight.";
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: name, template: `%s · ${name}` },
+    description: desc,
+    keywords: ["drones", "robotics", "club", "DRC", "innovation", "engineering", "students"],
+    authors: [{ name }],
+    alternates: {
+      canonical: "/",
+      languages: { en: "/", ar: "/?lang=ar" },
+    },
+    openGraph: {
+      title: name,
+      description: desc,
+      type: "website",
+      url: SITE_URL,
+      siteName: name,
+      locale: isAr ? "ar_SA" : "en_US",
+      alternateLocale: isAr ? "en_US" : "ar_SA",
+      images: [{ url: "/og-image.png", width: 1200, height: 630, alt: name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: name,
+      description: shortDesc,
+      images: ["/og-image.png"],
+    },
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
