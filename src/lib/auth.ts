@@ -21,7 +21,25 @@ export interface SessionUser {
   departmentSlug: string | null;
 }
 
-const SECRET = process.env.JWT_SECRET ?? "dev-only-change-me";
+function resolveJwtSecret(): string {
+  const raw = process.env.JWT_SECRET;
+  const isProd = process.env.NODE_ENV === "production";
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (!raw || raw === "dev-only-change-me" || raw.length < 32) {
+    if (isProd && !isBuildPhase) {
+      throw new Error(
+        "JWT_SECRET must be set to a strong random value (>=32 chars) in production",
+      );
+    }
+    console.warn(
+      "[auth] JWT_SECRET is missing or weak; using insecure dev fallback. DO NOT run this in production.",
+    );
+    return raw && raw.length > 0 ? raw : "dev-only-change-me";
+  }
+  return raw;
+}
+
+const SECRET = resolveJwtSecret();
 const COOKIE = process.env.SESSION_COOKIE_NAME ?? "drc_session";
 const DAYS = Number(process.env.SESSION_DAYS ?? "7");
 const DEVICE_COOKIE = "drc_device";

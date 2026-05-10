@@ -44,6 +44,13 @@ if (env.NODE_ENV === "production" && !isBuildPhase) {
   if (!env.JWT_SECRET) missing.push("JWT_SECRET");
   if (!env.BLOB_READ_WRITE_TOKEN) missing.push("BLOB_READ_WRITE_TOKEN");
   if (!env.NEXT_PUBLIC_SITE_URL) missing.push("NEXT_PUBLIC_SITE_URL");
+  // JWT_SECRET is non-negotiable in production: forging sessions becomes
+  // trivial without a strong signing key. Fail fast at module load.
+  if (!env.JWT_SECRET || env.JWT_SECRET === "dev-only-change-me" || env.JWT_SECRET.length < 32) {
+    throw new Error(
+      "[env] JWT_SECRET must be set to a strong random value (>=32 chars) in production",
+    );
+  }
   if (missing.length > 0) {
     console.warn("[env] Missing in production:", missing.join(", "));
   }
