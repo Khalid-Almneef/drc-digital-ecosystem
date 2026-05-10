@@ -183,12 +183,6 @@ export default function LoginPage() {
               </p>
             </form>
 
-            <div className="flex items-center gap-4 my-8">
-              <div className="flex-1 h-px bg-border/50" />
-              <span className="text-[10px] font-bold text-muted/40 tracking-widest">{t("login.or")}</span>
-              <div className="flex-1 h-px bg-border/50" />
-            </div>
-
             {process.env.NODE_ENV !== "production" && (
               <button
                 onClick={() => setShowDemo(!showDemo)}

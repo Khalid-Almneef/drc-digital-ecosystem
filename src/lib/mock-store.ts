@@ -1474,7 +1474,7 @@ function seedStore(): MockStore {
     {
       memberId: 1133, fullName: 'Ryan Ahmed Alzahrani', fullNameAr: 'ريان احمد الزهراني', email: 'ahmdd655@gmail.com',
       position: 'member', departmentId: 8, departmentSlug: 'logistics', departmentName: 'Logistics', departmentNameAr: 'اللجنة اللوجستية',
-      avatarUrl: null, bio: 'Ministry of Defense', quote: null, quoteAr: null, major: 'هندسة الحاسب', phoneNumber: '0532275951',
+      avatarUrl: null, bio: 'Confidential', quote: null, quoteAr: null, major: 'هندسة الحاسب', phoneNumber: '0532275951',
       linkedinUrl: 'https://www.linkedin.com/in/rayan-alzahrani-a8a3311b7/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3BMnGYAme9RuyquQT%2BcoTh9A%3D%3D', githubUrl: null, graduationYear: 2024, gender: null, isActive: true, isPublicOnTeam: true, profileStatus: 'alumni',
     },
     {
