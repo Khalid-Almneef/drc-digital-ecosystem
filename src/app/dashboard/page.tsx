@@ -35,13 +35,18 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { MemberCombobox } from "@/components/dashboard/MemberCombobox";
 import { api } from "@/lib/client";
+import { MadaratRegistrationModal } from "@/components/sections/MadaratRegistrationModal";
 
 interface EventItem {
-  eventId: number;
+  eventId: number | string;
   title: string;
   description: string | null;
   startTime: string;
   location: string | null;
+  registrationKind?: "madarat" | null;
+  registrationOpen?: boolean | null;
+  visibility?: "public" | "club_only" | null;
+  seatsAvailable?: number | null;
 }
 
 interface TaskRow {
@@ -277,6 +282,7 @@ export default function DashboardOverview() {
   const endorsementsGiven = endorsementsData?.given ?? [];
   const loading = loadingEvents || loadingTasks || loadingHours || loadingHourTasks || loadingAnnouncements || loadingEndorsements;
   const [error] = useState<string | null>(null);
+  const [registerEvent, setRegisterEvent] = useState<EventItem | null>(null);
 
   const [logOpen, setLogOpen] = useState(false);
   const [logForm, setLogForm] = useState({
@@ -547,6 +553,21 @@ export default function DashboardOverview() {
                         {nextEvent.location ? (
                           <span className="rounded-full border border-border bg-background/55 px-3 py-1 text-xs text-muted">{nextEvent.location}</span>
                         ) : null}
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {nextEvent.registrationKind === "madarat" && nextEvent.registrationOpen ? (
+                          <button
+                            type="button"
+                            disabled={nextEvent.seatsAvailable === 0}
+                            onClick={() => setRegisterEvent(nextEvent)}
+                            className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs disabled:opacity-50"
+                          >
+                            {nextEvent.seatsAvailable === 0 ? tr("Full", "مكتمل") : tr("Register", "سجّل")}
+                          </button>
+                        ) : null}
+                        <Link href="/events" className="btn-secondary inline-flex items-center gap-1.5 px-4 py-2 text-xs">
+                          {tr("View all events", "عرض كل الفعاليات")}
+                        </Link>
                       </div>
                     </>
                   ) : (
@@ -867,6 +888,10 @@ export default function DashboardOverview() {
             </div>
           </div>
         </div>
+      ) : null}
+
+      {registerEvent ? (
+        <MadaratRegistrationModal event={registerEvent} onClose={() => setRegisterEvent(null)} />
       ) : null}
     </div>
   );
