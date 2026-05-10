@@ -41,7 +41,6 @@ interface MadaratSessionRow {
   scheduledAt: string;
   durationMin: number | null;
   location: string | null;
-  meetingUrl: string | null;
   maxRegistrants: number | null;
   registrationOpen: boolean;
   isPublished: boolean;
@@ -99,7 +98,6 @@ const SESSION_FORM = {
   scheduledAt: "",
   durationMin: "",
   location: "",
-  meetingUrl: "",
   maxRegistrants: "",
   registrationOpen: false,
   isPublished: false,
@@ -310,11 +308,7 @@ function CreateSessionModal({
           </div>
           <div>
             <label className={labelCls}>{tr("Location", "المكان")}</label>
-            <input value={form.location} onChange={(event) => onChange({ location: event.target.value })} className={inputCls} placeholder={tr("Hall, room, or online", "قاعة، غرفة، أو عن بُعد")} />
-          </div>
-          <div>
-            <label className={labelCls}>{tr("Meeting URL", "رابط الاجتماع")}</label>
-            <input value={form.meetingUrl} onChange={(event) => onChange({ meetingUrl: event.target.value })} className={inputCls} placeholder="https://..." />
+            <input value={form.location} onChange={(event) => onChange({ location: event.target.value })} className={inputCls} placeholder={tr("Hall or room (in-person only)", "القاعة أو الغرفة (حضوري فقط)")} />
           </div>
           <div>
             <label className={labelCls}>{tr("Max Registrants", "الحد الأقصى للمسجّلين")}</label>
@@ -421,7 +415,6 @@ export default function MadaratDashboard() {
         scheduledAt: new Date(sessionForm.scheduledAt).toISOString(),
         durationMin: sessionForm.durationMin ? Number(sessionForm.durationMin) : undefined,
         location: sessionForm.location || undefined,
-        meetingUrl: sessionForm.meetingUrl || undefined,
         maxRegistrants: sessionForm.maxRegistrants ? Number(sessionForm.maxRegistrants) : undefined,
         registrationOpen: sessionForm.registrationOpen,
         isPublished: sessionForm.isPublished,
@@ -440,7 +433,7 @@ export default function MadaratDashboard() {
 
   function getSessionsCsv() {
     return toCsv(
-      ["title", "description", "intervieweeName", "interviewerName", "intervieweeRole", "programType", "scheduledAt", "durationMin", "location", "meetingUrl", "maxRegistrants", "registrationOpen", "isPublished"],
+      ["title", "description", "intervieweeName", "interviewerName", "intervieweeRole", "programType", "scheduledAt", "durationMin", "location", "maxRegistrants", "registrationOpen", "isPublished"],
       sessions.map((session) => [
         session.title,
         session.description ?? "",
@@ -451,7 +444,6 @@ export default function MadaratDashboard() {
         session.scheduledAt,
         session.durationMin ?? "",
         session.location ?? "",
-        session.meetingUrl ?? "",
         session.maxRegistrants ?? "",
         session.registrationOpen,
         session.isPublished,
@@ -461,8 +453,8 @@ export default function MadaratDashboard() {
 
   function getSessionsTemplateCsv() {
     return toCsv(
-      ["title", "description", "intervieweeName", "interviewerName", "intervieweeRole", "programType", "scheduledAt", "durationMin", "location", "meetingUrl", "maxRegistrants", "registrationOpen", "isPublished"],
-      [["Career Conversation", "Session summary", "Guest Name", "Host Name", "Alumni, Product Lead", "madarat", new Date().toISOString(), 60, "Innovation Hall", "", 80, true, false]],
+      ["title", "description", "intervieweeName", "interviewerName", "intervieweeRole", "programType", "scheduledAt", "durationMin", "location", "maxRegistrants", "registrationOpen", "isPublished"],
+      [["Career Conversation", "Session summary", "Guest Name", "Host Name", "Alumni, Product Lead", "madarat", new Date().toISOString(), 60, "Innovation Hall", 80, true, false]],
     );
   }
 
@@ -479,7 +471,6 @@ export default function MadaratDashboard() {
         scheduledAt: row.scheduledAt?.trim() || new Date().toISOString(),
         durationMin: row.durationMin ? Number(row.durationMin) : undefined,
         location: row.location?.trim() || undefined,
-        meetingUrl: row.meetingUrl?.trim() || undefined,
         maxRegistrants: row.maxRegistrants ? Number(row.maxRegistrants) : undefined,
         registrationOpen: parseBoolean(row.registrationOpen ?? ""),
         isPublished: parseBoolean(row.isPublished ?? ""),
