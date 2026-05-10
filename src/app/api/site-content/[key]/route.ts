@@ -31,6 +31,8 @@ const Body = z.object({
 
 function canEdit(s: { position: string; departmentSlug: string | null }, key: string) {
   if (s.position === "president" || s.position === "vice_president") return true;
+  // auth.* settings (e.g. auth.requireDeviceConfirm) are admin-only.
+  if (key.startsWith("auth.")) return false;
   const isLeader = ["dept_leader", "dept_vice_leader", "sub_leader"].includes(s.position);
   if (!isLeader) return false;
   // Media leaders own the public site copy end-to-end — banners, hero, social,

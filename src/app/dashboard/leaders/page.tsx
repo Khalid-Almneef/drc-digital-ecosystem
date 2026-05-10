@@ -701,8 +701,77 @@ export default function LeadersDashboard() {
               </div>
             )}
           </div>
+
+          <DeviceConfirmToggle tr={tr} />
         </aside>
       </div>
+    </div>
+  );
+}
+
+function DeviceConfirmToggle({ tr }: { tr: (en: string, ar: string) => string }) {
+  const { data, mutate, isLoading } = useApi<{ key: string; json: { enabled?: boolean } | null }>(
+    "/api/site-content/auth.requireDeviceConfirm",
+  );
+  const enabled = data?.json?.enabled === true;
+  const [saving, setSaving] = useState(false);
+
+  async function toggle(next: boolean) {
+    setSaving(true);
+    try {
+      await api.patch("/api/site-content/auth.requireDeviceConfirm", {
+        json: { enabled: next },
+      });
+      toast.success(
+        next
+          ? tr("Device confirmation enabled", "تم تفعيل تأكيد الجهاز")
+          : tr("Device confirmation disabled", "تم تعطيل تأكيد الجهاز"),
+      );
+      void mutate();
+    } catch {
+      toast.error(tr("Could not update setting.", "تعذّر تحديث الإعداد."));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="glass-card p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Shield size={14} />
+            {tr("Security", "الأمان")}
+          </h3>
+          <p className="mt-1 text-xs text-muted">
+            {tr(
+              "When enabled, members signing in from a new device must click a confirmation link sent to their email. Trusted devices skip this step.",
+              "عند التفعيل، يجب على الأعضاء الذين يسجّلون الدخول من جهاز جديد النقر على رابط تأكيد يُرسل إلى بريدهم. الأجهزة الموثوقة تتخطى هذه الخطوة.",
+            )}
+          </p>
+        </div>
+      </div>
+      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-surface-elevated/35 px-3 py-3">
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            {tr("Require device confirmation", "اشتراط تأكيد الجهاز")}
+          </p>
+          <p className="mt-0.5 text-[11px] text-muted">
+            {isLoading
+              ? tr("Loading…", "جارٍ التحميل…")
+              : enabled
+                ? tr("On — new devices send a confirmation email.", "مفعّل — الأجهزة الجديدة ترسل بريد تأكيد.")
+                : tr("Off — members sign in directly.", "معطّل — يسجّل الأعضاء الدخول مباشرة.")}
+          </p>
+        </div>
+        <input
+          type="checkbox"
+          checked={enabled}
+          disabled={saving || isLoading}
+          onChange={(event) => void toggle(event.target.checked)}
+          className="h-5 w-5 accent-primary"
+        />
+      </label>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { sendEmail, renderEmail } from "@/lib/email";
+import { getRequireDeviceConfirm } from "@/lib/auth-settings";
 import { getMockStore, isMockMode, MOCK_DEMO_USERS, mockSessionFromKey } from "@/lib/mock-store";
 
 function resolveAppUrl(): string {
@@ -100,7 +101,9 @@ export const POST = handle(async (req) => {
       ])
     : null;
 
-  if (!knownDevice) {
+  const requireDeviceConfirm = await getRequireDeviceConfirm();
+
+  if (!knownDevice && requireDeviceConfirm) {
     const plain = randomToken(24);
     const appUrl = resolveAppUrl();
     const newDeviceToken = randomToken(24);
