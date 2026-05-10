@@ -310,7 +310,7 @@ export default function EventsPage() {
 function MadaratRegistrationModal({ event, onClose }: { event: UpcomingEvent; onClose: () => void }) {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [form, setForm] = useState({ fullName: "", email: "", universityId: "", phone: "", department: "", notes: "" });
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "", department: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
 
@@ -325,7 +325,7 @@ function MadaratRegistrationModal({ event, onClose }: { event: UpcomingEvent; on
     try {
       await api.post(`/api/madarat/sessions/${sessionId}/registrations`, form);
       setMessage({ kind: "ok", text: tr("You're registered. We'll follow up by email.", "تم تسجيلك. سنتواصل معك عبر البريد الإلكتروني.") });
-      setForm({ fullName: "", email: "", universityId: "", phone: "", department: "", notes: "" });
+      setForm({ fullName: "", email: "", phone: "", department: "", notes: "" });
     } catch (error) {
       const errorMsg = (error as { message?: string } | null)?.message;
       setMessage({ kind: "error", text: errorMsg || tr("Registration failed. Please try again.", "فشل التسجيل. حاول مرة أخرى.") });
@@ -351,9 +351,6 @@ function MadaratRegistrationModal({ event, onClose }: { event: UpcomingEvent; on
           </label>
           <label className="text-xs text-muted">{tr("Email", "البريد الإلكتروني")}
             <input type="email" className={fieldCls} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          </label>
-          <label className="text-xs text-muted">{tr("KSU ID (optional)", "الرقم الجامعي (اختياري)")}
-            <input className={fieldCls} value={form.universityId} onChange={(e) => setForm({ ...form, universityId: e.target.value })} />
           </label>
           <label className="text-xs text-muted">{tr("Phone (optional)", "الجوال (اختياري)")}
             <input className={fieldCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
