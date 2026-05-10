@@ -37,17 +37,15 @@ export const PATCH = handle(async (req, ctx) => {
   const { id } = await ctx.params;
   const b = await parseBody(req, Patch);
 
-  // Publishing (isPublished -> true) is gated to media leadership + admins.
-  // The rest of the patch is open to any signed-in user (event owners can still
-  // edit their drafts).
-  if (b.isPublished === true) {
-    const isAdmin = session.position === "president" || session.position === "vice_president";
-    const isMediaLead =
-      (session.position === "dept_leader" || session.position === "dept_vice_leader") &&
-      session.departmentSlug === "media";
-    if (!isAdmin && !isMediaLead) {
-      return err(403, "Only the media team can publish events.");
-    }
+  // All event mutations (publishing, edits, deletes) are restricted to club
+  // admins and media leadership. Plain members must not be able to rewrite
+  // events that they don't own.
+  const isAdmin = session.position === "president" || session.position === "vice_president";
+  const isMediaLead =
+    (session.position === "dept_leader" || session.position === "dept_vice_leader") &&
+    session.departmentSlug === "media";
+  if (!isAdmin && !isMediaLead) {
+    return err(403, "Only the media team can edit events.");
   }
 
   if (isMockMode()) {
@@ -87,16 +85,25 @@ export const PATCH = handle(async (req, ctx) => {
 });
 
 export const DELETE = handle(async (_req, ctx) => {
+  // CRITICAL: auth check must run BEFORE the mock-mode branch so a misconfigured
+  // mock-mode deploy can never serve an unauthenticated delete. Event deletion
+  // is restricted to club admins and media leadership (same gate as publishing).
+  const s = await requireSession();
+  const isAdmin = s.position === "president" || s.position === "vice_president";
+  const isMediaLead =
+    (s.position === "dept_leader" || s.position === "dept_vice_leader") &&
+    s.departmentSlug === "media";
+  if (!isAdmin && !isMediaLead) {
+    return err(403, "Only the media team can delete events.");
+  }
+  const { id } = await ctx.params;
   if (isMockMode()) {
-    const { id } = await ctx.params;
     const store = getMockStore();
     const eventId = Number(id);
     store.events = store.events.filter((item) => item.eventId !== eventId);
     store.volunteerHours = store.volunteerHours.filter((hour) => !(hour.sourceType === "event_credit" && hour.sourceId === eventId));
     return ok({ success: true });
   }
-  await requireSession();
-  const { id } = await ctx.params;
   await query(`DELETE FROM events WHERE event_id = $1`, [id]);
   return ok({ success: true });
 });
