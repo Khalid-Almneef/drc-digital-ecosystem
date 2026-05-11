@@ -259,6 +259,20 @@ h2, h3 {
     0 14px 34px rgba(2, 10, 24, 0.12);
 }
 
+/* Calm "Layer A" section wrapper. No border, no shadow — just spacing.
+   Use for grouping headings + sub-cards so the page has rest zones. */
+.panel-quiet {
+  border-radius: 1.1rem;
+  background: transparent;
+}
+
+/* Tabular numerals for stats / tables so values don't jitter when they change. */
+[data-stat-value],
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
 .control-surface {
   border: 1px solid color-mix(in srgb, var(--border) 82%, rgba(255, 255, 255, 0.03));
   border-radius: 0.95rem;
