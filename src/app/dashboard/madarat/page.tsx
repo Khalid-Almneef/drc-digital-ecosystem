@@ -565,11 +565,10 @@ export default function MadaratDashboard() {
         description={tr("Track interviewees, audience registration for Madarat sessions, and cross-department delivery work.", "تابع الضيوف، تسجيل الجمهور لجلسات مدارات، ومهام التنفيذ بين الأقسام.")}
       />
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-8">
+      <div className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         <StatCard icon={Mic2} label={tr("Upcoming Interviewees", "الضيوف القادمين")} value={upcomingSessions.length} />
-        <StatCard icon={CalendarDays} label={tr("Previous Sessions", "الجلسات السابقة")} value={pastSessions.length} />
-        <StatCard icon={Users} label={tr("Audience Registrations", "تسجيلات الجمهور")} value={totalRegistrations} color="text-cyan-300" />
-        <StatCard icon={Megaphone} label={tr("Open Support Tasks", "مهام الدعم المفتوحة")} value={openSupportTasks} color="text-amber-300" />
+        <StatCard icon={Users} label={tr("Audience Registrations", "تسجيلات الجمهور")} value={totalRegistrations} />
+        <StatCard icon={Megaphone} label={tr("Open Support Tasks", "مهام الدعم المفتوحة")} value={openSupportTasks} tone={openSupportTasks > 0 ? "warning" : "neutral"} />
       </div>
 
       <div className="tab-rail mb-6 w-fit">
@@ -713,17 +712,16 @@ export default function MadaratDashboard() {
 
       {activeView === "audience" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard icon={Users} label="Total Registered Audience" value={totalRegistrations} color="text-cyan-300" />
-            <StatCard icon={Radio} label="Published Sessions" value={sessions.filter((session) => session.isPublished).length} color="text-primary" />
-            <StatCard icon={Mic2} label="Madariya Sessions" value={madariyaCount} color="text-fuchsia-300" />
-            <StatCard icon={Clock3} label="Avg. Registration / Session" value={sessions.length ? (totalRegistrations / sessions.length).toFixed(1) : "0.0"} color="text-emerald-300" />
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            <StatCard icon={Users} label="Total Registered Audience" value={totalRegistrations} />
+            <StatCard icon={Radio} label="Published Sessions" value={sessions.filter((session) => session.isPublished).length} />
+            <StatCard icon={Clock3} label="Avg. Registration / Session" value={sessions.length ? (totalRegistrations / sessions.length).toFixed(1) : "0.0"} />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <StatCard icon={Users} label="Male Audience" value={audienceMaleCount} color="text-sky-300" />
-            <StatCard icon={Users} label="Female Audience" value={audienceFemaleCount} color="text-rose-300" />
-            <StatCard icon={Users} label="Unspecified Audience" value={audienceUnspecifiedCount} color="text-muted" />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <StatCard icon={Users} label="Male Audience" value={audienceMaleCount} />
+            <StatCard icon={Users} label="Female Audience" value={audienceFemaleCount} />
+            <StatCard icon={Users} label="Unspecified Audience" value={audienceUnspecifiedCount} />
           </div>
 
           <div className="glass-card p-5">

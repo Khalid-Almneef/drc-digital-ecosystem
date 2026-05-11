@@ -488,11 +488,20 @@ export default function DashboardOverview() {
         </div>
       ) : null}
 
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Inbox} label={tr("Open Tasks", "المهام المفتوحة")} value={openTasks.length} color="text-primary" />
-        <StatCard icon={Clock3} label={tr("Pending Hours", "ساعات معلقة")} value={pendingHourTotal.toFixed(1)} color="text-amber-300" />
-        <StatCard icon={CheckCircle} label={tr("Approved Hours", "ساعات مقبولة")} value={approvedHours.toFixed(1)} color="text-emerald-300" />
-        <StatCard icon={Trophy} label={tr("Endorsement Points", "نقاط التزكية")} value={endorsementSummary.endorsementPoints} color="text-cyan-300" />
+      {/* Inline summary strip — replaces the old 4-card KPI row.
+          Values stay visible but stop competing visually with the work below. */}
+      <div className="mb-7 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-border/60 bg-surface/25 px-4 py-3 text-sm sm:px-5">
+        {[
+          { label: tr("Open Tasks", "المهام المفتوحة"), value: openTasks.length },
+          { label: tr("Pending Hours", "ساعات معلقة"), value: pendingHourTotal.toFixed(1) },
+          { label: tr("Approved Hours", "ساعات مقبولة"), value: approvedHours.toFixed(1) },
+          { label: tr("Endorsement Points", "نقاط التزكية"), value: endorsementSummary.endorsementPoints },
+        ].map((item) => (
+          <div key={item.label} className="flex items-baseline gap-2">
+            <span className="text-xs uppercase tracking-[0.16em] text-muted">{item.label}</span>
+            <span data-stat-value className="text-base font-semibold text-foreground">{item.value}</span>
+          </div>
+        ))}
       </div>
 
       {loading ? (
