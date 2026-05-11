@@ -13,6 +13,7 @@ const PatchSchema = z.object({
     secondary: HexColor,
     accent: HexColor,
   }).nullable().optional(),
+  glowEnabled: z.boolean().optional(),
 });
 
 export const GET = handle(async () => {
@@ -31,7 +32,8 @@ export const PATCH = handle(async (req) => {
   if (
     body.language === undefined &&
     body.theme === undefined &&
-    body.palette === undefined
+    body.palette === undefined &&
+    body.glowEnabled === undefined
   ) {
     return err(400, "Nothing to update.");
   }
@@ -46,6 +48,7 @@ export const PATCH = handle(async (req) => {
       language: body.language,
       theme: body.theme,
       palette: body.palette,
+      glowEnabled: body.glowEnabled,
     },
     session.memberId,
   );

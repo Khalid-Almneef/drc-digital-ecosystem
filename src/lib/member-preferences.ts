@@ -16,6 +16,8 @@ export interface MemberPreferenceRecord {
   language?: PreferenceLanguage;
   theme?: PreferenceTheme;
   palette?: MemberPalettePreference | null;
+  /** Cursor / touch glow overlay. Default off for all members. */
+  glowEnabled?: boolean;
   updatedAt: string;
 }
 
@@ -60,6 +62,7 @@ function sanitizePreferenceRecord(value: unknown): MemberPreferenceRecord | null
   } else if (isValidPalette(raw.palette)) {
     next.palette = raw.palette;
   }
+  if (typeof raw.glowEnabled === "boolean") next.glowEnabled = raw.glowEnabled;
 
   return next;
 }
@@ -110,6 +113,7 @@ export async function patchMemberPreferences(
     language?: PreferenceLanguage;
     theme?: PreferenceTheme;
     palette?: MemberPalettePreference | null;
+    glowEnabled?: boolean;
   },
   updatedBy: number,
 ) {
@@ -124,6 +128,7 @@ export async function patchMemberPreferences(
   if (patch.language !== undefined) next.language = patch.language;
   if (patch.theme !== undefined) next.theme = patch.theme;
   if (patch.palette !== undefined) next.palette = patch.palette;
+  if (patch.glowEnabled !== undefined) next.glowEnabled = patch.glowEnabled;
 
   payload.byMemberId[key] = next;
 

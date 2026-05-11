@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface TouchPoint {
   id: number;
@@ -10,12 +11,15 @@ interface TouchPoint {
 }
 
 export function GlowEffect({ className = "" }: { className?: string }) {
+  const { glowEnabled } = useTheme();
   const [mousePos, setMouseXPos] = useState({ x: -1000, y: -1000 });
   const [touchPoints, setTouchPoints] = useState<TouchPoint[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
+    if (!glowEnabled) return;
+
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const checkMotion = () => setReducedMotion(motionQuery.matches);
@@ -23,7 +27,7 @@ export function GlowEffect({ className = "" }: { className?: string }) {
     checkMotion();
     window.addEventListener("resize", checkMobile);
     motionQuery.addEventListener("change", checkMotion);
-    
+
     const handleMouseMove = (e: MouseEvent) => {
       if (isMobile || reducedMotion) return;
       setMouseXPos({ x: e.clientX, y: e.clientY });
@@ -38,7 +42,7 @@ export function GlowEffect({ className = "" }: { className?: string }) {
         y: touch.clientY,
       };
       setTouchPoints((prev) => [...prev, newPoint]);
-      
+
       // Remove point after animation
       setTimeout(() => {
         setTouchPoints((prev) => prev.filter((p) => p.id !== newPoint.id));
@@ -54,9 +58,10 @@ export function GlowEffect({ className = "" }: { className?: string }) {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchstart", handleTouchStart);
     };
-  }, [isMobile, reducedMotion]);
+  }, [glowEnabled, isMobile, reducedMotion]);
 
   if (reducedMotion) return null;
+  if (!glowEnabled) return null;
 
   return (
     <div className={`pointer-events-none fixed inset-0 z-0 overflow-hidden ${className}`}>

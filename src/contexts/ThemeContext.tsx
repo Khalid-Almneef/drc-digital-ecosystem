@@ -19,12 +19,16 @@ interface ThemeContextType {
   hasCustomPalette: boolean;
   setPalette: (palette: ThemePalette) => void;
   resetPalette: () => void;
+  /** Cursor / touch glow overlay. Off by default. */
+  glowEnabled: boolean;
+  setGlowEnabled: (next: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 const THEME_STORAGE_KEY = "drc-theme";
 const PALETTE_STORAGE_KEY = "drc-palette";
+const GLOW_STORAGE_KEY = "drc-glow";
 
 const DEFAULT_PALETTES: Record<Theme, ThemePalette> = {
   dark: {
@@ -115,6 +119,13 @@ export function ThemeProvider({
   const { user, isLoading } = useAuth();
   const [theme, setTheme] = useState<Theme>(() => readStoredTheme(THEME_STORAGE_KEY) ?? initialTheme);
   const [customPalette, setCustomPalette] = useState<ThemePalette | null>(() => readStoredPalette(PALETTE_STORAGE_KEY));
+  const [glowEnabled, setGlowEnabledState] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(GLOW_STORAGE_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
   const [accountReady, setAccountReady] = useState(false);
   const localPreferenceWinsRef = useRef(false);
 
@@ -125,6 +136,9 @@ export function ThemeProvider({
       }
       if (event.key === PALETTE_STORAGE_KEY) {
         setCustomPalette(readStoredPalette(PALETTE_STORAGE_KEY));
+      }
+      if (event.key === GLOW_STORAGE_KEY) {
+        setGlowEnabledState(event.newValue === "true");
       }
     };
 
@@ -173,6 +187,10 @@ export function ThemeProvider({
         } else if (isPalette(preferences?.palette)) {
           setCustomPalette(preferences.palette);
           writeStoredPalette(scopedPaletteKey, preferences.palette);
+        }
+        if (typeof preferences?.glowEnabled === "boolean") {
+          setGlowEnabledState(preferences.glowEnabled);
+          try { localStorage.setItem(GLOW_STORAGE_KEY, String(preferences.glowEnabled)); } catch {}
         }
       })
       .catch(() => {})
@@ -242,9 +260,19 @@ export function ThemeProvider({
       body: JSON.stringify({
         theme,
         palette: customPalette,
+        glowEnabled,
       }),
     }).catch(() => {});
-  }, [accountReady, customPalette, theme, user?.id]);
+  }, [accountReady, customPalette, theme, glowEnabled, user?.id]);
+
+  const setGlowEnabled = (next: boolean) => {
+    localPreferenceWinsRef.current = true;
+    setGlowEnabledState(next);
+    try {
+      localStorage.setItem(GLOW_STORAGE_KEY, String(next));
+      if (user?.id) localStorage.setItem(`${GLOW_STORAGE_KEY}:${user.id}`, String(next));
+    } catch {}
+  };
 
   const toggleTheme = () => {
     localPreferenceWinsRef.current = true;
@@ -276,6 +304,8 @@ export function ThemeProvider({
         hasCustomPalette: Boolean(customPalette),
         setPalette: updatePalette,
         resetPalette,
+        glowEnabled,
+        setGlowEnabled,
       }}
     >
       {children}

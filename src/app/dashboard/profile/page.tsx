@@ -192,7 +192,7 @@ const PRESET_PALETTES = [
 export default function ProfilePage() {
   const { user } = useAuth();
   const { lang, setLang } = useLang();
-  const { theme, setTheme, palette, hasCustomPalette, setPalette, resetPalette } = useTheme();
+  const { theme, setTheme, palette, hasCustomPalette, setPalette, resetPalette, glowEnabled, setGlowEnabled } = useTheme();
   const [form, setForm] = useState<ProfileData>(empty);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -391,6 +391,45 @@ export default function ProfilePage() {
                     <option value="dark">{tr("Dark", "داكن")}</option>
                     <option value="light">{tr("Light", "فاتح")}</option>
                   </select>
+                </div>
+                <div className="flex flex-col gap-1.5 sm:col-span-2">
+                  <label className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">{tr("Glow", "التوهج")}</label>
+                  <div
+                    role="switch"
+                    aria-checked={glowEnabled}
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === " " || event.key === "Enter") {
+                        event.preventDefault();
+                        setGlowEnabled(!glowEnabled);
+                      }
+                    }}
+                    onClick={() => setGlowEnabled(!glowEnabled)}
+                    className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-border bg-surface/40 p-3 transition-colors hover:border-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">{tr("Cursor & touch glow", "توهّج المؤشّر واللمس")}</p>
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        {tr(
+                          "Adds a soft brand-colored glow that follows your cursor (or your taps on phone). Off by default.",
+                          "يُضيف توهجًا خفيفًا بلون النادي يتبع مؤشّر الفأرة (أو لمساتك على الجوال). مُعطّل افتراضيًا.",
+                        )}
+                      </p>
+                    </div>
+                    <span
+                      aria-hidden="true"
+                      dir="ltr"
+                      className={`relative mt-0.5 inline-flex h-6 w-10 shrink-0 items-center rounded-full border transition-colors ${
+                        glowEnabled ? "border-primary/40 bg-primary/30" : "border-border bg-surface"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                          glowEnabled ? "translate-x-5 bg-primary" : "translate-x-1 bg-muted"
+                        }`}
+                      />
+                    </span>
+                  </div>
                 </div>
               </div>
 
