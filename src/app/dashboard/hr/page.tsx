@@ -11,7 +11,7 @@ import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformance
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useApi } from "@/lib/hooks/useApi";
 import {
-  Users, UserPlus, UserCheck, Clock, Search, Loader2,
+  Users, UserPlus, Clock, Search, Loader2,
   ChevronDown, ChevronUp, Check, X, Save, ExternalLink,
   ThumbsUp, ThumbsDown, Shield, CalendarDays, Megaphone,
   Mail, Plus, Download, Upload, FileSpreadsheet, AlertTriangle,

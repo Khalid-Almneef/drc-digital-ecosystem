@@ -6,12 +6,10 @@ import {
   Award,
   Calendar,
   Check,
-  CheckCircle,
   Clock3,
   ExternalLink,
   FolderKanban,
   HeartHandshake,
-  Inbox,
   Loader2,
   Megaphone,
   Plus,
@@ -20,7 +18,6 @@ import {
   Sparkles,
   Star,
   TimerReset,
-  Trophy,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";

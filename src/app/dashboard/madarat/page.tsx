@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  CalendarDays,
   Clock3,
   GraduationCap,
   Loader2,
@@ -391,10 +390,6 @@ export default function MadaratDashboard() {
   );
   const totalRegistrations = useMemo(
     () => sessions.reduce((sum, session) => sum + session.registrationCount, 0),
-    [sessions],
-  );
-  const madariyaCount = useMemo(
-    () => sessions.filter((session) => session.programType !== "madarat").length,
     [sessions],
   );
   const audienceMaleCount = useMemo(() => sessions.reduce((sum, session) => sum + (session.maleCount ?? 0), 0), [sessions]);
