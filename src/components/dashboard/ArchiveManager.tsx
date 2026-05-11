@@ -743,7 +743,7 @@ export function ArchiveManager() {
           />
           <button onClick={() => setCreateOpen(true)} className="btn-primary flex items-center gap-1.5 px-4 py-2 text-xs">
             <Plus size={13} />
-            {tr("Create Item", "إنشاء عنصر")}
+            {tr("Create Project or Event", "إنشاء مشروع أو فعالية")}
           </button>
         </div>
       </div>

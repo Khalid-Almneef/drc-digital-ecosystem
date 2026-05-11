@@ -492,7 +492,7 @@ export default function InnovationDashboard() {
       <div className="flex items-center justify-between gap-4 mb-6">
         <div className="tab-rail w-fit" role="tablist" aria-label={tr("Innovation sections", "أقسام الابتكار")}>
           {([
-            { key: "projects",     label: tr("Projects", "المشاريع") },
+            { key: "projects",     label: tr("Projects & Events", "المشاريع والفعاليات") },
             { key: "tasks",        label: tr("Task Review", "مراجعة المهام") },
             { key: "team",         label: tr("Team Performance", "أداء الفريق") },
             { key: "applications", label: tr("Applications", "الطلبات") },
