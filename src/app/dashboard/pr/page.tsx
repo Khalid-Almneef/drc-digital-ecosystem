@@ -318,8 +318,8 @@ export default function PRDashboard() {
         <StatCard icon={Calendar} label={tr("Events Promoting", "فعاليات تحت الترويج")} value={eventPromotions.length} onClick={() => setActiveTab("promotions")} />
       </div>
 
-      {/* Bulk-import past partner events / activations */}
-      <div className="mb-8">
+      {/* Bulk-import past partner events / activations + sponsors */}
+      <div className="mb-8 grid gap-4 xl:grid-cols-2">
         <BulkUploadCard
           title="Bulk-import past PR events"
           titleAr="استيراد فعاليات العلاقات العامة بالجملة"
@@ -328,6 +328,16 @@ export default function PRDashboard() {
           templateUrl="/api/events/bulk/template"
           uploadUrl="/api/events/bulk"
           templateFilename="pr-events-template.csv"
+        />
+        <BulkUploadCard
+          title="Bulk-import sponsors"
+          titleAr="استيراد الرعاة بالجملة"
+          description="Add many sponsors at once from a CSV. Same fields as the single-sponsor form (tier, status, contact info, proposal). Existing sponsor names are not deduplicated — review before uploading."
+          descriptionAr="أضف عددًا من الرعاة دفعة واحدة عبر ملف CSV. نفس حقول إضافة راعٍ واحد (الفئة، الحالة، بيانات التواصل، العرض). لا يتم تجاهل الأسماء المكرّرة — راجع الملف قبل الرفع."
+          templateUrl="/api/sponsors/bulk/template"
+          uploadUrl="/api/sponsors/bulk"
+          templateFilename="sponsors-bulk-template.csv"
+          onComplete={() => { void loadSponsors(); }}
         />
       </div>
 
