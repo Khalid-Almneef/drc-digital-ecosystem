@@ -331,29 +331,79 @@ export default function PRDashboard() {
         />
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div className="tab-rail w-fit" role="tablist" aria-label={tr("PR sections", "أقسام العلاقات العامة")}>
-          {([
-            { key: "sponsors",    label: tr("Sponsors", "الرعاة") },
-            { key: "promotions",  label: tr("Promotions", "الترويج") },
-            { key: "visitIdeas",  label: tr("Visit Ideas", "أفكار الزيارات") },
-            { key: "tasks",       label: tr("Task Review", "مراجعة المهام") },
-            { key: "operations",  label: tr("Operations", "التشغيل") },
-            { key: "changeRequests", label: tr("Change Requests", "طلبات التغيير") },
-          ] as const).map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} data-active={activeTab === tab.key} role="tab" aria-selected={activeTab === tab.key} className="tab-pill">
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        {activeTab === "sponsors" && (
-          <button type="button" onClick={startNewSponsor} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs">
-            <Plus className="w-3.5 h-3.5" />
-            {tr("Add Potential Sponsor", "إضافة راع محتمل")}
-          </button>
-        )}
-      </div>
-
+      {(() => {
+        const TAB_LABELS = {
+          sponsors: tr("Sponsors", "الرعاة"),
+          promotions: tr("Promotions", "الترويج"),
+          visitIdeas: tr("Visit Ideas", "أفكار الزيارات"),
+          tasks: tr("Task Review", "مراجعة المهام"),
+          operations: tr("Operations", "التشغيل"),
+          changeRequests: tr("Change Requests", "طلبات التغيير"),
+        } as const;
+        const GROUPS = {
+          pipeline: { label: tr("Pipeline", "السلسلة"), tabs: ["sponsors", "promotions", "visitIdeas"] as const },
+          tasks: { label: tr("Tasks", "المهام"), tabs: ["tasks", "changeRequests"] as const },
+          settings: { label: tr("Settings", "الإعدادات"), tabs: ["operations"] as const },
+        } as const;
+        const findGroup = (): keyof typeof GROUPS => {
+          for (const key of Object.keys(GROUPS) as (keyof typeof GROUPS)[]) {
+            if ((GROUPS[key].tabs as readonly string[]).includes(activeTab)) return key;
+          }
+          return "pipeline";
+        };
+        const activeGroup = findGroup();
+        const subTabs = GROUPS[activeGroup].tabs;
+        return (
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-3">
+              <div className="tab-rail w-fit" role="tablist" aria-label={tr("PR sections", "أقسام العلاقات العامة")}>
+                {(Object.keys(GROUPS) as (keyof typeof GROUPS)[]).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setActiveTab(GROUPS[key].tabs[0] as typeof activeTab)}
+                    data-active={key === activeGroup}
+                    aria-selected={key === activeGroup}
+                    role="tab"
+                    className="tab-pill"
+                  >
+                    {GROUPS[key].label}
+                  </button>
+                ))}
+              </div>
+              {subTabs.length > 1 ? (
+                <div className="-mx-1 flex flex-wrap gap-1.5 px-1" role="tablist" aria-label={GROUPS[activeGroup].label}>
+                  {subTabs.map((tab) => {
+                    const isActive = activeTab === tab;
+                    return (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setActiveTab(tab as typeof activeTab)}
+                        aria-selected={isActive}
+                        role="tab"
+                        className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                          isActive
+                            ? "border-primary/40 bg-primary/10 text-foreground"
+                            : "border-border/70 bg-surface/30 text-muted hover:border-primary/30 hover:text-foreground"
+                        }`}
+                      >
+                        {TAB_LABELS[tab]}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+            {activeTab === "sponsors" && (
+              <button type="button" onClick={startNewSponsor} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs">
+                <Plus className="w-3.5 h-3.5" />
+                {tr("Add Potential Sponsor", "إضافة راع محتمل")}
+              </button>
+            )}
+          </div>
+        );
+      })()}
       {activeTab === "sponsors" && (
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
           <div className="space-y-3">

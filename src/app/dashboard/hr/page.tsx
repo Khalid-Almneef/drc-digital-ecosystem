@@ -528,35 +528,76 @@ export default function HRDashboard() {
         description={tr("Manage club membership, applications, volunteer hours, and member records.", "أدر العضوية والطلبات والساعات التطوعية وبيانات الأعضاء.")}
       />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-8">
-        <StatCard icon={Users}     label={tr("Total Members", "إجمالي الأعضاء")}          value={membersLoading ? "…" : totalMembers}   onClick={() => setActiveTab("members")} />
-        <StatCard icon={UserPlus}  label={tr("Pending Applications", "الطلبات المعلقة")}   value={appsLoading ? "…" : pendingApps}      onClick={() => setActiveTab("applications")} />
-        <StatCard icon={UserCheck} label={tr("Active Members", "الأعضاء النشطين")}         value={membersLoading ? "…" : activeMembers} onClick={() => setActiveTab("members")} />
-        <StatCard icon={Users}     label={tr("Male Members", "الأعضاء الذكور")}           value={membersLoading ? "…" : maleMembers}   onClick={() => setActiveTab("members")} color="text-sky-300" />
-        <StatCard icon={Users}     label={tr("Female Members", "العضوات")}                value={membersLoading ? "…" : femaleMembers} onClick={() => setActiveTab("members")} color="text-rose-300" />
-        <StatCard icon={Shield}    label={tr("Join Status", "حالة الانضمام")}            value={accepting ? tr("Open", "مفتوح") : tr("Closed", "مغلق")} onClick={() => setActiveTab("membership")} />
+      {/* Stats (focused: 3 north-star KPIs only — male/female/active surface inside Members) */}
+      <div className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+        <StatCard icon={Users}     label={tr("Total Members", "إجمالي الأعضاء")}        value={membersLoading ? "…" : totalMembers}   onClick={() => setActiveTab("members")} />
+        <StatCard icon={UserPlus}  label={tr("Pending Applications", "الطلبات المعلقة")} value={appsLoading ? "…" : pendingApps}      onClick={() => setActiveTab("applications")} tone={pendingApps > 0 ? "warning" : "neutral"} />
+        <StatCard icon={Shield}    label={tr("Join Status", "حالة الانضمام")}           value={accepting ? tr("Open", "مفتوح") : tr("Closed", "مغلق")} onClick={() => setActiveTab("membership")} tone={accepting ? "success" : "neutral"} />
       </div>
 
-      {/* Tabs */}
-      <div className="tab-rail mb-6 w-fit" role="tablist" aria-label={tr("HR sections", "أقسام الموارد")}>
-        {(["members", "applications", "forms", "motm", "endorsements", "hours", "hourTasks", "performance", "announcements", "changeRequests", "membership", "operations", "alumni"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            data-active={activeTab === tab}
-            role="tab"
-            aria-selected={activeTab === tab}
-            className="tab-pill"
-          >
-            {tab === "applications" && pendingApps > 0 ? (
-              <>{TAB_LABELS[tab]} <span className="ml-1.5 badge badge-warning">{pendingApps}</span></>
-            ) : (
-              TAB_LABELS[tab]
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Two-tier tabs: 4 primary groups → in-group sub-tabs */}
+      {(() => {
+        const GROUPS = {
+          people: { label: tr("People", "الأشخاص"), tabs: ["members", "applications", "alumni", "performance"] as const },
+          recognition: { label: tr("Recognition", "التقدير"), tabs: ["motm", "endorsements", "hours", "hourTasks"] as const },
+          comms: { label: tr("Communications", "التواصل"), tabs: ["announcements", "forms", "changeRequests"] as const },
+          settings: { label: tr("Settings", "الإعدادات"), tabs: ["membership", "operations"] as const },
+        } as const;
+        const findGroup = (tab: typeof activeTab): keyof typeof GROUPS => {
+          for (const key of Object.keys(GROUPS) as (keyof typeof GROUPS)[]) {
+            if ((GROUPS[key].tabs as readonly string[]).includes(tab)) return key;
+          }
+          return "people";
+        };
+        const activeGroup = findGroup(activeTab);
+        const subTabs = GROUPS[activeGroup].tabs;
+        return (
+          <div className="mb-6 space-y-3">
+            <div className="tab-rail w-fit" role="tablist" aria-label={tr("HR sections", "أقسام الموارد")}>
+              {(Object.keys(GROUPS) as (keyof typeof GROUPS)[]).map((key) => {
+                const isActive = key === activeGroup;
+                const showBadge = key === "people" && pendingApps > 0;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setActiveTab(GROUPS[key].tabs[0] as typeof activeTab)}
+                    data-active={isActive}
+                    aria-selected={isActive}
+                    role="tab"
+                    className="tab-pill"
+                  >
+                    {GROUPS[key].label}
+                    {showBadge ? <span className="ms-1.5 badge badge-warning">{pendingApps}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="-mx-1 flex flex-wrap gap-1.5 px-1" role="tablist" aria-label={GROUPS[activeGroup].label}>
+              {subTabs.map((tab) => {
+                const isActive = activeTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab as typeof activeTab)}
+                    aria-selected={isActive}
+                    role="tab"
+                    className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                      isActive
+                        ? "border-primary/40 bg-primary/10 text-foreground"
+                        : "border-border/70 bg-surface/30 text-muted hover:border-primary/30 hover:text-foreground"
+                    }`}
+                  >
+                    {TAB_LABELS[tab]}
+                    {tab === "applications" && pendingApps > 0 ? <span className="badge badge-warning">{pendingApps}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Members Tab ── */}
       {activeTab === "members" && (
