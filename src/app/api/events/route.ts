@@ -20,7 +20,8 @@ export const GET = handle(async () => {
     `SELECT event_id AS "eventId", title, description, image_url AS "imageUrl",
             type::text AS type, category, start_time AS "startTime", end_time AS "endTime",
             location, seats_available AS "seatsAvailable", max_team_size AS "maxTeamSize",
-            requirements, is_published AS "isPublished", credit_hours AS "creditHours"
+            requirements, is_published AS "isPublished", credit_hours AS "creditHours",
+            created_by AS "createdBy", created_at AS "createdAt"
        FROM events ORDER BY start_time DESC`,
   );
   return ok(rows);

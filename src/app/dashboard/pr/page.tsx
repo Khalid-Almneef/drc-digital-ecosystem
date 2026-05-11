@@ -23,6 +23,23 @@ import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOper
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
+import { useApi } from "@/lib/hooks/useApi";
+
+interface PRPromoEvent {
+  eventId: number;
+  title: string;
+  description: string | null;
+  type: "workshop" | "competition" | "meetup" | "general";
+  category: string | null;
+  startTime: string;
+  endTime: string | null;
+  location: string | null;
+  seatsAvailable: number | null;
+  isPublished: boolean;
+  imageUrl: string | null;
+  createdBy: number | null;
+  createdAt: string;
+}
 
 type SponsorStatus = "wanting_to_contact" | "contacted" | "in_process" | "valid" | "failed";
 type SponsorTier = "platinum" | "gold" | "silver" | "bronze";
@@ -98,9 +115,6 @@ const tierColors: Record<SponsorTier, string> = {
   bronze: "text-orange-300 bg-orange-400/10 border-orange-400/20",
 };
 
-// Empty until the PR committee tracks real promotions. The "Promotions"
-// tab renders an empty state instead of fake numbers.
-const eventPromotions: { event: string; date: string; reach: string; registrations: number; status: string }[] = [];
 
 function statusMeta(status: SponsorStatus) {
   return statusOptions.find((option) => option.value === status) ?? statusOptions[0];
@@ -202,6 +216,7 @@ export default function PRDashboard() {
   const { lang } = useLang();
   const [activeTab, setActiveTab] = useState<"sponsors" | "promotions" | "visitIdeas" | "tasks" | "operations" | "changeRequests">("sponsors");
   const [sponsors, setSponsors] = useState<SponsorRow[]>([]);
+  const { data: prEvents = [], isLoading: eventsLoading, mutate: refreshEvents } = useApi<PRPromoEvent[]>("/api/events");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingId, setUploadingId] = useState<number | null>(null);
@@ -315,7 +330,7 @@ export default function PRDashboard() {
         <StatCard icon={Handshake} label={tr("Potential Sponsors", "رعاة محتملون")} value={metrics.potential}     onClick={() => setActiveTab("sponsors")} />
         <StatCard icon={Megaphone} label={tr("In Process", "قيد المتابعة")}        value={metrics.inProcess}     onClick={() => setActiveTab("sponsors")} />
         <StatCard icon={DollarSign} label={tr("Valid Sponsorship", "الرعاية المعتمدة")} value={`${metrics.validAmount.toLocaleString()} SAR`} onClick={() => setActiveTab("sponsors")} />
-        <StatCard icon={Calendar} label={tr("Events Promoting", "فعاليات تحت الترويج")} value={eventPromotions.length} onClick={() => setActiveTab("promotions")} />
+        <StatCard icon={Calendar} label={tr("PR Events", "فعاليات العلاقات")} value={eventsLoading ? "…" : prEvents.length} onClick={() => setActiveTab("promotions")} />
       </div>
 
       {/* Bulk-import past partner events / activations + sponsors */}
@@ -323,11 +338,12 @@ export default function PRDashboard() {
         <BulkUploadCard
           title="Bulk-import past PR events"
           titleAr="استيراد فعاليات العلاقات العامة بالجملة"
-          description="Migrate historical campaigns, partner events, or company visits in one CSV. Imports are saved as drafts and need media-team approval to go live."
-          descriptionAr="انقل الحملات السابقة وفعاليات الشركاء والزيارات بملف CSV واحد. الاستيراد يُحفظ كمسودات وينشر فقط بعد موافقة فريق الإعلام."
+          description="Migrate historical campaigns, partner events, or company visits in one CSV. Imports are saved as drafts and need media-team approval to go live. After upload, find them under the Promotions tab."
+          descriptionAr="انقل الحملات السابقة وفعاليات الشركاء والزيارات بملف CSV واحد. الاستيراد يُحفظ كمسودات وينشر فقط بعد موافقة فريق الإعلام. بعد الرفع تجدها تحت تبويب الترويج."
           templateUrl="/api/events/bulk/template"
           uploadUrl="/api/events/bulk"
           templateFilename="pr-events-template.csv"
+          onComplete={() => { void refreshEvents(); setActiveTab("promotions"); }}
         />
         <BulkUploadCard
           title="Bulk-import sponsors"
@@ -337,7 +353,7 @@ export default function PRDashboard() {
           templateUrl="/api/sponsors/bulk/template"
           uploadUrl="/api/sponsors/bulk"
           templateFilename="sponsors-bulk-template.csv"
-          onComplete={() => { void loadSponsors(); }}
+          onComplete={() => { void loadSponsors(); setActiveTab("sponsors"); }}
         />
       </div>
 
@@ -545,32 +561,58 @@ export default function PRDashboard() {
       )}
 
       {activeTab === "promotions" && (
-        <div className="space-y-3">
-          {eventPromotions.map((event, i) => (
-            <motion.div
-              key={event.event}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="glass-card p-5 flex items-center justify-between card-hover"
-            >
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">{event.event}</h4>
-                <p className="text-xs text-muted mt-0.5">{event.date}</p>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-muted">
-                <div className="text-center">
-                  <p className="text-sm font-bold text-foreground">{event.reach}</p>
-                  <p className="text-[9px]">{tr("Reach", "الوصول")}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-bold text-foreground">{event.registrations}</p>
-                  <p className="text-[9px]">{tr("Sign-ups", "التسجيلات")}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="space-y-3">
+          <div className="rounded-xl border border-border/60 bg-surface/30 px-4 py-3 text-xs text-muted">
+            {tr(
+              "Events imported through the CSV above (or created by Innovation) appear here. Drafts need Media leadership to publish them before they show on the public Events page.",
+              "تظهر هنا الفعاليات المستوردة من ملف CSV أعلاه (أو التي ينشئها فريق الابتكار). تحتاج المسودات إلى موافقة فريق الإعلام قبل نشرها في صفحة الفعاليات العامة.",
+            )}
+          </div>
+          {eventsLoading ? (
+            <div className="glass-card p-6 text-center text-sm text-muted">{tr("Loading events…", "جاري تحميل الفعاليات…")}</div>
+          ) : prEvents.length === 0 ? (
+            <div className="glass-card p-6 text-center text-sm text-muted">
+              {tr("No events yet. Use the CSV importer above to add past PR events.", "لا توجد فعاليات بعد. استخدم ملف CSV أعلاه لإضافة فعاليات سابقة.")}
+            </div>
+          ) : (
+            prEvents.map((event, i) => {
+              const startDate = new Date(event.startTime);
+              const dateLabel = startDate.toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { year: "numeric", month: "short", day: "numeric" });
+              const timeLabel = startDate.toLocaleTimeString(lang === "ar" ? "ar-SA" : "en-US", { hour: "2-digit", minute: "2-digit" });
+              return (
+                <motion.div
+                  key={event.eventId}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(i, 6) * 0.04 }}
+                  className="glass-card p-4 sm:p-5"
+                >
+                  <div className="flex flex-wrap items-start gap-3">
+                    {event.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={event.imageUrl} alt={event.title} className="h-14 w-14 shrink-0 rounded-lg border border-border object-cover" />
+                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="text-sm font-semibold text-foreground">{event.title}</h4>
+                        <span className={event.isPublished ? "badge badge-success" : "badge"}>
+                          {event.isPublished ? tr("Published", "منشور") : tr("Draft", "مسودة")}
+                        </span>
+                        <span className="badge bg-surface-elevated text-muted border-border capitalize">{event.type}</span>
+                        {event.category ? <span className="badge bg-surface-elevated text-muted border-border">{event.category}</span> : null}
+                      </div>
+                      {event.description ? <p className="mt-1 line-clamp-2 text-xs text-muted">{event.description}</p> : null}
+                      <p className="mt-2 text-xs text-muted">
+                        {dateLabel} · {timeLabel}{event.location ? ` · ${event.location}` : ""}
+                        {typeof event.seatsAvailable === "number" ? ` · ${event.seatsAvailable} ${tr("seats", "مقعد")}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
+        </motion.div>
       )}
 
       {activeTab === "visitIdeas" && (

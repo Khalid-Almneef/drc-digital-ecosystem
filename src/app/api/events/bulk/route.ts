@@ -86,11 +86,12 @@ export const POST = handle(async (req) => {
         await query(
           `INSERT INTO events (title, description, image_url, type, category,
                                start_time, end_time, location, seats_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2,$3,$4::event_type,$5,$6,$7,$8,$9,$10,$11)`,
+                               is_published, credit_hours, created_by)
+           VALUES ($1,$2,$3,$4::event_type,$5,$6,$7,$8,$9,$10,$11,$12)`,
           [
             title, description, imageUrl, type, category,
             startTime, endTime, location, seatsAvailable, isPublished, creditHours,
+            s.memberId,
           ],
         );
       }
