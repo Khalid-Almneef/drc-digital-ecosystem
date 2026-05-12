@@ -216,6 +216,10 @@ export default function PRDashboard() {
   const [activeTab, setActiveTab] = useState<"sponsors" | "promotions" | "visitIdeas" | "tasks" | "operations">("sponsors");
   const [sponsors, setSponsors] = useState<SponsorRow[]>([]);
   const { data: prEvents = [], isLoading: eventsLoading, mutate: refreshEvents } = useApi<PRPromoEvent[]>("/api/events");
+  // Top-level fetch so Pipeline/Visit Ideas can show a pending-count badge
+  // without the leader having to click in. Same endpoint VisitIdeasInbox uses.
+  const { data: visitInbox = [] } = useApi<{ status: string }[]>("/api/service-requests?scope=inbox&requestType=company_visit&targetDepartment=pr");
+  const pendingVisitCount = visitInbox.filter((r) => r.status === "pending").length;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingId, setUploadingId] = useState<number | null>(null);
@@ -381,24 +385,33 @@ export default function PRDashboard() {
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3">
               <div className="tab-rail w-fit" role="tablist" aria-label={tr("PR sections", "أقسام العلاقات العامة")}>
-                {(Object.keys(GROUPS) as (keyof typeof GROUPS)[]).map((key) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setActiveTab(GROUPS[key].tabs[0] as typeof activeTab)}
-                    data-active={key === activeGroup}
-                    aria-selected={key === activeGroup}
-                    role="tab"
-                    className="tab-pill"
-                  >
-                    {GROUPS[key].label}
-                  </button>
-                ))}
+                {(Object.keys(GROUPS) as (keyof typeof GROUPS)[]).map((key) => {
+                  const showBadge = key === "pipeline" && pendingVisitCount > 0;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setActiveTab(GROUPS[key].tabs[0] as typeof activeTab)}
+                      data-active={key === activeGroup}
+                      aria-selected={key === activeGroup}
+                      role="tab"
+                      className="tab-pill"
+                    >
+                      {GROUPS[key].label}
+                      {showBadge && (
+                        <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
+                          {pendingVisitCount}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               {subTabs.length > 1 ? (
                 <div className="-mx-1 flex flex-wrap gap-1.5 px-1" role="tablist" aria-label={GROUPS[activeGroup].label}>
                   {subTabs.map((tab) => {
                     const isActive = activeTab === tab;
+                    const showBadge = tab === "visitIdeas" && pendingVisitCount > 0;
                     return (
                       <button
                         key={tab}
@@ -413,6 +426,11 @@ export default function PRDashboard() {
                         }`}
                       >
                         {TAB_LABELS[tab]}
+                        {showBadge && (
+                          <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
+                            {pendingVisitCount}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
