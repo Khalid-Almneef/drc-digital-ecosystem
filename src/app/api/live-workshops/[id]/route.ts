@@ -54,6 +54,7 @@ const PatchSchema = z.object({
   maxRegistrants: z.number().int().positive().nullable().optional(),
   registrationOpen: z.boolean().optional(),
   isPublished: z.boolean().optional(),
+  membersOnly: z.boolean().optional(),
 });
 
 const COL: Record<string, string> = {
@@ -63,6 +64,7 @@ const COL: Record<string, string> = {
   location: "location", meetingUrl: "meeting_url",
   maxRegistrants: "max_registrants",
   registrationOpen: "registration_open", isPublished: "is_published",
+  membersOnly: "members_only",
 };
 
 // PATCH /api/live-workshops/[id] — update fields (dev leaders)
@@ -86,6 +88,7 @@ export const PATCH = handle(async (req, ctx) => {
     if (b.maxRegistrants !== undefined) workshop.maxRegistrants = b.maxRegistrants ?? null;
     if (b.registrationOpen !== undefined) workshop.registrationOpen = b.registrationOpen;
     if (b.isPublished !== undefined) workshop.isPublished = b.isPublished;
+    if (b.membersOnly !== undefined) workshop.membersOnly = b.membersOnly;
     return ok({ success: true });
   }
 

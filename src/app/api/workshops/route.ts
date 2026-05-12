@@ -18,12 +18,13 @@ export const GET = handle(async () => {
     return ok(getMockStore().workshops.map(sortSessions));
   }
   const { rows } = await query(
-    `SELECT workshop_id AS "workshopId", title, title_ar AS "titleAr",
-            description, description_ar AS "descriptionAr", category, presenter,
-            duration_min AS "durationMin", video_url AS "videoUrl",
-            google_drive_folder_url AS "googleDriveFolderUrl",
-            thumbnail_url AS "thumbnailUrl", recorded_date AS "recordedDate",
-            is_published AS "isPublished",
+    `SELECT w.workshop_id AS "workshopId", w.title, w.title_ar AS "titleAr",
+            w.description, w.description_ar AS "descriptionAr", w.category, w.presenter,
+            w.duration_min AS "durationMin", w.video_url AS "videoUrl",
+            w.google_drive_folder_url AS "googleDriveFolderUrl",
+            w.thumbnail_url AS "thumbnailUrl", w.recorded_date AS "recordedDate",
+            w.is_published AS "isPublished",
+            w.members_only AS "membersOnly",
             COALESCE(
               jsonb_agg(
                 jsonb_build_object(
@@ -69,6 +70,7 @@ const Post = z.object({
   thumbnailUrl: z.string().optional(),
   recordedDate: z.string().optional(),
   isPublished: z.boolean().default(false),
+  membersOnly: z.boolean().default(false),
   sessions: z.array(SessionPost).default([]),
 });
 
@@ -102,6 +104,7 @@ export const POST = handle(async (req) => {
       thumbnailUrl: b.thumbnailUrl ?? null,
       recordedDate: b.recordedDate ?? null,
       isPublished: b.isPublished,
+      membersOnly: b.membersOnly,
       sessions: b.sessions.map((session, index) => ({
         sessionId: sessionBase + index,
         workshopId,
@@ -119,13 +122,13 @@ export const POST = handle(async (req) => {
   const workshopId = await withTx(async (client) => {
     const { rows } = await client.query<{ workshop_id: number }>(
       `INSERT INTO workshops (title, title_ar, description, description_ar, category, presenter,
-         duration_min, video_url, google_drive_folder_url, thumbnail_url, recorded_date, is_published, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING workshop_id`,
+         duration_min, video_url, google_drive_folder_url, thumbnail_url, recorded_date, is_published, members_only, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING workshop_id`,
       [
         b.title, b.titleAr ?? null, b.description ?? null, b.descriptionAr ?? null,
         b.category ?? null, b.presenter ?? null, b.durationMin ?? null,
         b.videoUrl ?? b.googleDriveFolderUrl ?? null, b.googleDriveFolderUrl ?? b.videoUrl ?? null,
-        b.thumbnailUrl ?? null, b.recordedDate ?? null, b.isPublished, s.memberId,
+        b.thumbnailUrl ?? null, b.recordedDate ?? null, b.isPublished, b.membersOnly, s.memberId,
       ],
     );
     const workshopId = rows[0].workshop_id;

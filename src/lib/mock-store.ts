@@ -296,6 +296,7 @@ export interface MockWorkshop {
   thumbnailUrl: string | null;
   recordedDate: string | null;
   isPublished: boolean;
+  membersOnly?: boolean;
   sessions?: MockWorkshopSession[];
 }
 
@@ -324,6 +325,7 @@ export interface MockLiveWorkshop {
   maxRegistrants: number | null;
   registrationOpen: boolean;
   isPublished: boolean;
+  membersOnly?: boolean;
   createdAt: string;
 }
 
@@ -1982,7 +1984,7 @@ const events: MockEvent[] = [
   const workshops: MockWorkshop[] = [];
 
   const liveWorkshops: MockLiveWorkshop[] = [
-    { liveWorkshopId: 1, title: "Weekly Dev Office Hours", titleAr: "ساعات التطوير الأسبوعية", description: "Live Q&A for members building active club tools.", descriptionAr: "جلسة أسئلة وأجوبة مباشرة للأعضاء العاملين على أدوات النادي.", presenter: "Development Leader", scheduledAt: "2026-04-22T16:00:00.000Z", durationMin: 60, location: "Zoom", meetingUrl: "https://example.com/meet", maxRegistrants: 50, registrationOpen: true, isPublished: true, createdAt: "2026-04-10T12:00:00.000Z" },
+    { liveWorkshopId: 1, title: "Weekly Dev Office Hours", titleAr: "ساعات التطوير الأسبوعية", description: "Live Q&A for members building active club tools.", descriptionAr: "جلسة أسئلة وأجوبة مباشرة للأعضاء العاملين على أدوات النادي.", presenter: "Development Leader", scheduledAt: "2026-04-22T16:00:00.000Z", durationMin: 60, location: "Zoom", meetingUrl: "https://example.com/meet", maxRegistrants: 50, registrationOpen: true, isPublished: true, membersOnly: false, createdAt: "2026-04-10T12:00:00.000Z" },
   ];
 
   const liveWorkshopRegistrations: MockLiveWorkshopRegistration[] = [

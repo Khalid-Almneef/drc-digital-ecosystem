@@ -28,6 +28,7 @@ interface LiveWorkshop {
   maxRegistrants: number | null;
   registrationOpen: boolean;
   registrationCount: number;
+  membersOnly?: boolean;
 }
 
 interface WorkshopSession {
@@ -55,6 +56,7 @@ interface RecordedWorkshop {
   thumbnailUrl: string | null;
   recordedDate: string | null;
   sessions: WorkshopSession[];
+  membersOnly?: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -17,6 +17,7 @@ const Patch = z.object({
   thumbnailUrl: z.string().optional(),
   recordedDate: z.string().optional(),
   isPublished: z.boolean().optional(),
+  membersOnly: z.boolean().optional(),
 });
 
 function canManage(s: { position: string; departmentSlug: string | null }) {
@@ -47,6 +48,7 @@ export const PATCH = handle(async (req, ctx) => {
     if (b.thumbnailUrl !== undefined) workshop.thumbnailUrl = b.thumbnailUrl || null;
     if (b.recordedDate !== undefined) workshop.recordedDate = b.recordedDate || null;
     if (b.isPublished !== undefined) workshop.isPublished = b.isPublished;
+    if (b.membersOnly !== undefined) workshop.membersOnly = b.membersOnly;
     return ok({ success: true });
   }
   const map: Record<string, string> = {
@@ -54,7 +56,7 @@ export const PATCH = handle(async (req, ctx) => {
     category: "category", presenter: "presenter", durationMin: "duration_min",
     videoUrl: "video_url", googleDriveFolderUrl: "google_drive_folder_url",
     thumbnailUrl: "thumbnail_url", recordedDate: "recorded_date",
-    isPublished: "is_published",
+    isPublished: "is_published", membersOnly: "members_only",
   };
   const sets: string[] = [];
   const params: unknown[] = [id];

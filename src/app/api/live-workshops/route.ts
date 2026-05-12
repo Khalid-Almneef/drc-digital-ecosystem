@@ -31,6 +31,7 @@ export const GET = handle(async () => {
       maxRegistrants: w.maxRegistrants,
       registrationOpen: w.registrationOpen,
       isPublished: w.isPublished,
+      membersOnly: w.membersOnly ?? false,
       createdAt: w.createdAt,
       registrationCount: store.liveWorkshopRegistrations.filter((r) => r.liveWorkshopId === w.liveWorkshopId).length,
     }));
@@ -51,6 +52,7 @@ export const GET = handle(async () => {
       lw.max_registrants    AS "maxRegistrants",
       lw.registration_open  AS "registrationOpen",
       lw.is_published       AS "isPublished",
+      lw.members_only       AS "membersOnly",
       lw.created_at         AS "createdAt",
       COUNT(r.registration_id)::int AS "registrationCount"
     FROM live_workshops lw
@@ -74,6 +76,7 @@ const PostSchema = z.object({
   maxRegistrants: z.number().int().positive().optional(),
   registrationOpen: z.boolean().default(false),
   isPublished: z.boolean().default(false),
+  membersOnly: z.boolean().default(false),
 });
 
 // POST /api/live-workshops — create (dev leaders)
@@ -99,6 +102,7 @@ export const POST = handle(async (req) => {
       maxRegistrants: b.maxRegistrants ?? null,
       registrationOpen: b.registrationOpen,
       isPublished: b.isPublished,
+      membersOnly: b.membersOnly,
       createdAt: new Date().toISOString(),
     });
     return ok({ liveWorkshopId }, { status: 201 });
@@ -106,14 +110,14 @@ export const POST = handle(async (req) => {
   const { rows } = await query<{ live_workshop_id: number }>(
     `INSERT INTO live_workshops
        (title, title_ar, description, description_ar, presenter, scheduled_at,
-        duration_min, location, meeting_url, max_registrants, registration_open, is_published, created_by)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+        duration_min, location, meeting_url, max_registrants, registration_open, is_published, members_only, created_by)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
      RETURNING live_workshop_id`,
     [
       b.title, b.titleAr ?? null, b.description ?? null, b.descriptionAr ?? null,
       b.presenter ?? null, b.scheduledAt,
       b.durationMin ?? null, b.location ?? null, b.meetingUrl || null,
-      b.maxRegistrants ?? null, b.registrationOpen, b.isPublished, s.memberId,
+      b.maxRegistrants ?? null, b.registrationOpen, b.isPublished, b.membersOnly, s.memberId,
     ],
   );
   return ok({ liveWorkshopId: rows[0].live_workshop_id }, { status: 201 });

@@ -32,6 +32,7 @@ interface LiveWorkshop {
   maxRegistrants: number | null;
   registrationOpen: boolean;
   isPublished: boolean;
+  membersOnly: boolean;
   registrationCount: number;
 }
 
@@ -60,6 +61,7 @@ interface RecordedWorkshop {
   thumbnailUrl: string | null;
   recordedDate: string | null;
   isPublished: boolean;
+  membersOnly: boolean;
   sessions: WorkshopSession[];
 }
 
@@ -100,10 +102,10 @@ const EMPTY_FORM = {
   title: "", titleAr: "", description: "", descriptionAr: "",
   presenter: "", scheduledAt: "", durationMin: "", location: "",
   meetingUrl: "", maxRegistrants: "",
-  registrationOpen: false, isPublished: false,
+  registrationOpen: false, isPublished: false, membersOnly: false,
 };
 
-interface CreateModalProps { onClose: () => void; onCreated: () => void }
+interface CreateModalProps { onClose: () => void; onCreated: () => void | Promise<unknown> }
 
 function CreateModal({ onClose, onCreated }: CreateModalProps) {
   const { lang } = useLang();
@@ -113,7 +115,7 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
   const [error, setError] = useState("");
 
   const set = (k: keyof typeof EMPTY_FORM) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setF(prev => ({ ...prev, [k]: e.target.value }));
 
   const setCheck = (k: "registrationOpen" | "isPublished") =>
@@ -137,11 +139,15 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
         maxRegistrants: f.maxRegistrants ? parseInt(f.maxRegistrants, 10) : undefined,
         registrationOpen: f.registrationOpen,
         isPublished: f.isPublished,
+        membersOnly: f.membersOnly,
       });
-      onCreated();
+      await onCreated();
+      toast.success(tr("Live workshop created.", "تم إنشاء الورشة المباشرة."));
       onClose();
     } catch (err: unknown) {
-      setError((err as { message?: string }).message ?? "Failed to create workshop");
+      const message = (err as { message?: string }).message ?? "Failed to create workshop";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -209,6 +215,17 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
             <div>
               <label className={labelCls}>{tr("Max Registrants", "الحد الأقصى للمسجّلين")}</label>
               <input type="number" min={1} value={f.maxRegistrants} onChange={set("maxRegistrants")} placeholder={tr("Leave empty for unlimited", "اتركه فارغاً للسعة المفتوحة")} className={inputCls} />
+            </div>
+            <div className="col-span-2">
+              <label className={labelCls}>{tr("Visibility", "الظهور")}</label>
+              <select
+                value={f.membersOnly ? "members_only" : "public"}
+                onChange={(e) => setF(prev => ({ ...prev, membersOnly: e.target.value === "members_only" }))}
+                className={inputCls}
+              >
+                <option value="public">{tr("Public (any visitor)", "عام (لأي زائر)")}</option>
+                <option value="members_only">{tr("Members only (signed-in)", "للأعضاء فقط (مسجلين)")}</option>
+              </select>
             </div>
           </div>
 
@@ -408,6 +425,7 @@ function LiveWorkshopsTab() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <p className="text-sm font-semibold text-foreground truncate">{w.title}</p>
                       {past_ && <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-elevated text-muted border border-border shrink-0">{tr("Past", "منتهية")}</span>}
+                      {w.membersOnly && <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">{tr("Members only", "للأعضاء فقط")}</span>}
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-muted">
                       <span className="flex items-center gap-1"><Calendar size={10} />{fmt(w.scheduledAt)}</span>
@@ -478,10 +496,10 @@ function LiveWorkshopsTab() {
 const EMPTY_RECORDED = {
   title: "", titleAr: "", description: "", descriptionAr: "",
   category: "Software", presenter: "", durationMin: "",
-  googleDriveFolderUrl: "", recordedDate: "", isPublished: false,
+  googleDriveFolderUrl: "", recordedDate: "", isPublished: false, membersOnly: false,
 };
 
-function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void | Promise<unknown> }) {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [f, setF] = useState(EMPTY_RECORDED);
@@ -519,12 +537,16 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
         videoUrl: f.googleDriveFolderUrl || undefined,
         recordedDate: f.recordedDate || undefined,
         isPublished: f.isPublished,
+        membersOnly: f.membersOnly,
         sessions: cleanSessions,
       });
-      onCreated();
+      await onCreated();
+      toast.success(tr("Workshop saved.", "تم حفظ الورشة."));
       onClose();
     } catch (err: unknown) {
-      setError((err as { message?: string }).message ?? "Failed to create workshop library");
+      const message = (err as { message?: string }).message ?? "Failed to create workshop library";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -595,10 +617,23 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
             </div>
           </div>
 
-          <label className="flex items-center gap-2.5 cursor-pointer">
-            <Toggle checked={f.isPublished} onChange={() => setF((prev) => ({ ...prev, isPublished: !prev.isPublished }))} />
-            <span className="text-sm text-foreground">{tr("Publish to public workshops page", "نشر في صفحة الورش العامة")}</span>
-          </label>
+          <div className="grid gap-4 md:grid-cols-2 md:items-end">
+            <div>
+              <label className={labelCls}>{tr("Visibility", "الظهور")}</label>
+              <select
+                value={f.membersOnly ? "members_only" : "public"}
+                onChange={(e) => setF((prev) => ({ ...prev, membersOnly: e.target.value === "members_only" }))}
+                className={inputCls}
+              >
+                <option value="public">{tr("Public (any visitor)", "عام (لأي زائر)")}</option>
+                <option value="members_only">{tr("Members only (signed-in)", "للأعضاء فقط (مسجلين)")}</option>
+              </select>
+            </div>
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <Toggle checked={f.isPublished} onChange={() => setF((prev) => ({ ...prev, isPublished: !prev.isPublished }))} />
+              <span className="text-sm text-foreground">{tr("Publish to public workshops page", "نشر في صفحة الورش العامة")}</span>
+            </label>
+          </div>
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
@@ -657,6 +692,9 @@ function RecordedWorkshopsTab() {
                     <h4 className="text-sm font-semibold text-foreground">{workshop.title}</h4>
                     <span className="badge bg-surface-elevated text-muted border-border">{workshop.category ?? tr("Workshop", "ورشة")}</span>
                     <span className={workshop.isPublished ? "badge badge-success" : "badge"}>{workshop.isPublished ? tr("published", "منشور") : tr("draft", "مسودّة")}</span>
+                    {workshop.membersOnly && (
+                      <span className="badge bg-primary/10 text-primary border-primary/20">{tr("members only", "للأعضاء فقط")}</span>
+                    )}
                   </div>
                   <p className="text-xs leading-5 text-muted">{workshop.description ?? tr("No description added.", "لم يُضف وصف.")}</p>
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted">
