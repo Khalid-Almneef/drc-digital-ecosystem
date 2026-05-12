@@ -18,13 +18,12 @@ import {
 import { useLang } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/hooks/useApi";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ImageUrlInput } from "@/components/dashboard/ImageUrlInput";
 import { useEscape } from "@/lib/hooks/useEscape";
 import { api } from "@/lib/client";
 
-type View = "sessions" | "audience" | "tasks" | "operations";
+type View = "sessions" | "audience" | "tasks";
 type ProgramType = "madarat" | "madariya_males" | "madariya_females";
 type TaskStatus = "todo" | "in_progress" | "review" | "done";
 type TaskPriority = "low" | "medium" | "high" | "urgent";
@@ -581,7 +580,6 @@ export default function MadaratDashboard() {
           { key: "sessions", label: "Sessions" },
           { key: "audience", label: "Audience" },
           { key: "tasks", label: "Support Tasks" },
-          { key: "operations", label: "Operations" },
         ] as { key: View; label: string }[]).map(({ key, label }) => (
           <button
             key={key}
@@ -889,12 +887,6 @@ export default function MadaratDashboard() {
               </div>
             )}
           </div>
-        </motion.div>
-      )}
-
-      {activeView === "operations" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-          <DepartmentOperationsPanel departmentSlug="madarat" title={tr("Madarat budget, procurement, and department requests", "ميزانية مدارات والمشتريات وطلبات القسم")} />
         </motion.div>
       )}
 

@@ -26,9 +26,14 @@ async function notifyTargetDeptLeaders(
     const leaders = store.members.filter(
       (m) =>
         m.isActive &&
-        m.departmentSlug === targetSlug &&
-        (m.position === "dept_leader" || m.position === "dept_vice_leader") &&
-        m.memberId !== requesterId,
+        m.memberId !== requesterId &&
+        (
+          // Dept leadership of the target dept.
+          ((m.position === "dept_leader" || m.position === "dept_vice_leader") && m.departmentSlug === targetSlug)
+          // Club admins (oversee every dept).
+          || m.position === "president"
+          || m.position === "vice_president"
+        ),
     );
     void emitNotifications(
       leaders.map((leader) => ({
@@ -43,14 +48,18 @@ async function notifyTargetDeptLeaders(
     );
     return;
   }
+  // Target dept's leadership + every active club admin. Admins oversee every
+  // dept so they should see cross-dept requests in their bell too.
   const { rows } = await query<{ member_id: number }>(
     `SELECT u.member_id
        FROM users u
-       JOIN departments d ON d.department_id = u.department_id
-      WHERE d.slug::text = $1
-        AND u.is_active = TRUE
+       LEFT JOIN departments d ON d.department_id = u.department_id
+      WHERE u.is_active = TRUE
         AND u.member_id <> $2
-        AND u.position IN ('dept_leader', 'dept_vice_leader')`,
+        AND (
+          (u.position IN ('dept_leader', 'dept_vice_leader') AND d.slug::text = $1)
+          OR u.position IN ('president', 'vice_president')
+        )`,
     [targetSlug, requesterId],
   );
   void emitNotifications(

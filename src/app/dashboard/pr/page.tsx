@@ -19,7 +19,6 @@ import {
 import { useLang } from "@/contexts/LanguageContext";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { BulkUploadCard } from "@/components/dashboard/BulkUploadCard";
-import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useApi } from "@/lib/hooks/useApi";
@@ -213,7 +212,7 @@ function exportProposalPdf(sponsor: SponsorRow) {
 
 export default function PRDashboard() {
   const { lang } = useLang();
-  const [activeTab, setActiveTab] = useState<"sponsors" | "promotions" | "visitIdeas" | "tasks" | "operations">("sponsors");
+  const [activeTab, setActiveTab] = useState<"sponsors" | "promotions" | "visitIdeas" | "tasks">("sponsors");
   const [sponsors, setSponsors] = useState<SponsorRow[]>([]);
   const { data: prEvents = [], isLoading: eventsLoading, mutate: refreshEvents } = useApi<PRPromoEvent[]>("/api/events");
   // Top-level fetch so Pipeline/Visit Ideas can show a pending-count badge
@@ -366,12 +365,10 @@ export default function PRDashboard() {
           promotions: tr("Promotions", "الترويج"),
           visitIdeas: tr("Visit Ideas", "أفكار الزيارات"),
           tasks: tr("Task Review", "مراجعة المهام"),
-          operations: tr("Operations", "التشغيل"),
         } as const;
         const GROUPS = {
           pipeline: { label: tr("Pipeline", "السلسلة"), tabs: ["sponsors", "promotions", "visitIdeas"] as const },
           tasks: { label: tr("Tasks", "المهام"), tabs: ["tasks"] as const },
-          settings: { label: tr("Settings", "الإعدادات"), tabs: ["operations"] as const },
         } as const;
         const findGroup = (): keyof typeof GROUPS => {
           for (const key of Object.keys(GROUPS) as (keyof typeof GROUPS)[]) {
@@ -644,12 +641,6 @@ export default function PRDashboard() {
             title="PR task review"
             titleAr="مراجعة مهام العلاقات العامة"
           />
-        </motion.div>
-      )}
-
-      {activeTab === "operations" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-          <DepartmentOperationsPanel departmentSlug="pr" title={tr("PR budget, procurement, and media requests", "ميزانية العلاقات العامة والمشتريات وطلبات الإعلام")} />
         </motion.div>
       )}
 

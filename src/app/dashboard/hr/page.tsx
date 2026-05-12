@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useLang } from "@/contexts/LanguageContext";
 import { useEscape } from "@/lib/hooks/useEscape";
-import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useApi } from "@/lib/hooks/useApi";
@@ -135,7 +134,7 @@ const sourceTypeLabel: Record<HourRow["sourceType"], string> = {
 export default function HRDashboard() {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "membership" | "operations" | "alumni" | "endorsements">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "membership" | "alumni" | "endorsements">("members");
 
   // ── Members ──
   const { data: members = [], isLoading: membersLoading, mutate: loadMembers } = useApi<Member[]>("/api/members");
@@ -508,7 +507,6 @@ export default function HRDashboard() {
     performance: tr("Performance", "الأداء"),
     announcements: tr("Announcements", "الإعلانات"),
     membership: tr("Membership", "العضوية"),
-    operations: tr("Operations", "التشغيل"),
     alumni: tr("Edit Alumni", "تعديل الخريجين"),
     endorsements: tr("Endorsements", "التزكيات"),
   };
@@ -541,7 +539,7 @@ export default function HRDashboard() {
           people: { label: tr("People", "الأشخاص"), tabs: ["members", "applications", "alumni", "performance"] as const },
           recognition: { label: tr("Recognition", "التقدير"), tabs: ["motm", "endorsements", "hours", "hourTasks"] as const },
           comms: { label: tr("Communications", "التواصل"), tabs: ["announcements", "forms"] as const },
-          settings: { label: tr("Settings", "الإعدادات"), tabs: ["membership", "operations"] as const },
+          settings: { label: tr("Settings", "الإعدادات"), tabs: ["membership"] as const },
         } as const;
         const findGroup = (tab: typeof activeTab): keyof typeof GROUPS => {
           for (const key of Object.keys(GROUPS) as (keyof typeof GROUPS)[]) {
@@ -1458,12 +1456,6 @@ export default function HRDashboard() {
               </div>
             </div>
           </div>
-        </motion.div>
-      )}
-
-      {activeTab === "operations" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <DepartmentOperationsPanel departmentSlug="hr" title={tr("HR budget, procurement, and department requests", "ميزانية HR والمشتريات وطلبات القسم")} />
         </motion.div>
       )}
 

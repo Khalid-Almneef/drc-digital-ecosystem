@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -1036,7 +1035,7 @@ function CompanyVisitsTab() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-type View = "board" | "team" | "projects" | "live" | "library" | "requests" | "visits" | "operations";
+type View = "board" | "team" | "projects" | "live" | "library" | "requests" | "visits";
 
 interface ServiceRequestRow {
   requestId: number;
@@ -1382,7 +1381,6 @@ export default function DevelopmentDashboard() {
           { key: "library",    label: tr("Workshop Library","مكتبة الورش") },
           { key: "requests",   label: tr("Workshop Requests","طلبات الورش") },
           { key: "visits",     label: tr("Company Visits",  "زيارات الشركات") },
-          { key: "operations", label: tr("Operations",      "التشغيل") },
         ] as { key: View; label: string }[]).map(({ key, label }) => (
           <button
             key={key}
@@ -1448,12 +1446,6 @@ export default function DevelopmentDashboard() {
       {activeView === "visits" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           <CompanyVisitsTab />
-        </motion.div>
-      )}
-
-      {activeView === "operations" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <DepartmentOperationsPanel departmentSlug="development" title={tr("Development budget, procurement, and workshop requests", "ميزانية التطوير والمشتريات وطلبات الورش")} />
         </motion.div>
       )}
 

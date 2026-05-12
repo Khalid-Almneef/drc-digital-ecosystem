@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo, useRef, type Dispatch, type 
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useLang } from "@/contexts/LanguageContext";
 import { useEscape } from "@/lib/hooks/useEscape";
@@ -118,7 +117,7 @@ function fmtSize(bytes: number | null) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-type TabId = "overview" | "submissions" | "library" | "assignments" | "social" | "operations";
+type TabId = "overview" | "submissions" | "library" | "assignments" | "social";
 
 const TABS: { id: TabId; label: string; labelAr: string; icon: React.ElementType }[] = [
   { id: "overview",      label: "Overview",        labelAr: "نظرة عامة",     icon: Eye      },
@@ -126,7 +125,6 @@ const TABS: { id: TabId; label: string; labelAr: string; icon: React.ElementType
   { id: "library",       label: "Library",         labelAr: "المكتبة",        icon: Library  },
   { id: "assignments",   label: "Assignments",     labelAr: "المهام",         icon: Users    },
   { id: "social",        label: "Social",          labelAr: "وسائل التواصل", icon: Settings },
-  { id: "operations",    label: "Operations",      labelAr: "العمليات",      icon: Briefcase },
 ];
 
 type HomepageMediaField = {
@@ -998,12 +996,6 @@ export default function MediaDashboard() {
             })}
           </div>
         </div>
-      )}
-
-      {tab === "operations" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-          <DepartmentOperationsPanel departmentSlug="media" title="Media budget, procurement, and design request inbox" />
-        </motion.div>
       )}
 
       {/* ── Social ── */}

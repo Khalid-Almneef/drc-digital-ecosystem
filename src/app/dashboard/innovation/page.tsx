@@ -13,7 +13,6 @@ import { useApi } from "@/lib/hooks/useApi";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ArchiveManager } from "@/components/dashboard/ArchiveManager";
 import { BulkUploadCard } from "@/components/dashboard/BulkUploadCard";
-import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
 import { MemberLink } from "@/components/dashboard/MemberLink";
@@ -271,7 +270,7 @@ function CreateProjectModal({ onClose, onCreated }: CreateProjectModalProps) {
 
 // ─── View type ────────────────────────────────────────────────────────────────
 
-type View = "projects" | "tasks" | "team" | "applications" | "operations";
+type View = "projects" | "tasks" | "team" | "applications";
 
 // ─── Applications Inbox ───────────────────────────────────────────────────────
 
@@ -496,7 +495,6 @@ export default function InnovationDashboard() {
             { key: "tasks",        label: tr("Task Review", "مراجعة المهام") },
             { key: "team",         label: tr("Team Performance", "أداء الفريق") },
             { key: "applications", label: tr("Applications", "الطلبات") },
-            { key: "operations",   label: tr("Operations", "التشغيل") },
           ] as { key: View; label: string }[]).map(({ key, label }) => (
             <button
               key={key}
@@ -550,12 +548,6 @@ export default function InnovationDashboard() {
       {activeView === "applications" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           <ApplicationsInbox />
-        </motion.div>
-      )}
-
-      {activeView === "operations" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <DepartmentOperationsPanel departmentSlug="innovation" title={tr("Innovation budget, procurement, media, and workshop requests", "ميزانية الابتكار والمشتريات وطلبات الإعلام والورش")} />
         </motion.div>
       )}
 
