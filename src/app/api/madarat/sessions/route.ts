@@ -7,11 +7,13 @@ import { findMockMember, getMockStore, isMockMode, nextMockId } from "@/lib/mock
 const Body = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
-  intervieweeName: z.string().min(1),
-  interviewerName: z.string().min(1),
+  // Past-session imports are allowed to have missing identity fields — title +
+  // programType is the minimum a leader needs to record that a session happened.
+  intervieweeName: z.string().optional(),
+  interviewerName: z.string().optional(),
   intervieweeRole: z.string().optional(),
   programType: z.enum(["madarat", "madariya_males", "madariya_females"]).default("madarat"),
-  scheduledAt: z.string().datetime(),
+  scheduledAt: z.string().datetime().optional(),
   durationMin: z.number().int().positive().optional(),
   location: z.string().optional(),
   meetingUrl: z.string().max(2048).optional().or(z.literal("")),
@@ -19,6 +21,8 @@ const Body = z.object({
   registrationOpen: z.boolean().default(false),
   isPublished: z.boolean().default(false),
   visibility: z.enum(["public", "club_only"]).default("public"),
+  imageUrl: z.string().max(2048).optional().or(z.literal("")),
+  attendanceCount: z.number().int().min(0).nullable().optional(),
 });
 
 export const GET = handle(async () => {
@@ -58,6 +62,8 @@ export const GET = handle(async () => {
             ms.location,
             ms.meeting_url AS "meetingUrl",
             ms.max_registrants AS "maxRegistrants",
+            ms.image_url AS "imageUrl",
+            ms.attendance_count AS "attendanceCount",
             ms.registration_open AS "registrationOpen",
             ms.is_published AS "isPublished",
             ms.visibility,
@@ -89,11 +95,11 @@ export const POST = handle(async (req) => {
       sessionId,
       title: body.title,
       description: body.description ?? null,
-      intervieweeName: body.intervieweeName,
-      interviewerName: body.interviewerName,
+      intervieweeName: body.intervieweeName ?? "",
+      interviewerName: body.interviewerName ?? null,
       intervieweeRole: body.intervieweeRole ?? null,
       programType: body.programType,
-      scheduledAt: body.scheduledAt,
+      scheduledAt: body.scheduledAt ?? new Date().toISOString(),
       durationMin: body.durationMin ?? null,
       location: body.location ?? null,
       meetingUrl: body.meetingUrl || null,
@@ -109,17 +115,18 @@ export const POST = handle(async (req) => {
   const { rows } = await query<{ session_id: number }>(
     `INSERT INTO madarat_sessions
        (title, description, interviewee_name, interviewer_name, interviewee_role, program_type, scheduled_at,
-        duration_min, location, meeting_url, max_registrants, registration_open, is_published, visibility, created_by)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        duration_min, location, meeting_url, max_registrants, registration_open, is_published, visibility,
+        image_url, attendance_count, created_by)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
      RETURNING session_id`,
     [
       body.title,
       body.description ?? null,
-      body.intervieweeName,
-      body.interviewerName,
+      body.intervieweeName ?? null,
+      body.interviewerName ?? null,
       body.intervieweeRole ?? null,
       body.programType,
-      body.scheduledAt,
+      body.scheduledAt ?? new Date().toISOString(),
       body.durationMin ?? null,
       body.location ?? null,
       body.meetingUrl || null,
@@ -127,6 +134,8 @@ export const POST = handle(async (req) => {
       body.registrationOpen,
       body.isPublished,
       body.visibility,
+      body.imageUrl || null,
+      body.attendanceCount ?? null,
       session.memberId,
     ],
   );

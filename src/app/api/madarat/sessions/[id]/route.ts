@@ -19,6 +19,8 @@ const Body = z.object({
   registrationOpen: z.boolean().optional(),
   isPublished: z.boolean().optional(),
   visibility: z.enum(["public", "club_only"]).optional(),
+  imageUrl: z.string().max(2048).nullable().optional(),
+  attendanceCount: z.number().int().min(0).nullable().optional(),
 }).refine((value) => Object.values(value).some((entry) => entry !== undefined), {
   message: "At least one field is required.",
 });
@@ -82,6 +84,8 @@ export const PATCH = handle(async (req, ctx) => {
     registrationOpen: "registration_open",
     isPublished: "is_published",
     visibility: "visibility",
+    imageUrl: "image_url",
+    attendanceCount: "attendance_count",
   };
   const sets: string[] = [];
   const params: unknown[] = [sessionId];
