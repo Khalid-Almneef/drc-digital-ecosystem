@@ -9,6 +9,7 @@ import {
   Loader2,
   Megaphone,
   Mic2,
+  Pencil,
   Plus,
   Radio,
   Trash2,
@@ -235,6 +236,7 @@ function RegistrationsModal({ session, onClose }: { session: MadaratSessionRow; 
 function CreateSessionModal({
   form,
   saving,
+  isEditing = false,
   onClose,
   onChange,
   onToggle,
@@ -242,6 +244,7 @@ function CreateSessionModal({
 }: {
   form: typeof SESSION_FORM;
   saving: boolean;
+  isEditing?: boolean;
   onClose: () => void;
   onChange: (patch: Partial<typeof SESSION_FORM>) => void;
   onToggle: (key: "registrationOpen" | "isPublished") => void;
@@ -271,8 +274,16 @@ function CreateSessionModal({
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-foreground">{tr("Create Madarat Session", "إنشاء جلسة مدارات")}</h3>
-            <p className="mt-1 text-sm text-muted">{tr("Use Madarat for standard interviews and Madariya for gender-specific alumni hosting sessions.", "استخدم مدارات للمقابلات العامة، ومدارية لجلسات استضافة الخريجين المخصصة حسب الجنس.")}</p>
+            <h3 className="text-lg font-semibold text-foreground">
+              {isEditing
+                ? tr("Edit Madarat session", "تعديل جلسة مدارات")
+                : tr("Create Madarat Session", "إنشاء جلسة مدارات")}
+            </h3>
+            <p className="mt-1 text-sm text-muted">
+              {isEditing
+                ? tr("Update the session details and save. Changes apply immediately.", "حدّث بيانات الجلسة واحفظ. يتم تطبيق التغييرات فورًا.")
+                : tr("Use Madarat for standard interviews and Madariya for gender-specific alumni hosting sessions.", "استخدم مدارات للمقابلات العامة، ومدارية لجلسات استضافة الخريجين المخصصة حسب الجنس.")}
+            </p>
           </div>
           <button onClick={onClose} className="btn-secondary px-3 py-2 text-xs">{tr("Close", "إغلاق")}</button>
         </div>
@@ -357,8 +368,8 @@ function CreateSessionModal({
 
         <div className="mt-5 flex justify-end">
           <button onClick={onSubmit} disabled={saving} className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
-            {saving ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
-            {tr("Create Session", "إنشاء الجلسة")}
+            {saving ? <Loader2 size={11} className="animate-spin" /> : isEditing ? <Pencil size={11} /> : <Plus size={11} />}
+            {isEditing ? tr("Save changes", "حفظ التغييرات") : tr("Create Session", "إنشاء الجلسة")}
           </button>
         </div>
       </motion.div>
@@ -379,6 +390,7 @@ export default function MadaratDashboard() {
   const [sessionSaving, setSessionSaving] = useState(false);
   const [sessionForm, setSessionForm] = useState(SESSION_FORM);
   const [createSessionOpen, setCreateSessionOpen] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
   const [logPastOpen, setLogPastOpen] = useState(false);
   useEscape(logPastOpen, () => setLogPastOpen(false));
   const [updatingSessionId, setUpdatingSessionId] = useState<number | null>(null);
@@ -427,7 +439,7 @@ export default function MadaratDashboard() {
     if (!sessionForm.title || !sessionForm.intervieweeName || !sessionForm.interviewerName || !sessionForm.scheduledAt) return;
     setSessionSaving(true);
     try {
-      await api.post("/api/madarat/sessions", {
+      const payload = {
         title: sessionForm.title,
         description: sessionForm.description || undefined,
         intervieweeName: sessionForm.intervieweeName,
@@ -442,17 +454,45 @@ export default function MadaratDashboard() {
         isPublished: sessionForm.isPublished,
         visibility: sessionForm.visibility,
         imageUrl: sessionForm.imageUrl || undefined,
-      });
+      };
+      if (editingSessionId != null) {
+        await api.patch(`/api/madarat/sessions/${editingSessionId}`, payload);
+        toast.success(tr("Session updated", "تم تحديث الجلسة"));
+      } else {
+        await api.post("/api/madarat/sessions", payload);
+        toast.success(tr("Session created", "تم إنشاء الجلسة"));
+      }
       setSessionForm(SESSION_FORM);
+      setEditingSessionId(null);
       setCreateSessionOpen(false);
-      toast.success(tr("Session created", "تم إنشاء الجلسة"));
       loadSessions();
     } catch (error) {
       const message = (error as { message?: string } | null)?.message;
-      toast.error(message || tr("Create failed. Please try again.", "فشل الإنشاء. حاول مرة أخرى."));
+      toast.error(message || tr("Save failed. Please try again.", "فشل الحفظ. حاول مرة أخرى."));
     } finally {
       setSessionSaving(false);
     }
+  }
+
+  function startEditingSession(session: MadaratSessionRow) {
+    setEditingSessionId(session.sessionId);
+    setSessionForm({
+      title: session.title,
+      description: session.description ?? "",
+      intervieweeName: session.intervieweeName ?? "",
+      interviewerName: session.interviewerName ?? "",
+      intervieweeRole: session.intervieweeRole ?? "",
+      programType: session.programType,
+      scheduledAt: session.scheduledAt ? new Date(session.scheduledAt).toISOString().slice(0, 16) : "",
+      durationMin: session.durationMin != null ? String(session.durationMin) : "",
+      location: session.location ?? "",
+      maxRegistrants: session.maxRegistrants != null ? String(session.maxRegistrants) : "",
+      imageUrl: session.imageUrl ?? "",
+      registrationOpen: session.registrationOpen,
+      isPublished: session.isPublished,
+      visibility: session.visibility,
+    });
+    setCreateSessionOpen(true);
   }
 
 
@@ -666,6 +706,14 @@ export default function MadaratDashboard() {
                                 />
                               </label>
                               <button
+                                onClick={() => startEditingSession(session)}
+                                disabled={updatingSessionId === session.sessionId}
+                                aria-label={tr("Edit session", "تعديل الجلسة")}
+                                className="rounded-lg p-1.5 text-muted hover:bg-surface-elevated hover:text-foreground"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
                                 onClick={() => deleteSession(session.sessionId)}
                                 disabled={updatingSessionId === session.sessionId}
                                 aria-label={tr("Delete session", "حذف الجلسة")}
@@ -861,7 +909,8 @@ export default function MadaratDashboard() {
           <CreateSessionModal
             form={sessionForm}
             saving={sessionSaving}
-            onClose={() => setCreateSessionOpen(false)}
+            isEditing={editingSessionId != null}
+            onClose={() => { setCreateSessionOpen(false); setEditingSessionId(null); setSessionForm(SESSION_FORM); }}
             onChange={(patch) => setSessionForm((current) => ({ ...current, ...patch }))}
             onToggle={(key) => setSessionForm((current) => ({ ...current, [key]: !current[key] }))}
             onSubmit={createSession}

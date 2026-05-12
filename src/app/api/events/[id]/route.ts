@@ -37,15 +37,36 @@ export const PATCH = handle(async (req, ctx) => {
   const { id } = await ctx.params;
   const b = await parseBody(req, Patch);
 
-  // All event mutations (publishing, edits, deletes) are restricted to club
-  // admins and media leadership. Plain members must not be able to rewrite
-  // events that they don't own.
   const isAdmin = session.position === "president" || session.position === "vice_president";
   const isMediaLead =
     (session.position === "dept_leader" || session.position === "dept_vice_leader") &&
     session.departmentSlug === "media";
-  if (!isAdmin && !isMediaLead) {
-    return err(403, "Only the media team can edit events.");
+  const isAnyDeptLead = session.position === "dept_leader" || session.position === "dept_vice_leader";
+
+  // Publishing remains gated to media leadership + admins — media owns the
+  // public-events surface and the editorial standard for what goes live.
+  if (b.isPublished === true && !isAdmin && !isMediaLead) {
+    return err(403, "Only the media team can publish events.");
+  }
+
+  // Editing (excluding publishing) is open to admins, media, or any
+  // department's leadership so each committee can fix up events they own
+  // (Innovation projects/events, Madarat sessions, PR partner events …).
+  // Plain members still can't edit events they don't own.
+  if (!isAdmin && !isMediaLead && !isAnyDeptLead) {
+    // Fall back to creator ownership — useful for sub-leaders who created
+    // the event themselves.
+    if (!isMockMode()) {
+      const owner = await queryOne<{ createdBy: number | null }>(
+        `SELECT created_by AS "createdBy" FROM events WHERE event_id = $1`,
+        [id],
+      );
+      if (!owner) return err(404, "Not found");
+      if (owner.createdBy !== session.memberId) return err(403, "Forbidden");
+    } else {
+      // Mock store doesn't track created_by on events; deny non-leaders.
+      return err(403, "Forbidden");
+    }
   }
 
   if (isMockMode()) {
