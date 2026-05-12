@@ -152,6 +152,15 @@ export default function EventsPage() {
                       </div>
                     </div>
 
+                    {event.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="h-32 w-full max-w-xs shrink-0 rounded-xl border border-border object-cover md:h-24 md:w-32"
+                      />
+                    ) : null}
+
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-4">
                         <div>
@@ -255,6 +264,14 @@ export default function EventsPage() {
                     transition={{ duration: 0.5, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] as const }}
                     className="glass-card p-6 card-hover group"
                   >
+                    {event.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="mb-4 h-32 w-full rounded-lg border border-border object-cover"
+                      />
+                    ) : null}
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <span className="text-xs text-muted">
                         {formatEventDate(event.startTime, lang)}

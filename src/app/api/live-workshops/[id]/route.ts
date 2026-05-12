@@ -50,7 +50,7 @@ const PatchSchema = z.object({
   scheduledAt: z.string().datetime().optional(),
   durationMin: z.number().int().positive().optional(),
   location: z.string().optional(),
-  meetingUrl: z.string().url().optional().or(z.literal("")),
+  meetingUrl: z.string().max(2048).optional().or(z.literal("")),
   maxRegistrants: z.number().int().positive().nullable().optional(),
   registrationOpen: z.boolean().optional(),
   isPublished: z.boolean().optional(),

@@ -62,8 +62,8 @@ export const GET = handle(async () => {
 const Post = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
-  imageUrl: z.string().url().optional(),
-  githubUrl: z.string().url().optional(),
+  imageUrl: z.string().max(2048).optional(),
+  githubUrl: z.string().max(2048).optional(),
   category: z.string().optional(),
   status: z.enum(["planning", "in_progress", "testing", "completed", "archived"]).default("planning"),
   leadMemberId: z.number().int().optional(),
