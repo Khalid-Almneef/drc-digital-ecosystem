@@ -19,7 +19,6 @@ import {
 import { api } from "@/lib/client";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { MotmLeaderboardPanel } from "@/components/dashboard/MotmLeaderboardPanel";
-import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import { FormsManager } from "@/components/dashboard/FormsManager";
 import { AlumniManager } from "@/components/dashboard/AlumniManager";
 import { EndorsementsLeaderboard } from "@/components/dashboard/EndorsementsLeaderboard";
@@ -136,7 +135,7 @@ const sourceTypeLabel: Record<HourRow["sourceType"], string> = {
 export default function HRDashboard() {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "changeRequests" | "membership" | "operations" | "alumni" | "endorsements">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "membership" | "operations" | "alumni" | "endorsements">("members");
 
   // ── Members ──
   const { data: members = [], isLoading: membersLoading, mutate: loadMembers } = useApi<Member[]>("/api/members");
@@ -507,7 +506,6 @@ export default function HRDashboard() {
     hourTasks: tr("Hour Tasks", "مهام الساعات"),
     performance: tr("Performance", "الأداء"),
     announcements: tr("Announcements", "الإعلانات"),
-    changeRequests: tr("Change Requests", "طلبات التغيير"),
     membership: tr("Membership", "العضوية"),
     operations: tr("Operations", "التشغيل"),
     alumni: tr("Edit Alumni", "تعديل الخريجين"),
@@ -541,7 +539,7 @@ export default function HRDashboard() {
         const GROUPS = {
           people: { label: tr("People", "الأشخاص"), tabs: ["members", "applications", "alumni", "performance"] as const },
           recognition: { label: tr("Recognition", "التقدير"), tabs: ["motm", "endorsements", "hours", "hourTasks"] as const },
-          comms: { label: tr("Communications", "التواصل"), tabs: ["announcements", "forms", "changeRequests"] as const },
+          comms: { label: tr("Communications", "التواصل"), tabs: ["announcements", "forms"] as const },
           settings: { label: tr("Settings", "الإعدادات"), tabs: ["membership", "operations"] as const },
         } as const;
         const findGroup = (tab: typeof activeTab): keyof typeof GROUPS => {
@@ -1390,26 +1388,6 @@ export default function HRDashboard() {
               ))}
             </div>
           )}
-        </motion.div>
-      )}
-
-      {/* ── Change Requests Tab ── */}
-      {/* Single component covers both leader and member views — the API auto-
-          scopes: leaders see incoming requests, members see their own. */}
-      {activeTab === "changeRequests" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <div className="panel-soft mb-5 p-5">
-            <h3 className="text-sm font-semibold text-foreground">
-              {tr("Pending changes awaiting decision", "تغييرات بانتظار قرار")}
-            </h3>
-            <p className="mt-1 text-xs text-muted leading-relaxed">
-              {tr(
-                "Approve to apply, reject to dismiss. Rejection has no reason field — only a notification.",
-                "اعتمد للتطبيق أو ارفض للإلغاء. الرفض بدون ذكر سبب، فقط يُرسل إشعار للمرسل.",
-              )}
-            </p>
-          </div>
-          <ChangeRequestInbox />
         </motion.div>
       )}
 

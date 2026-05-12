@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Inbox, Send, Plus, Loader2, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { Inbox, Send, Plus, Loader2, AlertCircle, CheckCircle2, Clock, FileCheck2 } from "lucide-react";
 import { toast } from "sonner";
 import { useLang } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApi } from "@/lib/hooks/useApi";
 import { api } from "@/lib/client";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import {
   ServiceRequestRow,
   ServiceRequestType,
@@ -21,6 +22,7 @@ import {
 } from "@/lib/service-requests";
 
 type Scope = "inbox" | "outbox" | "related";
+type Section = "service" | "approvals";
 
 const REQUEST_TYPES: ServiceRequestType[] = [
   "design",
@@ -64,6 +66,7 @@ export default function RequestsPage() {
   const isAdmin = user?.position === "president" || user?.position === "vice_president";
 
   const [scope, setScope] = useState<Scope>("inbox");
+  const [section, setSection] = useState<Section>("service");
   const { data: rows = [], isLoading, mutate } = useApi<ServiceRequestRow[]>(`/api/service-requests?scope=${scope}`);
 
   if (!isAnyLeader) {
@@ -80,18 +83,55 @@ export default function RequestsPage() {
   return (
     <div className="space-y-6">
       <DashboardHeader
-        title={tr("Cross-Department Requests", "طلبات بين اللجان")}
+        title={tr("Requests", "الطلبات")}
         description={tr(
-          "Send a request to another committee, or review requests sent to yours.",
-          "أرسل طلبًا إلى لجنة أخرى، أو راجع الطلبات المرسلة إلى لجنتك.",
+          "Cross-department service requests and change approvals — all in one place.",
+          "طلبات الخدمات بين اللجان واعتماد التغييرات — في مكان واحد.",
         )}
       />
 
-      <Composer onCreated={() => mutate()} />
+      <SectionSwitch section={section} setSection={setSection} />
 
-      <Tabs scope={scope} setScope={setScope} isAdmin={isAdmin} />
+      {section === "service" ? (
+        <>
+          <Composer onCreated={() => mutate()} />
 
-      <RequestsList rows={rows} isLoading={isLoading} sourceDept={sourceDept} onChanged={() => mutate()} scope={scope} />
+          <Tabs scope={scope} setScope={setScope} isAdmin={isAdmin} />
+
+          <RequestsList rows={rows} isLoading={isLoading} sourceDept={sourceDept} onChanged={() => mutate()} scope={scope} />
+        </>
+      ) : (
+        <ChangeRequestInbox />
+      )}
+    </div>
+  );
+}
+
+// ─── Section switch ────────────────────────────────────────────────────────
+
+function SectionSwitch({ section, setSection }: { section: Section; setSection: (s: Section) => void }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
+  const sections: { key: Section; label: string; labelAr: string; icon: React.ElementType }[] = [
+    { key: "service",   label: "Service Requests",  labelAr: "طلبات الخدمات",  icon: Send },
+    { key: "approvals", label: "Change Approvals",  labelAr: "اعتماد التغييرات", icon: FileCheck2 },
+  ];
+  return (
+    <div className="tab-rail w-fit" role="tablist" aria-label={tr("Requests sections", "أقسام الطلبات")}>
+      {sections.map((s) => (
+        <button
+          key={s.key}
+          type="button"
+          onClick={() => setSection(s.key)}
+          data-active={section === s.key}
+          role="tab"
+          aria-selected={section === s.key}
+          className="tab-pill"
+        >
+          <s.icon size={13} className="me-1.5" />
+          {lang === "ar" ? s.labelAr : s.label}
+        </button>
+      ))}
     </div>
   );
 }

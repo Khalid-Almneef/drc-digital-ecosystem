@@ -22,7 +22,6 @@ import { BulkUploadCard } from "@/components/dashboard/BulkUploadCard";
 import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import { useApi } from "@/lib/hooks/useApi";
 
 interface PRPromoEvent {
@@ -214,7 +213,7 @@ function exportProposalPdf(sponsor: SponsorRow) {
 
 export default function PRDashboard() {
   const { lang } = useLang();
-  const [activeTab, setActiveTab] = useState<"sponsors" | "promotions" | "visitIdeas" | "tasks" | "operations" | "changeRequests">("sponsors");
+  const [activeTab, setActiveTab] = useState<"sponsors" | "promotions" | "visitIdeas" | "tasks" | "operations">("sponsors");
   const [sponsors, setSponsors] = useState<SponsorRow[]>([]);
   const { data: prEvents = [], isLoading: eventsLoading, mutate: refreshEvents } = useApi<PRPromoEvent[]>("/api/events");
   const [loading, setLoading] = useState(true);
@@ -364,11 +363,10 @@ export default function PRDashboard() {
           visitIdeas: tr("Visit Ideas", "أفكار الزيارات"),
           tasks: tr("Task Review", "مراجعة المهام"),
           operations: tr("Operations", "التشغيل"),
-          changeRequests: tr("Change Requests", "طلبات التغيير"),
         } as const;
         const GROUPS = {
           pipeline: { label: tr("Pipeline", "السلسلة"), tabs: ["sponsors", "promotions", "visitIdeas"] as const },
-          tasks: { label: tr("Tasks", "المهام"), tabs: ["tasks", "changeRequests"] as const },
+          tasks: { label: tr("Tasks", "المهام"), tabs: ["tasks"] as const },
           settings: { label: tr("Settings", "الإعدادات"), tabs: ["operations"] as const },
         } as const;
         const findGroup = (): keyof typeof GROUPS => {
@@ -637,11 +635,6 @@ export default function PRDashboard() {
         </motion.div>
       )}
 
-      {activeTab === "changeRequests" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-          <ChangeRequestInbox />
-        </motion.div>
-      )}
     </div>
   );
 }

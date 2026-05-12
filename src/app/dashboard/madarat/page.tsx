@@ -20,12 +20,11 @@ import { useApi } from "@/lib/hooks/useApi";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import { ImageUrlInput } from "@/components/dashboard/ImageUrlInput";
 import { useEscape } from "@/lib/hooks/useEscape";
 import { api } from "@/lib/client";
 
-type View = "sessions" | "audience" | "tasks" | "operations" | "changeRequests";
+type View = "sessions" | "audience" | "tasks" | "operations";
 type ProgramType = "madarat" | "madariya_males" | "madariya_females";
 type TaskStatus = "todo" | "in_progress" | "review" | "done";
 type TaskPriority = "low" | "medium" | "high" | "urgent";
@@ -583,7 +582,6 @@ export default function MadaratDashboard() {
           { key: "audience", label: "Audience" },
           { key: "tasks", label: "Support Tasks" },
           { key: "operations", label: "Operations" },
-          { key: "changeRequests", label: tr("Change Requests", "طلبات التغيير") },
         ] as { key: View; label: string }[]).map(({ key, label }) => (
           <button
             key={key}
@@ -897,12 +895,6 @@ export default function MadaratDashboard() {
       {activeView === "operations" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
           <DepartmentOperationsPanel departmentSlug="madarat" title={tr("Madarat budget, procurement, and department requests", "ميزانية مدارات والمشتريات وطلبات القسم")} />
-        </motion.div>
-      )}
-
-      {activeView === "changeRequests" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-          <ChangeRequestInbox />
         </motion.div>
       )}
 

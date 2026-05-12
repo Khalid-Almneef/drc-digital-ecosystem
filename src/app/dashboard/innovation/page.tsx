@@ -17,7 +17,6 @@ import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOper
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
 import { MemberLink } from "@/components/dashboard/MemberLink";
-import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { api } from "@/lib/client";
 
@@ -272,7 +271,7 @@ function CreateProjectModal({ onClose, onCreated }: CreateProjectModalProps) {
 
 // ─── View type ────────────────────────────────────────────────────────────────
 
-type View = "projects" | "tasks" | "team" | "applications" | "operations" | "changeRequests";
+type View = "projects" | "tasks" | "team" | "applications" | "operations";
 
 // ─── Applications Inbox ───────────────────────────────────────────────────────
 
@@ -497,7 +496,6 @@ export default function InnovationDashboard() {
             { key: "team",         label: tr("Team Performance", "أداء الفريق") },
             { key: "applications", label: tr("Applications", "الطلبات") },
             { key: "operations",   label: tr("Operations", "التشغيل") },
-            { key: "changeRequests", label: tr("Change Requests", "طلبات التغيير") },
           ] as { key: View; label: string }[]).map(({ key, label }) => (
             <button
               key={key}
@@ -557,13 +555,6 @@ export default function InnovationDashboard() {
       {activeView === "operations" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           <DepartmentOperationsPanel departmentSlug="innovation" title={tr("Innovation budget, procurement, media, and workshop requests", "ميزانية الابتكار والمشتريات وطلبات الإعلام والورش")} />
-        </motion.div>
-      )}
-
-      {/* Self-scoping inbox: members see their own submissions, leaders see incoming. */}
-      {activeView === "changeRequests" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <ChangeRequestInbox />
         </motion.div>
       )}
 

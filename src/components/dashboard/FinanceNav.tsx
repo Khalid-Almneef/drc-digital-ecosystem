@@ -8,7 +8,6 @@ const items = [
   { label: "Operations", labelAr: "التشغيل", href: "/dashboard/finance" },
   { label: "Tasks", labelAr: "المهام", href: "/dashboard/finance/tasks" },
   { label: "Reports", labelAr: "التقارير", href: "/dashboard/finance/reports" },
-  { label: "Change Requests", labelAr: "طلبات التغيير", href: "/dashboard/finance/change-requests" },
 ];
 
 export function FinanceNav() {

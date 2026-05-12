@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import { useLang } from "@/contexts/LanguageContext";
 import { useEscape } from "@/lib/hooks/useEscape";
 import { useApi } from "@/lib/hooks/useApi";
@@ -119,7 +118,7 @@ function fmtSize(bytes: number | null) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-type TabId = "overview" | "submissions" | "library" | "assignments" | "social" | "operations" | "changeRequests";
+type TabId = "overview" | "submissions" | "library" | "assignments" | "social" | "operations";
 
 const TABS: { id: TabId; label: string; labelAr: string; icon: React.ElementType }[] = [
   { id: "overview",      label: "Overview",        labelAr: "نظرة عامة",     icon: Eye      },
@@ -128,7 +127,6 @@ const TABS: { id: TabId; label: string; labelAr: string; icon: React.ElementType
   { id: "assignments",   label: "Assignments",     labelAr: "المهام",         icon: Users    },
   { id: "social",        label: "Social",          labelAr: "وسائل التواصل", icon: Settings },
   { id: "operations",    label: "Operations",      labelAr: "العمليات",      icon: Briefcase },
-  { id: "changeRequests",label: "Change Requests", labelAr: "طلبات التغيير",  icon: Inbox    },
 ];
 
 type HomepageMediaField = {
@@ -1004,12 +1002,6 @@ export default function MediaDashboard() {
       {tab === "operations" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
           <DepartmentOperationsPanel departmentSlug="media" title="Media budget, procurement, and design request inbox" />
-        </motion.div>
-      )}
-
-      {tab === "changeRequests" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-          <ChangeRequestInbox />
         </motion.div>
       )}
 

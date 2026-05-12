@@ -13,7 +13,6 @@ import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOper
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import { api } from "@/lib/client";
 import { toExternalUrl } from "@/lib/url";
 import { useApi } from "@/lib/hooks/useApi";
@@ -827,7 +826,7 @@ function CompanyVisitsTab() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-type View = "board" | "team" | "projects" | "live" | "library" | "requests" | "visits" | "operations" | "changeRequests";
+type View = "board" | "team" | "projects" | "live" | "library" | "requests" | "visits" | "operations";
 
 interface ServiceRequestRow {
   requestId: number;
@@ -1174,7 +1173,6 @@ export default function DevelopmentDashboard() {
           { key: "requests",   label: tr("Workshop Requests","طلبات الورش") },
           { key: "visits",     label: tr("Company Visits",  "زيارات الشركات") },
           { key: "operations", label: tr("Operations",      "التشغيل") },
-          { key: "changeRequests", label: tr("Change Requests","طلبات التغيير") },
         ] as { key: View; label: string }[]).map(({ key, label }) => (
           <button
             key={key}
@@ -1249,11 +1247,6 @@ export default function DevelopmentDashboard() {
         </motion.div>
       )}
 
-      {activeView === "changeRequests" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <ChangeRequestInbox />
-        </motion.div>
-      )}
     </div>
   );
 }
