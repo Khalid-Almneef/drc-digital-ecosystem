@@ -432,7 +432,7 @@ export default function PRDashboard() {
       })()}
       {activeTab === "sponsors" && (
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[calc(100dvh-18rem)] overflow-y-auto pr-1">
             {loading ? (
               <div className="glass-card p-6 text-sm text-muted">{tr("Loading sponsors…", "جارٍ تحميل الرعاة…")}</div>
             ) : sponsors.length === 0 ? (

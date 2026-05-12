@@ -1059,9 +1059,9 @@ export default function HRDashboard() {
                   </button>
                 </div>
               )}
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-[calc(100dvh-26rem)] overflow-y-auto">
                 <table className="w-full">
-                  <thead>
+                  <thead className="sticky top-0 z-10 bg-surface">
                     <tr className="border-b border-border">
                       <th className="px-3 py-3 w-9">
                         <input

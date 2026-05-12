@@ -383,7 +383,7 @@ function LiveWorkshopsTab() {
           {tr("No live workshops yet. Create one to get started.", "لا توجد ورش مباشرة بعد. أنشئ واحدة للبدء.")}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-[calc(100dvh-22rem)] overflow-y-auto pr-1">
           {[...upcoming, ...past].map((w, i) => {
             const past_ = isPast(w.scheduledAt);
             const spots = w.maxRegistrants ? `${w.registrationCount}/${w.maxRegistrants}` : `${w.registrationCount}`;
@@ -648,7 +648,7 @@ function RecordedWorkshopsTab() {
       ) : workshops.length === 0 ? (
         <div className="glass-card p-12 text-center text-sm text-muted">{tr("No recorded workshop libraries yet.", "لا توجد مكتبات ورش مسجَّلة بعد.")}</div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-[calc(100dvh-22rem)] overflow-y-auto pr-1">
           {workshops.map((workshop, index) => (
             <motion.div key={workshop.workshopId} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }} className="glass-card p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -793,7 +793,7 @@ function CompanyVisitsTab() {
         ) : visits.length === 0 ? (
           <div className="glass-card p-6 text-center text-sm text-muted">{tr("No visit requests yet. Submit one above.", "لا توجد طلبات زيارة بعد. أرسل طلباً من الأعلى.")}</div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[calc(100dvh-30rem)] overflow-y-auto pr-1">
             {visits.map((req) => (
               <div key={req.requestId} className="glass-card p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -945,7 +945,7 @@ function WorkshopRequestsInbox() {
           {tr("No requests in this list.", "لا توجد طلبات في هذه القائمة.")}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-[calc(100dvh-22rem)] overflow-y-auto pr-1">
           {rows.map((req) => (
             <div key={req.requestId} className="glass-card p-4 space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-3">

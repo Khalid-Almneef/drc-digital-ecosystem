@@ -223,7 +223,7 @@ function CommitteeTaskPanel({ departmentSlug }: { departmentSlug: FinanceDepartm
         <div className="space-y-4">
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground">{tr("Review Queue", "قائمة المراجعة")}</h4>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2 max-h-[calc(100dvh-26rem)] overflow-y-auto pr-1">
               {loading ? (
                 <div className="rounded-2xl border border-border bg-surface/25 p-6 text-center text-sm text-muted">{tr("Loading tasks...", "جاري التحميل...")}</div>
               ) : reviewTasks.length === 0 ? (
@@ -553,7 +553,7 @@ export function DepartmentOperationsPanel({ departmentSlug, title }: { departmen
           ) : outboundRows.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted">{tr("No outbound requests yet.", "لا توجد طلبات صادرة بعد.")}</p>
           ) : (
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-3 max-h-[calc(100dvh-22rem)] overflow-y-auto pr-1">
               {outboundRows.map((row) => (
                 <div key={row.requestId} className="rounded-2xl border border-border bg-surface-elevated/30 p-4">
                   <div className="flex flex-wrap items-center gap-2">
@@ -601,7 +601,7 @@ export function DepartmentOperationsPanel({ departmentSlug, title }: { departmen
             ) : inboundRows.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted">{tr("No incoming requests.", "لا توجد طلبات واردة.")}</p>
             ) : (
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 space-y-3 max-h-[calc(100dvh-22rem)] overflow-y-auto pr-1">
                 {inboundRows.map((row) => {
                   const draft = requestDrafts[row.requestId] ?? {
                     status: row.status,

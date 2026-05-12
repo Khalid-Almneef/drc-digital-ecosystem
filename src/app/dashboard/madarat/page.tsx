@@ -644,7 +644,7 @@ export default function MadaratDashboard() {
                   {group.rows.length === 0 ? (
                     <p className="py-8 text-center text-sm text-muted">{group.empty}</p>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-3 max-h-[calc(100dvh-22rem)] overflow-y-auto pr-1">
                       {group.rows.map((session) => (
                         <div key={session.sessionId} className="rounded-xl border border-border bg-surface-elevated/30 p-4">
                           <div className="flex items-start gap-3">

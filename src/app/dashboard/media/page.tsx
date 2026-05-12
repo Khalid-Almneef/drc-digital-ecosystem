@@ -736,7 +736,7 @@ export default function MediaDashboard() {
           {submissions.length === 0 ? (
             <div className="glass-card p-10 text-center text-sm text-muted">No submissions pending review.</div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[calc(100dvh-16rem)] overflow-y-auto pr-1">
               {submissions.map((t, i) => (
                 <motion.div key={t.taskId} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
@@ -1266,7 +1266,7 @@ export default function MediaDashboard() {
                 No queued social content yet.
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[calc(100dvh-22rem)] overflow-y-auto pr-1">
                 {socialQueue.map((item) => (
                   <div key={item.contentId} className="glass-card p-4 flex flex-col lg:flex-row lg:items-center gap-4">
                     {item.fileUrl ? (
