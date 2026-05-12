@@ -78,8 +78,11 @@ function isPast(iso: string) { return new Date(iso) < new Date(); }
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
   return (
     <button
+      type="button"
       onClick={onChange}
       disabled={disabled}
+      role="switch"
+      aria-checked={checked}
       className={`relative w-9 h-5 rounded-full border transition-colors duration-200 shrink-0 ${
         checked ? "bg-primary/20 border-primary/40" : "bg-surface-elevated border-border"
       } disabled:opacity-40`}

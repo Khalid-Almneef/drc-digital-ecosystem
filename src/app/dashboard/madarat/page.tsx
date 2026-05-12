@@ -140,8 +140,11 @@ const statusClass: Record<TaskStatus, string> = {
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
   return (
     <button
+      type="button"
       onClick={onChange}
       disabled={disabled}
+      role="switch"
+      aria-checked={checked}
       className={`relative h-5 w-9 rounded-full border transition-colors ${
         checked ? "border-primary/40 bg-primary/20" : "border-border bg-surface-elevated"
       } disabled:opacity-50`}
