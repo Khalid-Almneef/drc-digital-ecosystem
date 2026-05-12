@@ -447,14 +447,14 @@ export default function InnovationDashboard() {
   const [archiveKey, setArchiveKey] = useState(0);
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
 
-  const { data: innovationProjects = [] } = useApi<{ projectId: number; status: string; departmentSlug: string | null }[]>(
+  const { data: innovationProjects = [], mutate: refreshInnovationProjects } = useApi<{ projectId: number; status: string; departmentSlug: string | null }[]>(
     "/api/projects?scope=all",
   );
   const innoProjects = innovationProjects.filter((p) => p.departmentSlug === "innovation");
   const activeProjects = innoProjects.filter((p) => p.status === "active" || p.status === "in_progress").length;
   const completedProjects = innoProjects.filter((p) => p.status === "completed").length;
 
-  const { data: innovationApplications = [] } = useApi<ProjectApplicationRow[]>(
+  const { data: innovationApplications = [], mutate: refreshInnovationApplications } = useApi<ProjectApplicationRow[]>(
     "/api/innovation/applications?scope=open",
   );
   const openApplications = innovationApplications.length;
@@ -484,6 +484,7 @@ export default function InnovationDashboard() {
           templateUrl="/api/events/bulk/template"
           uploadUrl="/api/events/bulk"
           templateFilename="events-bulk-template.csv"
+          onComplete={() => { setArchiveKey(k => k + 1); }}
         />
       </div>
 
@@ -562,7 +563,12 @@ export default function InnovationDashboard() {
         {showCreateProject && (
           <CreateProjectModal
             onClose={() => setShowCreateProject(false)}
-            onCreated={() => { setShowCreateProject(false); setArchiveKey(k => k + 1); }}
+            onCreated={() => {
+              setShowCreateProject(false);
+              setArchiveKey(k => k + 1);
+              void refreshInnovationProjects();
+              void refreshInnovationApplications();
+            }}
           />
         )}
       </AnimatePresence>

@@ -460,6 +460,7 @@ export default function HRDashboard() {
     setMembershipSaving(true);
     try {
       await api.patch("/api/site-content/join.closed.message", { en: closedEn, ar: closedAr });
+      void loadClosedMsgApi();
       toast.success(tr("Membership settings saved", "تم حفظ إعدادات العضوية"));
     } catch {
       toast.error(tr("Save failed. Please try again.", "فشل الحفظ. حاول مرة أخرى."));

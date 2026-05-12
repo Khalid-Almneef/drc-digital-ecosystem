@@ -325,7 +325,7 @@ export default function MediaDashboard() {
   const [deletingTask, setDeletingTask] = useState<number | null>(null);
 
   // ── Social ──
-  const { data: handlesData } = useApi<{ json: SocialHandles | null }>("/api/site-content/social.handles");
+  const { data: handlesData, mutate: loadHandles } = useApi<{ json: SocialHandles | null }>("/api/site-content/social.handles");
   const [handles, setHandles] = useState<SocialHandles>(DEFAULT_SOCIAL_HANDLES);
   useEffect(() => {
     if (handlesData?.json) setHandles({ ...DEFAULT_SOCIAL_HANDLES, ...handlesData.json });
@@ -533,6 +533,7 @@ export default function MediaDashboard() {
     setHandlesSaving(true);
     try {
       await api.patch("/api/site-content/social.handles", { json: handles });
+      void loadHandles();
       toast.success(tr("Social handles saved", "تم حفظ روابط التواصل"));
     } catch {
       toast.error(tr("Save failed. Please try again.", "فشل الحفظ. حاول مرة أخرى."));
