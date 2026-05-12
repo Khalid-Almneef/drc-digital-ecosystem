@@ -422,6 +422,22 @@ function RequestCard({
           {row.description && (
             <p className="mt-1.5 text-xs leading-6 text-muted whitespace-pre-wrap">{row.description}</p>
           )}
+          {row.assigneeNote && (
+            <div className={`mt-3 rounded-lg border px-3 py-2 ${
+              row.status === "rejected"
+                ? "border-error/25 bg-error/[0.06]"
+                : "border-border bg-surface-elevated/40"
+            }`}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+                {row.status === "rejected"
+                  ? tr("Rejection reason", "سبب الرفض")
+                  : tr("Note from receiving team", "ملاحظة من اللجنة المستلمة")}
+              </p>
+              <p className="mt-1 whitespace-pre-wrap text-xs leading-6 text-foreground/85">
+                {row.assigneeNote}
+              </p>
+            </div>
+          )}
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
             <span>
               {tr("From", "من")}:{" "}

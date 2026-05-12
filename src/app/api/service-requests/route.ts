@@ -4,6 +4,67 @@ import { requireSession } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { type MockDepartmentSlug, type MockServiceRequest, findMockMember, getMockStore, isMockMode, nextMockId } from "@/lib/mock-store";
 import { canCreateServiceRequest, toServiceRequestSlug, type ServiceRequestRow, type ServiceRequestTarget, type ServiceRequestType } from "@/lib/service-requests";
+import { emitNotifications } from "@/lib/notifications";
+
+// Notify every active leader of the target department so the request lands
+// in their notification bell, not just in the inbox tab. Excludes the
+// requester themselves to avoid self-pings on cross-dept requests they
+// happened to make.
+async function notifyTargetDeptLeaders(
+  targetSlug: ServiceRequestTarget,
+  requestId: number,
+  requestType: ServiceRequestType,
+  title: string,
+  requesterId: number,
+): Promise<void> {
+  const niceType = requestType.replace(/_/g, " ");
+  const notificationTitle = `New ${niceType} request`;
+  const linkUrl = "/dashboard/requests";
+  const sourceType = `service_request:${requestType}`;
+  if (isMockMode()) {
+    const store = getMockStore();
+    const leaders = store.members.filter(
+      (m) =>
+        m.isActive &&
+        m.departmentSlug === targetSlug &&
+        (m.position === "dept_leader" || m.position === "dept_vice_leader") &&
+        m.memberId !== requesterId,
+    );
+    void emitNotifications(
+      leaders.map((leader) => ({
+        recipientId: leader.memberId,
+        category: "service_request_update" as const,
+        title: notificationTitle,
+        body: title,
+        linkUrl,
+        sourceType,
+        sourceId: requestId,
+      })),
+    );
+    return;
+  }
+  const { rows } = await query<{ member_id: number }>(
+    `SELECT u.member_id
+       FROM users u
+       JOIN departments d ON d.department_id = u.department_id
+      WHERE d.slug::text = $1
+        AND u.is_active = TRUE
+        AND u.member_id <> $2
+        AND u.position IN ('dept_leader', 'dept_vice_leader')`,
+    [targetSlug, requesterId],
+  );
+  void emitNotifications(
+    rows.map((row) => ({
+      recipientId: row.member_id,
+      category: "service_request_update" as const,
+      title: notificationTitle,
+      body: title,
+      linkUrl,
+      sourceType,
+      sourceId: requestId,
+    })),
+  );
+}
 
 const REQUEST_TYPES = [
   "design", "workshop", "project_media", "company_visit",
@@ -172,6 +233,7 @@ export const POST = handle(async (req) => {
       updatedAt: new Date().toISOString(),
       resolvedAt: null,
     });
+    await notifyTargetDeptLeaders(body.targetDepartmentSlug, requestId, body.requestType, body.title.trim(), session.memberId);
     return ok({ requestId }, { status: 201 });
   }
 
@@ -191,5 +253,7 @@ export const POST = handle(async (req) => {
       body.attachmentUrls,
     ],
   );
-  return ok({ requestId: rows[0].request_id }, { status: 201 });
+  const requestId = rows[0].request_id;
+  await notifyTargetDeptLeaders(body.targetDepartmentSlug, requestId, body.requestType, body.title.trim(), session.memberId);
+  return ok({ requestId }, { status: 201 });
 });
