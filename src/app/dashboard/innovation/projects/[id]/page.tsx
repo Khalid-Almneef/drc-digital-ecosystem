@@ -13,6 +13,7 @@ import { MemberLink } from "@/components/dashboard/MemberLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { api } from "@/lib/client";
+import { toExternalUrl } from "@/lib/url";
 import { useApi } from "@/lib/hooks/useApi";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -586,7 +587,7 @@ export default function ProjectTrackPage() {
           </span>
         )}
         {project.githubUrl && (
-          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"
+          <a href={toExternalUrl(project.githubUrl)} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-primary/70 hover:text-primary transition-colors">
             GitHub <ExternalLink size={11} />
           </a>

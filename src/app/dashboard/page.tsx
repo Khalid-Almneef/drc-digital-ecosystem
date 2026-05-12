@@ -32,6 +32,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { MemberCombobox } from "@/components/dashboard/MemberCombobox";
 import { api } from "@/lib/client";
+import { toExternalUrl } from "@/lib/url";
 import { MadaratRegistrationModal } from "@/components/sections/MadaratRegistrationModal";
 
 interface EventItem {
@@ -598,7 +599,7 @@ export default function DashboardOverview() {
                           </div>
                           {announcement.body ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{announcement.body}</p> : null}
                           {announcement.linkUrl ? (
-                            <a href={announcement.linkUrl} target="_blank" rel="noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                            <a href={toExternalUrl(announcement.linkUrl)} target="_blank" rel="noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
                               {tr("Open link", "فتح الرابط")} <ExternalLink size={11} />
                             </a>
                           ) : null}

@@ -22,6 +22,7 @@ import { ImportExportToolbar } from "@/components/dashboard/ImportExportToolbar"
 import { StatCard } from "@/components/dashboard/StatCard";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { api } from "@/lib/client";
+import { toExternalUrl } from "@/lib/url";
 import { useApi } from "@/lib/hooks/useApi";
 import { parseBoolean, toCsv } from "@/lib/csv";
 import type { FinanceDepartmentSummary, FinancePurchaseRequest } from "@/lib/finance";
@@ -577,7 +578,7 @@ export default function LeadersDashboard() {
                       <p className="text-xs font-medium text-foreground">{announcement.title}</p>
                       {announcement.body && <p className="mt-0.5 line-clamp-2 text-[10px] text-muted">{announcement.body}</p>}
                       {announcement.linkUrl && (
-                        <a href={announcement.linkUrl} target="_blank" rel="noreferrer" className="mt-0.5 inline-block text-[10px] text-primary hover:underline">
+                        <a href={toExternalUrl(announcement.linkUrl)} target="_blank" rel="noreferrer" className="mt-0.5 inline-block text-[10px] text-primary hover:underline">
                           {tr("Open link", "فتح الرابط")} ↗
                         </a>
                       )}

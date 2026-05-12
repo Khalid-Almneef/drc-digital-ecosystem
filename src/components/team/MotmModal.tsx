@@ -6,6 +6,7 @@ import { X, Trophy, Crown, ExternalLink, Building2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { api } from "@/lib/client";
+import { toExternalUrl } from "@/lib/url";
 import { useLang } from "@/contexts/LanguageContext";
 
 interface MemberPublic {
@@ -191,7 +192,7 @@ export function MotmModal({
                   <div className="mt-6 flex justify-center gap-2">
                     {member.linkedinUrl && (
                       <a
-                        href={member.linkedinUrl}
+                        href={toExternalUrl(member.linkedinUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/15"

@@ -5,6 +5,7 @@ import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 import { ArrowUpRight, Calendar, ChevronRight, Clock, Eye } from "lucide-react";
 import { AdminLink } from "@/lib/ui-helpers";
+import { toExternalUrl } from "@/lib/url";
 import { useAuth } from "@/contexts/AuthContext";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import type { Announcement } from "@/hooks/useHomeData";
@@ -131,7 +132,7 @@ function NewsCard({ item, index, lang, t }: { item: Announcement; index: number;
           </div>
         );
         return item.linkUrl ? (
-          <a href={item.linkUrl} target="_blank" rel="noreferrer" className="glass-card group block p-5 transition-colors hover:bg-surface/65">
+          <a href={toExternalUrl(item.linkUrl)} target="_blank" rel="noreferrer" className="glass-card group block p-5 transition-colors hover:bg-surface/65">
             {inner}
           </a>
         ) : (

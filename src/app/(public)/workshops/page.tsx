@@ -10,6 +10,7 @@ import { SectionAnchorBar } from "@/components/ui/SectionAnchorBar";
 import { useLang } from "@/contexts/LanguageContext";
 import { workshops as fallbackWorkshops, CATEGORY_COLORS } from "@/data/workshops";
 import { api } from "@/lib/client";
+import { toExternalUrl } from "@/lib/url";
 import { DriveVideoPlayer } from "@/components/workshops/DriveVideoPlayer";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -573,7 +574,7 @@ export default function WorkshopsPage() {
                           {sessions.length} {sessions.length === 1 ? t("workshops.sessions.one") : t("workshops.sessions.many")}
                         </span>
                         {workshop.googleDriveFolderUrl && (
-                          <a href={workshop.googleDriveFolderUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-8 items-center gap-1 rounded-full border border-border px-2.5 text-[11px] text-muted hover:text-foreground">
+                          <a href={toExternalUrl(workshop.googleDriveFolderUrl)} target="_blank" rel="noreferrer" className="inline-flex min-h-8 items-center gap-1 rounded-full border border-border px-2.5 text-[11px] text-muted hover:text-foreground">
                             <FolderOpen size={11} />
                             {t("workshops.drive.label")}
                           </a>

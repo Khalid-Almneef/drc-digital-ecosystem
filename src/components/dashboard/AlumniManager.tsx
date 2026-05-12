@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Pencil, Plus, Trash2, X, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/client";
+import { toExternalUrl } from "@/lib/url";
 
 interface AlumniRow {
   memberId: number;
@@ -102,8 +103,8 @@ export function AlumniManager({ tr }: { tr: (en: string, ar: string) => string }
               </div>
               {a.bio && <p className="line-clamp-3 text-xs leading-5 text-muted">{a.bio}</p>}
               <div className="flex items-center gap-2 pt-1 text-[11px] text-muted">
-                {a.linkedinUrl && <a href={a.linkedinUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">LinkedIn</a>}
-                {a.githubUrl && <a href={a.githubUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">GitHub</a>}
+                {a.linkedinUrl && <a href={toExternalUrl(a.linkedinUrl)} target="_blank" rel="noreferrer" className="text-primary hover:underline">LinkedIn</a>}
+                {a.githubUrl && <a href={toExternalUrl(a.githubUrl)} target="_blank" rel="noreferrer" className="text-primary hover:underline">GitHub</a>}
               </div>
               <div className="flex items-center gap-1 border-t border-border/60 pt-2">
                 <button onClick={() => setEditing(a)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted hover:bg-surface-elevated hover:text-foreground">

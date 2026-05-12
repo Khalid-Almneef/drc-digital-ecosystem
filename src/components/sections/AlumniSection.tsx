@@ -6,6 +6,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { api } from "@/lib/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { displayMemberName, translateMajor } from "@/lib/format-name";
+import { toExternalUrl } from "@/lib/url";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 
 // Social icons custom SVGs to avoid build errors
@@ -191,7 +192,7 @@ function AlumniCard({
 
           {alumnus.linkedinUrl ? (
             <a
-              href={alumnus.linkedinUrl}
+              href={toExternalUrl(alumnus.linkedinUrl)}
               target="_blank"
               rel="noreferrer"
               onClick={(event) => event.stopPropagation()}
@@ -259,12 +260,12 @@ function AlumniModal({ alumnus, lang, onClose }: { alumnus: AlumniMember; lang: 
               <p className="text-primary font-bold mb-4 text-sm uppercase tracking-widest">{alumnus.departmentName}</p>
               <div className="flex gap-3">
                 {alumnus.linkedinUrl && (
-                  <a href={alumnus.linkedinUrl} target="_blank" className="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-elevated border border-border text-foreground hover:border-primary/40 hover:text-primary transition-all">
+                  <a href={toExternalUrl(alumnus.linkedinUrl)} target="_blank" className="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-elevated border border-border text-foreground hover:border-primary/40 hover:text-primary transition-all">
                     <Linkedin size={18} />
                   </a>
                 )}
                 {alumnus.githubUrl && (
-                  <a href={alumnus.githubUrl} target="_blank" className="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-elevated border border-border text-foreground hover:border-primary/40 hover:text-primary transition-all">
+                  <a href={toExternalUrl(alumnus.githubUrl)} target="_blank" className="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-elevated border border-border text-foreground hover:border-primary/40 hover:text-primary transition-all">
                     <Github size={18} />
                   </a>
                 )}
@@ -289,7 +290,7 @@ function AlumniModal({ alumnus, lang, onClose }: { alumnus: AlumniMember; lang: 
                     LinkedIn
                   </h4>
                   <a
-                    href={alumnus.linkedinUrl}
+                    href={toExternalUrl(alumnus.linkedinUrl)}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary-bright"

@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { api } from "@/lib/client";
 import { displayMemberName, translateMajor } from "@/lib/format-name";
+import { toExternalUrl } from "@/lib/url";
 import { useLang } from "@/contexts/LanguageContext";
 
 const Github = (props: React.SVGProps<SVGSVGElement>) => (
@@ -160,7 +161,7 @@ export default function TeamMemberProfilePage() {
               <div className="flex gap-3">
                 {data.linkedinUrl && (
                   <a
-                    href={data.linkedinUrl}
+                    href={toExternalUrl(data.linkedinUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="LinkedIn"
@@ -171,7 +172,7 @@ export default function TeamMemberProfilePage() {
                 )}
                 {data.githubUrl && (
                   <a
-                    href={data.githubUrl}
+                    href={toExternalUrl(data.githubUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="GitHub"

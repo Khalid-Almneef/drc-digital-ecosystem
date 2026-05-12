@@ -6,6 +6,7 @@ import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight, Play } from "lucide-react";
 import { AdminLink } from "@/lib/ui-helpers";
+import { toExternalUrl } from "@/lib/url";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { CATEGORY_COLORS } from "@/data/workshops";
 import type { Workshop } from "@/data/workshops";
@@ -104,7 +105,7 @@ function WorkshopCard({ workshop, index, lang, t }: { workshop: Workshop; index:
         <h3 className="text-base font-semibold leading-snug text-foreground">{lang === "ar" ? workshop.titleAr : workshop.title}</h3>
         <p className="mt-2 line-clamp-3 text-sm leading-7 text-muted">{lang === "ar" ? workshop.descriptionAr : workshop.description}</p>
         <a
-          href={workshop.videoUrl}
+          href={toExternalUrl(workshop.videoUrl)}
           className="mt-4 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors hover:bg-opacity-20"
           style={{ color: accent, borderColor: `${accent}35`, background: `${accent}08` }}
         >

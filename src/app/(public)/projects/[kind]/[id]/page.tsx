@@ -18,6 +18,7 @@ import {
 import { useLang } from "@/contexts/LanguageContext";
 import { api } from "@/lib/client";
 import { firstAndLastName } from "@/lib/format-name";
+import { toExternalUrl } from "@/lib/url";
 import { ContentImage } from "@/lib/ui-helpers";
 import {
   archiveStateFromEventDates,
@@ -127,7 +128,7 @@ function MemberDialog({
         )}
         {member.linkedinUrl ? (
           <a
-            href={member.linkedinUrl}
+            href={toExternalUrl(member.linkedinUrl)}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-4 py-2 text-sm text-primary transition-colors hover:border-primary/35 hover:text-primary-bright"
@@ -521,7 +522,7 @@ export default function ArchiveDetailPage() {
 
                 {kind === "projects" && project?.githubUrl ? (
                   <a
-                    href={project.githubUrl}
+                    href={toExternalUrl(project.githubUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm text-primary transition-colors hover:border-primary/35 hover:text-primary-bright"

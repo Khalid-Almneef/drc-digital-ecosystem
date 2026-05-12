@@ -15,6 +15,7 @@ import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformance
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
 import { api } from "@/lib/client";
+import { toExternalUrl } from "@/lib/url";
 import { useApi } from "@/lib/hooks/useApi";
 import { toast } from "sonner";
 
@@ -666,7 +667,7 @@ function RecordedWorkshopsTab() {
                   </div>
                   <div className="mt-3 grid gap-2 md:grid-cols-2">
                     {(workshop.sessions ?? []).slice(0, 4).map((session) => (
-                      <a key={session.sessionId} href={session.googleDriveUrl} target="_blank" rel="noreferrer" className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-border bg-surface-elevated/35 px-3 py-2 text-xs text-muted hover:text-foreground">
+                      <a key={session.sessionId} href={toExternalUrl(session.googleDriveUrl)} target="_blank" rel="noreferrer" className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-border bg-surface-elevated/35 px-3 py-2 text-xs text-muted hover:text-foreground">
                         <span className="line-clamp-1">{session.orderIndex}. {session.title}</span>
                         <ExternalLink size={12} className="shrink-0" />
                       </a>
@@ -674,7 +675,7 @@ function RecordedWorkshopsTab() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  {workshop.googleDriveFolderUrl && <a href={workshop.googleDriveFolderUrl} target="_blank" rel="noreferrer" className="btn-secondary inline-flex items-center gap-1.5 px-3 py-2 text-xs"><FolderOpen size={13} /> {tr("Folder", "المجلد")}</a>}
+                  {workshop.googleDriveFolderUrl && <a href={toExternalUrl(workshop.googleDriveFolderUrl)} target="_blank" rel="noreferrer" className="btn-secondary inline-flex items-center gap-1.5 px-3 py-2 text-xs"><FolderOpen size={13} /> {tr("Folder", "المجلد")}</a>}
                   <Toggle checked={workshop.isPublished} onChange={() => void togglePublished(workshop)} />
                   <button onClick={() => void del(workshop.workshopId)} className="min-h-10 rounded-lg border border-border px-3 text-muted hover:text-red-400"><Trash2 size={14} /></button>
                 </div>

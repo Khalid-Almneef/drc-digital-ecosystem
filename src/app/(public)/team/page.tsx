@@ -12,6 +12,7 @@ import { ExternalLink, Mail, Users } from "lucide-react";
 import { api } from "@/lib/client";
 import { DEFAULT_TEAM_STATS, TeamStatItem, localizedValue, parseCollection } from "@/lib/public-content";
 import { displayMemberName, firstAndLastName } from "@/lib/format-name";
+import { toExternalUrl } from "@/lib/url";
 import { MotmModal } from "@/components/team/MotmModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -196,7 +197,7 @@ function MemberCard({
         <div className="flex gap-2">
           {member?.linkedinUrl ? (
             <a
-              href={member.linkedinUrl}
+              href={toExternalUrl(member.linkedinUrl)}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn"
