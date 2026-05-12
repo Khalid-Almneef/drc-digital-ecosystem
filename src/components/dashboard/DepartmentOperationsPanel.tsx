@@ -330,14 +330,19 @@ export function DepartmentOperationsPanel({ departmentSlug, title }: { departmen
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.get<ServiceRequestRow[]>("/api/service-requests?scope=related");
+      // departmentSlug is honoured by the server only for club admins (it
+      // overrides the caller's own dept for the scope filter). For dept
+      // leaders it's a no-op — they still get their own scope.
+      const data = await api.get<ServiceRequestRow[]>(
+        `/api/service-requests?scope=related&departmentSlug=${departmentSlug}`,
+      );
       setRows(data ?? []);
     } catch {
       setRows([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [departmentSlug]);
 
   useEffect(() => {
     void load();

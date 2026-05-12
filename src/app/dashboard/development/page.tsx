@@ -835,7 +835,7 @@ function CompanyVisitsTab() {
   const [savingEdit, setSavingEdit] = useState(false);
 
   const { data: visits = [], isLoading: loadingVisits, mutate: loadVisits } = useApi<ServiceRequestRow[]>(
-    "/api/service-requests?scope=outbox&requestType=company_visit&sourceDepartment=development",
+    "/api/service-requests?scope=outbox&requestType=company_visit&departmentSlug=development",
   );
 
   function startEdit(req: ServiceRequestRow) {

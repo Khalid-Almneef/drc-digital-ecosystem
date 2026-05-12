@@ -80,6 +80,10 @@ const GetQuery = z.object({
   scope: z.enum(["inbox", "outbox", "related", "all"]).optional(),
   requestType: z.enum(REQUEST_TYPES).optional(),
   targetDepartment: z.enum(TARGET_DEPARTMENTS).optional(),
+  // Admin-only override: scope the inbox/outbox/related filter to this dept
+  // instead of the caller's own. Lets club admins open another dept's
+  // dashboard without their own dept silently AND'ing the query to empty.
+  departmentSlug: z.enum(TARGET_DEPARTMENTS).optional(),
 });
 
 const PostBody = z.object({
@@ -143,11 +147,15 @@ export const GET = handle(async (req) => {
 
   if (scope === "all" && !isAdmin) return err(403, "Forbidden");
 
-  // For admins, an explicit targetDepartment query param means "show me that
-  // dept's inbox" — without this override, the scope filter would force
-  // target = ownDepartment and silently AND it with the query filter, producing
-  // an impossible WHERE for admins viewing any other dept's dashboard.
-  const scopeDepartment = (isAdmin && q.targetDepartment) ? q.targetDepartment : ownDepartment;
+  // For admins, an explicit departmentSlug (or targetDepartment for the
+  // inbox case) query param means "show me that dept's view" — without this
+  // override, the scope filter would force target/source = ownDepartment and
+  // silently AND it with any query filter, producing an impossible WHERE for
+  // admins viewing any other dept's dashboard.
+  const adminDeptOverride = isAdmin
+    ? (q.departmentSlug ?? q.targetDepartment ?? null)
+    : null;
+  const scopeDepartment = adminDeptOverride ?? ownDepartment;
 
   if (isMockMode()) {
     const rows = getMockStore().serviceRequests.map(resolveMockRow);
