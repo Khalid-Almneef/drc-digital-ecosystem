@@ -10,9 +10,14 @@ const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com",
+  "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com https://drive.google.com https://*.googleusercontent.com https://i.ytimg.com",
   "font-src 'self' data:",
   "connect-src 'self' https://*.public.blob.vercel-storage.com https://api.resend.com",
+  // frame-src must explicitly list every host we embed; without it
+  // default-src would block all third-party iframes (Drive /preview,
+  // YouTube embeds, etc.) and the browser shows a generic "blocked"
+  // message inside the iframe.
+  "frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
