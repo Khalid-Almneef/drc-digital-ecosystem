@@ -18,11 +18,11 @@ import { useLang } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/hooks/useApi";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DepartmentOperationsPanel } from "@/components/dashboard/DepartmentOperationsPanel";
-import { ImportExportToolbar } from "@/components/dashboard/ImportExportToolbar";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
+import { ImageUrlInput } from "@/components/dashboard/ImageUrlInput";
+import { useEscape } from "@/lib/hooks/useEscape";
 import { api } from "@/lib/client";
-import { parseBoolean, toCsv } from "@/lib/csv";
 
 type View = "sessions" | "audience" | "tasks" | "operations" | "changeRequests";
 type ProgramType = "madarat" | "madariya_males" | "madariya_females";
@@ -44,6 +44,8 @@ interface MadaratSessionRow {
   registrationOpen: boolean;
   isPublished: boolean;
   visibility: "public" | "club_only";
+  imageUrl: string | null;
+  attendanceCount: number | null;
   createdAt: string;
   registrationCount: number;
   maleCount: number;
@@ -99,6 +101,7 @@ const SESSION_FORM = {
   durationMin: "",
   location: "",
   maxRegistrants: "",
+  imageUrl: "",
   registrationOpen: false,
   isPublished: false,
   visibility: "public" as "public" | "club_only",
@@ -327,6 +330,15 @@ function CreateSessionModal({
             </select>
           </div>
           <div className="md:col-span-2">
+            <label className={labelCls}>{tr("Cover Image", "صورة الغلاف")}</label>
+            <ImageUrlInput
+              value={form.imageUrl}
+              onChange={(value) => onChange({ imageUrl: value })}
+              placeholder={tr("Upload, paste a URL, or pick from the library", "ارفع صورة أو ضع رابطًا أو اختر من المكتبة")}
+              uploadLabel="madarat-session"
+            />
+          </div>
+          <div className="md:col-span-2">
             <label className={labelCls}>{tr("Description", "الوصف")}</label>
             <textarea value={form.description} onChange={(event) => onChange({ description: event.target.value })} rows={3} className={`${inputCls} resize-none`} placeholder={tr("What is this session about?", "عن أي شيء هذه الجلسة؟")} />
           </div>
@@ -367,6 +379,8 @@ export default function MadaratDashboard() {
   const [sessionSaving, setSessionSaving] = useState(false);
   const [sessionForm, setSessionForm] = useState(SESSION_FORM);
   const [createSessionOpen, setCreateSessionOpen] = useState(false);
+  const [logPastOpen, setLogPastOpen] = useState(false);
+  useEscape(logPastOpen, () => setLogPastOpen(false));
   const [updatingSessionId, setUpdatingSessionId] = useState<number | null>(null);
   const [viewRegsFor, setViewRegsFor] = useState<MadaratSessionRow | null>(null);
 
@@ -427,6 +441,7 @@ export default function MadaratDashboard() {
         registrationOpen: sessionForm.registrationOpen,
         isPublished: sessionForm.isPublished,
         visibility: sessionForm.visibility,
+        imageUrl: sessionForm.imageUrl || undefined,
       });
       setSessionForm(SESSION_FORM);
       setCreateSessionOpen(false);
@@ -440,53 +455,6 @@ export default function MadaratDashboard() {
     }
   }
 
-  function getSessionsCsv() {
-    return toCsv(
-      ["title", "description", "intervieweeName", "interviewerName", "intervieweeRole", "programType", "scheduledAt", "durationMin", "location", "maxRegistrants", "registrationOpen", "isPublished"],
-      sessions.map((session) => [
-        session.title,
-        session.description ?? "",
-        session.intervieweeName,
-        session.interviewerName ?? "",
-        session.intervieweeRole ?? "",
-        session.programType,
-        session.scheduledAt,
-        session.durationMin ?? "",
-        session.location ?? "",
-        session.maxRegistrants ?? "",
-        session.registrationOpen,
-        session.isPublished,
-      ]),
-    );
-  }
-
-  function getSessionsTemplateCsv() {
-    return toCsv(
-      ["title", "description", "intervieweeName", "interviewerName", "intervieweeRole", "programType", "scheduledAt", "durationMin", "location", "maxRegistrants", "registrationOpen", "isPublished"],
-      [["Career Conversation", "Session summary", "Guest Name", "Host Name", "Alumni, Product Lead", "madarat", new Date().toISOString(), 60, "Innovation Hall", 80, true, false]],
-    );
-  }
-
-  async function importSessions(rows: Record<string, string>[]) {
-    for (const row of rows) {
-      if (!row.title?.trim()) continue;
-      await api.post("/api/madarat/sessions", {
-        title: row.title.trim(),
-        description: row.description?.trim() || undefined,
-        intervieweeName: row.intervieweeName?.trim() || "",
-        interviewerName: row.interviewerName?.trim() || "",
-        intervieweeRole: row.intervieweeRole?.trim() || undefined,
-        programType: (row.programType?.trim() || "madarat") as ProgramType,
-        scheduledAt: row.scheduledAt?.trim() || new Date().toISOString(),
-        durationMin: row.durationMin ? Number(row.durationMin) : undefined,
-        location: row.location?.trim() || undefined,
-        maxRegistrants: row.maxRegistrants ? Number(row.maxRegistrants) : undefined,
-        registrationOpen: parseBoolean(row.registrationOpen ?? ""),
-        isPublished: parseBoolean(row.isPublished ?? ""),
-      });
-    }
-    loadSessions();
-  }
 
   async function patchSession(sessionId: number, patch: Partial<MadaratSessionRow>) {
     setUpdatingSessionId(sessionId);
@@ -596,23 +564,23 @@ export default function MadaratDashboard() {
                   <p className="mt-1 text-xs text-muted">{tr("Create Madarat and Madariya sessions from a focused modal instead of filling the whole page inline.", "أنشئ جلسات مدارات ومدارية من نافذة مخصّصة بدلاً من ملء الصفحة بالكامل.")}</p>
                 </div>
               </div>
-              <button onClick={() => setCreateSessionOpen(true)} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs">
-                <Plus size={11} />
-                {tr("Create Session", "إنشاء جلسة")}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setLogPastOpen(true)} className="btn-secondary inline-flex items-center gap-1.5 px-4 py-2 text-xs">
+                  <Plus size={11} />
+                  {tr("Log past session", "تسجيل جلسة سابقة")}
+                </button>
+                <button onClick={() => setCreateSessionOpen(true)} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs">
+                  <Plus size={11} />
+                  {tr("Create Session", "إنشاء جلسة")}
+                </button>
+              </div>
             </div>
-            <div className="mt-4">
-              <ImportExportToolbar
-                exportFilename="madarat-sessions.csv"
-                templateFilename="madarat-sessions-template.csv"
-                getExportCsv={getSessionsCsv}
-                getTemplateCsv={getSessionsTemplateCsv}
-                onImportRows={importSessions}
-                exportLabel="Export sessions"
-                templateLabel="Session template"
-                importLabel="Import sessions"
-              />
-            </div>
+            <p className="mt-3 text-xs text-muted">
+              {tr(
+                "Use “Log past session” to record a session that already happened — title and program type are enough; everything else (interviewee, date, cover image, attendance) is optional.",
+                "استخدم “تسجيل جلسة سابقة” لتوثيق جلسة انتهت — العنوان ونوع البرنامج كافيان؛ كل الباقي (الضيف، التاريخ، صورة الغلاف، الحضور) اختياري.",
+              )}
+            </p>
           </div>
 
           {sessionsLoading ? (
@@ -636,26 +604,39 @@ export default function MadaratDashboard() {
                     <div className="space-y-3">
                       {group.rows.map((session) => (
                         <div key={session.sessionId} className="rounded-xl border border-border bg-surface-elevated/30 p-4">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="min-w-0 truncate text-sm font-semibold text-foreground">{session.title}</p>
-                            <span className={
-                              session.programType === "madarat"
-                                ? "badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20"
-                                : "badge bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/20"
-                            }>
-                              {session.programType === "madarat"
-                                ? tr("Madarat", "مدارات")
-                                : session.programType === "madariya_males"
-                                  ? tr("Madariya (Males)", "مدارية (رجال)")
-                                  : tr("Madariya (Females)", "مدارية (نساء)")}
-                            </span>
-                            <span className={session.isPublished ? "badge badge-success" : "badge"}>
-                              {session.isPublished ? tr("Published", "منشور") : tr("Draft", "مسودة")}
-                            </span>
+                          <div className="flex items-start gap-3">
+                            {session.imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={session.imageUrl} alt={session.title} className="h-14 w-14 shrink-0 rounded-lg border border-border object-cover" />
+                            ) : null}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="min-w-0 truncate text-sm font-semibold text-foreground">{session.title}</p>
+                                <span className={
+                                  session.programType === "madarat"
+                                    ? "badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20"
+                                    : "badge bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/20"
+                                }>
+                                  {session.programType === "madarat"
+                                    ? tr("Madarat", "مدارات")
+                                    : session.programType === "madariya_males"
+                                      ? tr("Madariya (Males)", "مدارية (رجال)")
+                                      : tr("Madariya (Females)", "مدارية (نساء)")}
+                                </span>
+                                <span className={session.isPublished ? "badge badge-success" : "badge"}>
+                                  {session.isPublished ? tr("Published", "منشور") : tr("Draft", "مسودة")}
+                                </span>
+                                {typeof session.attendanceCount === "number" ? (
+                                  <span className="badge bg-emerald-500/10 text-emerald-300 border-emerald-500/20">
+                                    {session.attendanceCount} {tr("attended", "حضروا")}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
                           </div>
 
                           <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-xs text-muted sm:grid-cols-2">
-                            <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("Guest", "الضيف")}:</dt><dd className="text-foreground">{session.intervieweeName}</dd></div>
+                            {session.intervieweeName ? <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("Guest", "الضيف")}:</dt><dd className="text-foreground">{session.intervieweeName}</dd></div> : null}
                             {session.interviewerName ? <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("Interviewer", "المُحاوِر")}:</dt><dd className="text-foreground">{session.interviewerName}</dd></div> : null}
                             {session.intervieweeRole ? <div className="flex gap-2 sm:col-span-2"><dt className="shrink-0 text-muted/70">{tr("Role", "الدور")}:</dt><dd>{session.intervieweeRole}</dd></div> : null}
                             <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("When", "الموعد")}:</dt><dd>{fmtDateTime(session.scheduledAt)}</dd></div>
@@ -886,7 +867,163 @@ export default function MadaratDashboard() {
             onSubmit={createSession}
           />
         )}
+        {logPastOpen && (
+          <LogPastSessionModal
+            onClose={() => setLogPastOpen(false)}
+            onCreated={() => { setLogPastOpen(false); void loadSessions(); }}
+          />
+        )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function LogPastSessionModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
+  const [form, setForm] = useState({
+    title: "",
+    programType: "madarat" as ProgramType,
+    intervieweeName: "",
+    interviewerName: "",
+    intervieweeRole: "",
+    scheduledAt: "",
+    location: "",
+    description: "",
+    attendanceCount: "",
+    imageUrl: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function submit() {
+    if (!form.title.trim()) {
+      setMessage(tr("Title is required.", "العنوان مطلوب."));
+      return;
+    }
+    setSaving(true);
+    setMessage(null);
+    try {
+      await api.post("/api/madarat/sessions", {
+        title: form.title.trim(),
+        programType: form.programType,
+        intervieweeName: form.intervieweeName.trim() || undefined,
+        interviewerName: form.interviewerName.trim() || undefined,
+        intervieweeRole: form.intervieweeRole.trim() || undefined,
+        scheduledAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : undefined,
+        location: form.location.trim() || undefined,
+        description: form.description.trim() || undefined,
+        attendanceCount: form.attendanceCount.trim() === "" ? undefined : Number(form.attendanceCount),
+        imageUrl: form.imageUrl.trim() || undefined,
+        isPublished: true,
+        visibility: "public" as const,
+      });
+      onCreated();
+    } catch (error) {
+      const errorMsg = (error as { message?: string } | null)?.message;
+      setMessage(errorMsg || tr("Could not log session. Please try again.", "تعذّر تسجيل الجلسة. حاول مرة أخرى."));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const fieldCls = "w-full rounded-lg border border-border bg-surface-elevated/40 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-primary/40";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-3 sm:items-center sm:p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        onClick={(event) => event.stopPropagation()}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 20, opacity: 0 }}
+        className="flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl sm:rounded-2xl"
+      >
+        <div className="border-b border-border px-5 py-4">
+          <h3 className="text-base font-semibold text-foreground">{tr("Log past Madarat session", "تسجيل جلسة مدارات سابقة")}</h3>
+          <p className="mt-1 text-xs text-muted">
+            {tr(
+              "For a session that already happened. Title + program type are the only required fields — fill in whatever else you remember.",
+              "للجلسات التي تمّت. الحقل المطلوب الوحيد هو العنوان ونوع البرنامج — املأ ما تتذكره من الباقي.",
+            )}
+          </p>
+        </div>
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto px-5 py-4 sm:grid-cols-2">
+          <label className="text-xs text-muted sm:col-span-2">
+            <span className="block">{tr("Session title", "عنوان الجلسة")} <span className="text-primary">*</span></span>
+            <input className={fieldCls} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder={tr("e.g. Career conversation with …", "مثال: حوار مهني مع …")} />
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Program type", "نوع البرنامج")} <span className="text-primary">*</span></span>
+            <select className={fieldCls} value={form.programType} onChange={(event) => setForm({ ...form, programType: event.target.value as ProgramType })}>
+              <option value="madarat">{tr("Madarat", "مدارات")}</option>
+              <option value="madariya_males">{tr("Madariya (Males)", "مدارية (رجال)")}</option>
+              <option value="madariya_females">{tr("Madariya (Females)", "مدارية (نساء)")}</option>
+            </select>
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Date & time (optional)", "التاريخ والوقت (اختياري)")}</span>
+            <input type="datetime-local" className={fieldCls} value={form.scheduledAt} onChange={(event) => setForm({ ...form, scheduledAt: event.target.value })} />
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Interviewee (optional)", "الضيف (اختياري)")}</span>
+            <input className={fieldCls} value={form.intervieweeName} onChange={(event) => setForm({ ...form, intervieweeName: event.target.value })} placeholder={tr("Guest name", "اسم الضيف")} />
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Interviewer (optional)", "المُحاوِر (اختياري)")}</span>
+            <input className={fieldCls} value={form.interviewerName} onChange={(event) => setForm({ ...form, interviewerName: event.target.value })} placeholder={tr("Host or interviewer", "اسم المُقدِّم")} />
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Interviewee role (optional)", "دور الضيف (اختياري)")}</span>
+            <input className={fieldCls} value={form.intervieweeRole} onChange={(event) => setForm({ ...form, intervieweeRole: event.target.value })} placeholder={tr("Role / company / alumni context", "المنصب / الشركة / خلفية الخريج")} />
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Location (optional)", "المكان (اختياري)")}</span>
+            <input className={fieldCls} value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} placeholder={tr("Hall or room", "القاعة أو الغرفة")} />
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Audience attended (optional)", "عدد الحضور (اختياري)")}</span>
+            <input
+              type="number"
+              min="0"
+              className={fieldCls}
+              value={form.attendanceCount}
+              onChange={(event) => setForm({ ...form, attendanceCount: event.target.value })}
+              placeholder={tr("How many attended?", "كم عدد الحاضرين؟")}
+            />
+          </label>
+          <div className="text-xs text-muted sm:col-span-2">
+            <span className="block">{tr("Cover image (PNG / JPG, optional)", "صورة الغلاف (PNG / JPG، اختياري)")}</span>
+            <div className="mt-1">
+              <ImageUrlInput
+                value={form.imageUrl}
+                onChange={(value) => setForm({ ...form, imageUrl: value })}
+                placeholder={tr("Upload, paste a URL, or pick from the library", "ارفع صورة أو ضع رابطًا أو اختر من المكتبة")}
+                uploadLabel="madarat-past-session"
+              />
+            </div>
+          </div>
+          <label className="text-xs text-muted sm:col-span-2">
+            <span className="block">{tr("Description (optional)", "الوصف (اختياري)")}</span>
+            <textarea rows={3} className={`${fieldCls} resize-none`} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder={tr("Short summary or context", "ملخص أو سياق قصير")} />
+          </label>
+        </div>
+        {message && (
+          <div className="mx-5 mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{message}</div>
+        )}
+        <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
+          <button type="button" onClick={onClose} className="btn-secondary inline-flex items-center px-4 py-2 text-xs">{tr("Cancel", "إلغاء")}</button>
+          <button type="button" onClick={submit} disabled={saving} className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs disabled:opacity-50">
+            {saving ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
+            {tr("Log session", "تسجيل الجلسة")}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
