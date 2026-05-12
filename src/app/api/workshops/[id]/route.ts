@@ -1,8 +1,16 @@
 import { z } from "zod";
 import { handle, ok, parseBody, err } from "@/lib/api";
-import { query } from "@/lib/db";
+import { query, withTx } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { getMockStore, isMockMode } from "@/lib/mock-store";
+
+const SessionPatch = z.object({
+  title: z.string().min(1),
+  titleAr: z.string().optional(),
+  description: z.string().optional(),
+  durationMin: z.number().int().optional(),
+  googleDriveUrl: z.string().min(1),
+});
 
 const Patch = z.object({
   title: z.string().optional(),
@@ -18,6 +26,9 @@ const Patch = z.object({
   recordedDate: z.string().optional(),
   isPublished: z.boolean().optional(),
   membersOnly: z.boolean().optional(),
+  // When present, fully replaces the workshop's session list. Omit to leave
+  // sessions untouched.
+  sessions: z.array(SessionPatch).optional(),
 });
 
 function canManage(s: { position: string; departmentSlug: string | null }) {
@@ -49,6 +60,19 @@ export const PATCH = handle(async (req, ctx) => {
     if (b.recordedDate !== undefined) workshop.recordedDate = b.recordedDate || null;
     if (b.isPublished !== undefined) workshop.isPublished = b.isPublished;
     if (b.membersOnly !== undefined) workshop.membersOnly = b.membersOnly;
+    if (b.sessions !== undefined) {
+      const sessionBase = Date.now();
+      workshop.sessions = b.sessions.map((session, index) => ({
+        sessionId: sessionBase + index,
+        workshopId: workshop.workshopId,
+        title: session.title,
+        titleAr: session.titleAr ?? null,
+        description: session.description ?? null,
+        durationMin: session.durationMin ?? null,
+        googleDriveUrl: session.googleDriveUrl,
+        orderIndex: index + 1,
+      }));
+    }
     return ok({ success: true });
   }
   const map: Record<string, string> = {
@@ -58,14 +82,38 @@ export const PATCH = handle(async (req, ctx) => {
     thumbnailUrl: "thumbnail_url", recordedDate: "recorded_date",
     isPublished: "is_published", membersOnly: "members_only",
   };
-  const sets: string[] = [];
-  const params: unknown[] = [id];
-  for (const [k, v] of Object.entries(b)) {
-    if (v === undefined) continue;
-    if (map[k]) { params.push(v); sets.push(`${map[k]} = $${params.length}`); }
-  }
-  if (!sets.length) return ok({ success: true });
-  await query(`UPDATE workshops SET ${sets.join(", ")} WHERE workshop_id = $1`, params);
+  await withTx(async (client) => {
+    const sets: string[] = [];
+    const params: unknown[] = [id];
+    for (const [k, v] of Object.entries(b)) {
+      if (k === "sessions" || v === undefined) continue;
+      if (map[k]) { params.push(v); sets.push(`${map[k]} = $${params.length}`); }
+    }
+    if (sets.length) {
+      await client.query(`UPDATE workshops SET ${sets.join(", ")} WHERE workshop_id = $1`, params);
+    }
+    if (b.sessions !== undefined) {
+      // Replace-all semantics: simplest and most predictable. The drawback is
+      // that consumers tracking session_id across edits will see new IDs.
+      await client.query(`DELETE FROM workshop_sessions WHERE workshop_id = $1`, [id]);
+      for (const [index, session] of b.sessions.entries()) {
+        await client.query(
+          `INSERT INTO workshop_sessions
+             (workshop_id, title, title_ar, description, duration_min, google_drive_url, order_index)
+           VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+          [
+            id,
+            session.title,
+            session.titleAr ?? null,
+            session.description ?? null,
+            session.durationMin ?? null,
+            session.googleDriveUrl,
+            index + 1,
+          ],
+        );
+      }
+    }
+  });
   return ok({ success: true });
 });
 

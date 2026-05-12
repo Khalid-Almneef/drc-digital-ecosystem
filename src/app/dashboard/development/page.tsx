@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Code, GitBranch, CheckCircle2, Zap, Radio,
-  Plus, X, Users, Calendar, Clock, MapPin, Trash2, Eye,
+  Plus, X, Users, Calendar, Clock, MapPin, Trash2, Eye, Pencil,
   FolderOpen, ListVideo, ExternalLink, Building2, Send, Loader2,
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
@@ -23,7 +23,9 @@ import { toast } from "sonner";
 interface LiveWorkshop {
   liveWorkshopId: number;
   title: string;
+  titleAr: string | null;
   description: string | null;
+  descriptionAr: string | null;
   presenter: string | null;
   scheduledAt: string;
   durationMin: number | null;
@@ -105,12 +107,36 @@ const EMPTY_FORM = {
   registrationOpen: false, isPublished: false, membersOnly: false,
 };
 
-interface CreateModalProps { onClose: () => void; onCreated: () => void | Promise<unknown> }
+interface CreateModalProps { onClose: () => void; onSaved: () => void | Promise<unknown>; editing?: LiveWorkshop | null }
 
-function CreateModal({ onClose, onCreated }: CreateModalProps) {
+// Converts an ISO timestamp into the "YYYY-MM-DDTHH:mm" form expected by
+// <input type="datetime-local"> using the user's local timezone.
+function toLocalDatetimeInput(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function CreateModal({ onClose, onSaved, editing }: CreateModalProps) {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [f, setF] = useState(EMPTY_FORM);
+  const isEdit = Boolean(editing);
+  const initial = useMemo(() => editing ? ({
+    title: editing.title,
+    titleAr: editing.titleAr ?? "",
+    description: editing.description ?? "",
+    descriptionAr: editing.descriptionAr ?? "",
+    presenter: editing.presenter ?? "",
+    scheduledAt: toLocalDatetimeInput(editing.scheduledAt),
+    durationMin: editing.durationMin != null ? String(editing.durationMin) : "",
+    location: editing.location ?? "",
+    meetingUrl: editing.meetingUrl ?? "",
+    maxRegistrants: editing.maxRegistrants != null ? String(editing.maxRegistrants) : "",
+    registrationOpen: editing.registrationOpen,
+    isPublished: editing.isPublished,
+    membersOnly: editing.membersOnly,
+  }) : EMPTY_FORM, [editing]);
+  const [f, setF] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -126,7 +152,7 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
     setSaving(true);
     setError("");
     try {
-      await api.post("/api/live-workshops", {
+      const payload = {
         title: f.title,
         titleAr: f.titleAr || undefined,
         description: f.description || undefined,
@@ -140,12 +166,19 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
         registrationOpen: f.registrationOpen,
         isPublished: f.isPublished,
         membersOnly: f.membersOnly,
-      });
-      await onCreated();
-      toast.success(tr("Live workshop created.", "تم إنشاء الورشة المباشرة."));
+      };
+      if (isEdit && editing) {
+        await api.patch(`/api/live-workshops/${editing.liveWorkshopId}`, payload);
+        await onSaved();
+        toast.success(tr("Live workshop updated.", "تم تحديث الورشة المباشرة."));
+      } else {
+        await api.post("/api/live-workshops", payload);
+        await onSaved();
+        toast.success(tr("Live workshop created.", "تم إنشاء الورشة المباشرة."));
+      }
       onClose();
     } catch (err: unknown) {
-      const message = (err as { message?: string }).message ?? "Failed to create workshop";
+      const message = (err as { message?: string }).message ?? (isEdit ? "Failed to update workshop" : "Failed to create workshop");
       setError(message);
       toast.error(message);
     } finally {
@@ -172,7 +205,9 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors">
           <X size={18} />
         </button>
-        <h2 className="text-lg font-bold text-foreground mb-6">{tr("Create Live Workshop", "إنشاء ورشة مباشرة")}</h2>
+        <h2 className="text-lg font-bold text-foreground mb-6">
+          {isEdit ? tr("Edit Live Workshop", "تعديل الورشة المباشرة") : tr("Create Live Workshop", "إنشاء ورشة مباشرة")}
+        </h2>
 
         {error && (
           <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 mb-4">{error}</p>
@@ -243,7 +278,9 @@ function CreateModal({ onClose, onCreated }: CreateModalProps) {
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
             <button type="submit" disabled={saving} className="btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-60">
-              {saving ? tr("Creating…", "جارٍ الإنشاء…") : tr("Create Workshop", "إنشاء الورشة")}
+              {saving
+                ? (isEdit ? tr("Saving…", "جارٍ الحفظ…") : tr("Creating…", "جارٍ الإنشاء…"))
+                : (isEdit ? tr("Save Changes", "حفظ التعديلات") : tr("Create Workshop", "إنشاء الورشة"))}
             </button>
           </div>
         </form>
@@ -335,6 +372,7 @@ function LiveWorkshopsTab() {
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const { data: workshops = [], isLoading: loading, mutate: load } = useApi<LiveWorkshop[]>("/api/live-workshops");
   const [showCreate, setShowCreate] = useState(false);
+  const [editingLive, setEditingLive] = useState<LiveWorkshop | null>(null);
   const [viewRegsId, setViewRegsId] = useState<number | null>(null);
   const [toggling, setToggling] = useState<Record<number, boolean>>({});
 
@@ -467,6 +505,15 @@ function LiveWorkshopsTab() {
                       />
                     </div>
 
+                    {/* Edit */}
+                    <button
+                      onClick={() => setEditingLive(w)}
+                      aria-label={tr("Edit workshop", "تعديل الورشة")}
+                      className="text-muted hover:text-foreground transition-colors p-1"
+                    >
+                      <Pencil size={14} />
+                    </button>
+
                     {/* Delete */}
                     <button
                       onClick={() => del(w.liveWorkshopId)}
@@ -484,7 +531,8 @@ function LiveWorkshopsTab() {
 
       {/* Modals */}
       <AnimatePresence>
-        {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreated={load} />}
+        {showCreate && <CreateModal onClose={() => setShowCreate(false)} onSaved={load} />}
+        {editingLive && <CreateModal key={`edit-${editingLive.liveWorkshopId}`} onClose={() => setEditingLive(null)} onSaved={load} editing={editingLive} />}
         {viewRegsId !== null && <RegList workshopId={viewRegsId} onClose={() => setViewRegsId(null)} />}
       </AnimatePresence>
     </>
@@ -499,11 +547,37 @@ const EMPTY_RECORDED = {
   googleDriveFolderUrl: "", recordedDate: "", isPublished: false, membersOnly: false,
 };
 
-function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void | Promise<unknown> }) {
+function RecordedWorkshopModal({ onClose, onSaved, editing }: { onClose: () => void; onSaved: () => void | Promise<unknown>; editing?: RecordedWorkshop | null }) {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [f, setF] = useState(EMPTY_RECORDED);
-  const [sessions, setSessions] = useState([{ title: "", titleAr: "", description: "", durationMin: "", googleDriveUrl: "" }]);
+  const isEdit = Boolean(editing);
+  const initialForm = useMemo(() => editing ? ({
+    title: editing.title,
+    titleAr: editing.titleAr ?? "",
+    description: editing.description ?? "",
+    descriptionAr: editing.descriptionAr ?? "",
+    category: editing.category ?? "",
+    presenter: editing.presenter ?? "",
+    durationMin: editing.durationMin != null ? String(editing.durationMin) : "",
+    googleDriveFolderUrl: editing.googleDriveFolderUrl ?? "",
+    recordedDate: editing.recordedDate ?? "",
+    isPublished: editing.isPublished,
+    membersOnly: editing.membersOnly,
+  }) : EMPTY_RECORDED, [editing]);
+  const initialSessions = useMemo(() => {
+    if (!editing || editing.sessions.length === 0) {
+      return [{ title: "", titleAr: "", description: "", durationMin: "", googleDriveUrl: "" }];
+    }
+    return editing.sessions.map((s) => ({
+      title: s.title,
+      titleAr: s.titleAr ?? "",
+      description: s.description ?? "",
+      durationMin: s.durationMin != null ? String(s.durationMin) : "",
+      googleDriveUrl: s.googleDriveUrl,
+    }));
+  }, [editing]);
+  const [f, setF] = useState(initialForm);
+  const [sessions, setSessions] = useState(initialSessions);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const inputCls = "w-full px-3 py-2 rounded-lg bg-surface-elevated border border-border text-foreground text-sm placeholder:text-muted/40 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all";
@@ -525,7 +599,7 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
         }))
         .filter((session) => session.title && session.googleDriveUrl);
 
-      await api.post("/api/workshops", {
+      const payload = {
         title: f.title,
         titleAr: f.titleAr || undefined,
         description: f.description || undefined,
@@ -539,12 +613,19 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
         isPublished: f.isPublished,
         membersOnly: f.membersOnly,
         sessions: cleanSessions,
-      });
-      await onCreated();
-      toast.success(tr("Workshop saved.", "تم حفظ الورشة."));
+      };
+      if (isEdit && editing) {
+        await api.patch(`/api/workshops/${editing.workshopId}`, payload);
+        await onSaved();
+        toast.success(tr("Workshop updated.", "تم تحديث الورشة."));
+      } else {
+        await api.post("/api/workshops", payload);
+        await onSaved();
+        toast.success(tr("Workshop saved.", "تم حفظ الورشة."));
+      }
       onClose();
     } catch (err: unknown) {
-      const message = (err as { message?: string }).message ?? "Failed to create workshop library";
+      const message = (err as { message?: string }).message ?? (isEdit ? "Failed to update workshop" : "Failed to create workshop library");
       setError(message);
       toast.error(message);
     } finally {
@@ -556,7 +637,9 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 16 }} transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }} className="w-full max-w-3xl glass-card p-8 relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors"><X size={18} /></button>
-        <h2 className="text-lg font-bold text-foreground mb-2">{tr("Add Google Drive Workshop", "إضافة ورشة من Google Drive")}</h2>
+        <h2 className="text-lg font-bold text-foreground mb-2">
+          {isEdit ? tr("Edit Workshop", "تعديل الورشة") : tr("Add Google Drive Workshop", "إضافة ورشة من Google Drive")}
+        </h2>
         <p className="mb-6 text-sm text-muted">{tr("Create one workshop library and attach each recorded session as a separate Drive link.", "أنشئ مكتبة ورشة واحدة وأضف كل جلسة مسجَّلة كرابط Drive منفصل.")}</p>
         {error && <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 mb-4">{error}</p>}
 
@@ -637,7 +720,11 @@ function RecordedWorkshopModal({ onClose, onCreated }: { onClose: () => void; on
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
-            <button type="submit" disabled={saving} className="btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-60">{saving ? tr("Saving…", "جارٍ الحفظ…") : tr("Save Workshop", "حفظ الورشة")}</button>
+            <button type="submit" disabled={saving} className="btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-60">
+              {saving
+                ? tr("Saving…", "جارٍ الحفظ…")
+                : (isEdit ? tr("Save Changes", "حفظ التعديلات") : tr("Save Workshop", "حفظ الورشة"))}
+            </button>
           </div>
         </form>
       </motion.div>
@@ -650,6 +737,7 @@ function RecordedWorkshopsTab() {
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const { data: workshops = [], isLoading: loading, mutate: load } = useApi<RecordedWorkshop[]>("/api/workshops");
   const [showCreate, setShowCreate] = useState(false);
+  const [editingRecorded, setEditingRecorded] = useState<RecordedWorkshop | null>(null);
 
   async function togglePublished(workshop: RecordedWorkshop) {
     await api.patch(`/api/workshops/${workshop.workshopId}`, { isPublished: !workshop.isPublished });
@@ -714,6 +802,7 @@ function RecordedWorkshopsTab() {
                 <div className="flex shrink-0 items-center gap-3">
                   {workshop.googleDriveFolderUrl && <a href={toExternalUrl(workshop.googleDriveFolderUrl)} target="_blank" rel="noreferrer" className="btn-secondary inline-flex items-center gap-1.5 px-3 py-2 text-xs"><FolderOpen size={13} /> {tr("Folder", "المجلد")}</a>}
                   <Toggle checked={workshop.isPublished} onChange={() => void togglePublished(workshop)} />
+                  <button onClick={() => setEditingRecorded(workshop)} aria-label={tr("Edit workshop", "تعديل الورشة")} className="min-h-10 rounded-lg border border-border px-3 text-muted hover:text-foreground"><Pencil size={14} /></button>
                   <button onClick={() => void del(workshop.workshopId)} className="min-h-10 rounded-lg border border-border px-3 text-muted hover:text-red-400"><Trash2 size={14} /></button>
                 </div>
               </div>
@@ -723,7 +812,8 @@ function RecordedWorkshopsTab() {
       )}
 
       <AnimatePresence>
-        {showCreate && <RecordedWorkshopModal onClose={() => setShowCreate(false)} onCreated={load} />}
+        {showCreate && <RecordedWorkshopModal onClose={() => setShowCreate(false)} onSaved={load} />}
+        {editingRecorded && <RecordedWorkshopModal key={`edit-rec-${editingRecorded.workshopId}`} onClose={() => setEditingRecorded(null)} onSaved={load} editing={editingRecorded} />}
       </AnimatePresence>
     </>
   );
