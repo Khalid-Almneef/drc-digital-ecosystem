@@ -827,10 +827,53 @@ function CompanyVisitsTab() {
   const [contactRoute, setContactRoute] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [submitting, setSubmitting] = useState(false);
+  // Inline editing of a previously-submitted (still-pending) request.
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPriority, setEditPriority] = useState<"low" | "medium" | "high">("medium");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const { data: visits = [], isLoading: loadingVisits, mutate: loadVisits } = useApi<ServiceRequestRow[]>(
     "/api/service-requests?scope=outbox&requestType=company_visit&sourceDepartment=development",
   );
+
+  function startEdit(req: ServiceRequestRow) {
+    setEditingId(req.requestId);
+    setEditTitle(req.title);
+    setEditDescription(req.description ?? "");
+    setEditPriority(req.priority);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditTitle("");
+    setEditDescription("");
+    setEditPriority("medium");
+  }
+
+  async function saveEdit() {
+    if (editingId == null) return;
+    if (!editTitle.trim()) {
+      toast.error(tr("Title is required.", "العنوان مطلوب."));
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      await api.patch(`/api/service-requests/${editingId}`, {
+        title: editTitle.trim(),
+        description: editDescription.trim() || undefined,
+        priority: editPriority,
+      });
+      toast.success(tr("Visit request updated.", "تم تحديث طلب الزيارة."));
+      cancelEdit();
+      void loadVisits();
+    } catch {
+      toast.error(tr("Could not update. Please try again.", "تعذّر التحديث. حاول مرة أخرى."));
+    } finally {
+      setSavingEdit(false);
+    }
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -925,7 +968,7 @@ function CompanyVisitsTab() {
             {visits.map((req) => (
               <div key={req.requestId} className="glass-card p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-semibold text-foreground">{req.title}</p>
                       <span className={statusTone[req.status]}>{req.status.replace("_", " ")}</span>
@@ -942,7 +985,46 @@ function CompanyVisitsTab() {
                       {req.assigneeName ? ` · ${tr("handled by", "يتولّاه")} ${req.assigneeName}` : ""}
                     </p>
                   </div>
+                  {req.status === "pending" && editingId !== req.requestId && (
+                    <button
+                      type="button"
+                      onClick={() => startEdit(req)}
+                      aria-label={tr("Edit visit request", "تعديل طلب الزيارة")}
+                      className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted hover:text-foreground hover:border-primary/30"
+                    >
+                      <Pencil size={12} />
+                      {tr("Edit", "تعديل")}
+                    </button>
+                  )}
                 </div>
+                {editingId === req.requestId && (
+                  <div className="mt-4 space-y-3 rounded-xl border border-border bg-surface-elevated/30 p-3">
+                    <div>
+                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-muted">{tr("Title", "العنوان")}</label>
+                      <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="dashboard-field" />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-muted">{tr("Description", "الوصف")}</label>
+                      <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={4} className="dashboard-field resize-none" />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-muted">{tr("Priority", "الأولوية")}</label>
+                      <select value={editPriority} onChange={(e) => setEditPriority(e.target.value as typeof editPriority)} className="dashboard-select">
+                        <option value="low">{tr("Low", "منخفضة")}</option>
+                        <option value="medium">{tr("Medium", "متوسطة")}</option>
+                        <option value="high">{tr("High", "عالية")}</option>
+                      </select>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button type="button" onClick={cancelEdit} className="btn-secondary px-3 py-1.5 text-xs">
+                        {tr("Cancel", "إلغاء")}
+                      </button>
+                      <button type="button" onClick={saveEdit} disabled={savingEdit || !editTitle.trim()} className="btn-primary px-3 py-1.5 text-xs disabled:opacity-50">
+                        {savingEdit ? tr("Saving…", "جارٍ الحفظ…") : tr("Save changes", "حفظ التعديلات")}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

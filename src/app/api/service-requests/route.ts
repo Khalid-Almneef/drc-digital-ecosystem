@@ -143,17 +143,23 @@ export const GET = handle(async (req) => {
 
   if (scope === "all" && !isAdmin) return err(403, "Forbidden");
 
+  // For admins, an explicit targetDepartment query param means "show me that
+  // dept's inbox" — without this override, the scope filter would force
+  // target = ownDepartment and silently AND it with the query filter, producing
+  // an impossible WHERE for admins viewing any other dept's dashboard.
+  const scopeDepartment = (isAdmin && q.targetDepartment) ? q.targetDepartment : ownDepartment;
+
   if (isMockMode()) {
     const rows = getMockStore().serviceRequests.map(resolveMockRow);
-    return ok(filterRows(rows, ownDepartment, scope, q.requestType, q.targetDepartment));
+    return ok(filterRows(rows, scopeDepartment, scope, q.requestType, q.targetDepartment));
   }
 
   const conditions: string[] = [];
   const params: unknown[] = [];
 
   if (!isAdmin || scope !== "all") {
-    if (!ownDepartment) return err(403, "Department context required");
-    params.push(ownDepartment);
+    if (!scopeDepartment) return err(403, "Department context required");
+    params.push(scopeDepartment);
     const departmentParam = `$${params.length}`;
     if (scope === "inbox") conditions.push(`sr.target_department_slug = ${departmentParam}`);
     else if (scope === "outbox") conditions.push(`sr.source_department_slug = ${departmentParam}`);
@@ -165,7 +171,10 @@ export const GET = handle(async (req) => {
     conditions.push(`sr.request_type = $${params.length}`);
   }
 
-  if (q.targetDepartment) {
+  // Skip the redundant targetDepartment filter when we already used it as the
+  // scope dept above (it would AND target = X with target = X — same value but
+  // unnecessary).
+  if (q.targetDepartment && q.targetDepartment !== scopeDepartment) {
     params.push(q.targetDepartment);
     conditions.push(`sr.target_department_slug = $${params.length}`);
   }

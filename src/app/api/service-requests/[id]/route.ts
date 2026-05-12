@@ -28,6 +28,12 @@ const PatchBody = z.object({
   status: z.enum(["pending", "assigned", "in_progress", "completed", "rejected"]).optional(),
   assigneeId: z.number().int().nullable().optional(),
   assigneeNote: z.string().optional(),
+  // Requester-edit fields. Allowed while the request is still pending; the
+  // requester themself is the only one who can change them (admins can change
+  // anything via the leader path below).
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  priority: z.enum(["low", "medium", "high"]).optional(),
 }).refine((value) => Object.values(value).some((entry) => entry !== undefined), {
   message: "At least one field is required.",
 });
@@ -43,6 +49,45 @@ export const PATCH = handle(async (req, ctx) => {
   const body = await parseBody(req, PatchBody);
   const ownDepartment = toServiceRequestSlug(session.departmentSlug);
   const isAdmin = session.position === "president" || session.position === "vice_president";
+
+  const wantsContentEdit = body.title !== undefined || body.description !== undefined || body.priority !== undefined;
+  const wantsLeaderAction = body.status !== undefined || body.assigneeId !== undefined || body.assigneeNote !== undefined;
+
+  // Requester self-edit shortcut: the original requester can tweak their own
+  // request's title/description/priority while it's still pending without
+  // bouncing through the change-request approval flow.
+  if (wantsContentEdit && !wantsLeaderAction) {
+    if (isMockMode()) {
+      const request = getMockStore().serviceRequests.find((row) => row.requestId === requestId);
+      if (!request) return err(404, "Request not found");
+      if (request.requestedBy !== session.memberId && !isAdmin) return err(403, "Only the requester can edit a pending request.");
+      if (request.status !== "pending") return err(400, "Can only edit pending requests.");
+      if (body.title !== undefined) request.title = body.title.trim();
+      if (body.description !== undefined) request.description = body.description.trim() || null;
+      if (body.priority !== undefined) request.priority = body.priority;
+      request.updatedAt = new Date().toISOString();
+      return ok({ success: true });
+    }
+    const existing = await queryOne<{ requestedBy: number; status: string }>(
+      `SELECT requested_by AS "requestedBy", status FROM department_service_requests WHERE request_id = $1`,
+      [requestId],
+    );
+    if (!existing) return err(404, "Request not found");
+    if (existing.requestedBy !== session.memberId && !isAdmin) return err(403, "Only the requester can edit a pending request.");
+    if (existing.status !== "pending") return err(400, "Can only edit pending requests.");
+    const sets: string[] = [];
+    const params: unknown[] = [requestId];
+    if (body.title !== undefined) { params.push(body.title.trim()); sets.push(`title = $${params.length}`); }
+    if (body.description !== undefined) { params.push(body.description.trim() || null); sets.push(`description = $${params.length}`); }
+    if (body.priority !== undefined) { params.push(body.priority); sets.push(`priority = $${params.length}`); }
+    if (sets.length) {
+      await query(
+        `UPDATE department_service_requests SET ${sets.join(", ")}, updated_at = NOW() WHERE request_id = $1`,
+        params,
+      );
+    }
+    return ok({ success: true });
+  }
 
   // Non-leader members of the target department can propose a decision; it
   // routes to the target department's leadership for approval. Members of
