@@ -39,13 +39,24 @@ export const GET = handle(async () => {
 
   let rows: unknown[][];
   if (isMockMode()) {
-    rows = getMockStore().members.map((m) => [
-      m.memberId, m.email, m.fullName, m.fullNameAr ?? "",
-      m.position, m.departmentSlug ?? "",
-      m.customRole ?? "", m.customRoleAr ?? "",
-      m.major ?? "", m.phoneNumber ?? "", m.gender ?? "",
-      m.graduationYear ?? "", m.isActive ? "true" : "false", m.profileStatus,
-    ]);
+    const POSITION_RANK: Record<string, number> = {
+      president: 1, vice_president: 2, dept_leader: 3,
+      dept_vice_leader: 4, sub_leader: 5, member: 6,
+    };
+    rows = getMockStore().members
+      .slice()
+      .sort((a, b) => {
+        const r = (POSITION_RANK[a.position] ?? 99) - (POSITION_RANK[b.position] ?? 99);
+        if (r !== 0) return r;
+        return (a.fullName ?? "").localeCompare(b.fullName ?? "");
+      })
+      .map((m) => [
+        m.memberId, m.email, m.fullName, m.fullNameAr ?? "",
+        m.position, m.departmentSlug ?? "",
+        m.customRole ?? "", m.customRoleAr ?? "",
+        m.major ?? "", m.phoneNumber ?? "", m.gender ?? "",
+        m.graduationYear ?? "", m.isActive ? "true" : "false", m.profileStatus,
+      ]);
   } else {
     const result = await query<{
       member_id: number; email: string; full_name: string | null; full_name_ar: string | null;
@@ -63,7 +74,16 @@ export const GET = handle(async () => {
          FROM users u
          LEFT JOIN profiles p ON p.member_id = u.member_id
          LEFT JOIN departments d ON d.department_id = u.department_id
-        ORDER BY u.position, p.full_name`,
+        ORDER BY
+          CASE u.position
+            WHEN 'president' THEN 1
+            WHEN 'vice_president' THEN 2
+            WHEN 'dept_leader' THEN 3
+            WHEN 'dept_vice_leader' THEN 4
+            WHEN 'sub_leader' THEN 5
+            ELSE 6
+          END,
+          p.full_name`,
     );
     rows = result.rows.map((r) => [
       r.member_id, r.email, r.full_name ?? "", r.full_name_ar ?? "",

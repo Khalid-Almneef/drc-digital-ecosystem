@@ -10,6 +10,18 @@ const Query = z.object({
   status: z.string().optional(),
 });
 
+// Position hierarchy: presidents → VPs → dept leaders → dept vice leaders →
+// sub leaders → everyone else. Mirrored in /api/members/public's CASE order.
+const POSITION_RANK: Record<string, number> = {
+  president: 1,
+  vice_president: 2,
+  dept_leader: 3,
+  dept_vice_leader: 4,
+  sub_leader: 5,
+  member: 6,
+};
+const positionRank = (p: string) => POSITION_RANK[p] ?? 99;
+
 export const GET = handle(async (req) => {
   await requireSession();
   const url = new URL(req.url);
@@ -19,6 +31,12 @@ export const GET = handle(async (req) => {
       .filter((m) => !q.department || m.departmentSlug === q.department)
       .filter((m) => !q.position || m.position === q.position)
       .filter((m) => !q.status || m.profileStatus === q.status)
+      .slice()
+      .sort((a, b) => {
+        const r = positionRank(a.position) - positionRank(b.position);
+        if (r !== 0) return r;
+        return (a.fullName ?? "").localeCompare(b.fullName ?? "");
+      })
       .map((m) => ({
         memberId: m.memberId,
         email: m.email,
@@ -63,7 +81,16 @@ export const GET = handle(async (req) => {
        LEFT JOIN departments d ON d.department_id = u.department_id
        LEFT JOIN profiles p    ON p.member_id     = u.member_id
        ${clause}
-      ORDER BY u.position, p.full_name`,
+      ORDER BY
+        CASE u.position
+          WHEN 'president' THEN 1
+          WHEN 'vice_president' THEN 2
+          WHEN 'dept_leader' THEN 3
+          WHEN 'dept_vice_leader' THEN 4
+          WHEN 'sub_leader' THEN 5
+          ELSE 6
+        END,
+        p.full_name`,
     params,
   );
   return ok(rows);
