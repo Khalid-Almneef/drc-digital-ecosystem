@@ -393,8 +393,8 @@ export default function LeadersDashboard() {
           </div>
 
           {loadingOverview ? (
-            <div className="glass-card flex min-h-[260px] items-center justify-center">
-              <Loader2 size={22} className="animate-spin text-muted" />
+            <div className="grid gap-4 lg:grid-cols-2">
+              {[0, 1, 2, 3].map((i) => <div key={i} className="glass-card h-32 animate-pulse" />)}
             </div>
           ) : (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -571,7 +571,7 @@ export default function LeadersDashboard() {
                   <div className="flex items-start gap-2">
                     {announcement.imageUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={announcement.imageUrl} alt={announcement.title} className="h-12 w-12 rounded-lg object-cover border border-border shrink-0" />
+                      <img src={announcement.imageUrl} alt={announcement.title} className="h-12 w-12 rounded-lg object-cover border border-border shrink-0" loading="lazy" />
                     )}
                     <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: PRIORITY_COLORS[announcement.priority] }} />
                     <div className="min-w-0 flex-1">

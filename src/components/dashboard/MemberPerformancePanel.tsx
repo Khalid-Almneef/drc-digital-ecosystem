@@ -290,7 +290,7 @@ export function MemberPerformancePanel({
                   <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
                     {row.avatarUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={row.avatarUrl} alt="" className="w-full h-full object-cover" />
+                      <img src={row.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <span className="text-[10px] font-semibold text-primary">{initials}</span>
                     )}

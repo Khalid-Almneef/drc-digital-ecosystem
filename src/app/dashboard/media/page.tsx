@@ -717,7 +717,7 @@ export default function MediaDashboard() {
                 {assets.slice(0, 6).map((a) => (
                   <div key={a.assetId} className="aspect-square rounded-lg overflow-hidden border border-border">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={a.url} alt={a.label ?? a.filename} className="w-full h-full object-cover" />
+                    <img src={a.url} alt={a.label ?? a.filename} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                 ))}
               </div>
@@ -743,7 +743,7 @@ export default function MediaDashboard() {
                     <div className="shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-border bg-surface-elevated">
                       {t.artifactUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={t.artifactUrl} alt="artifact" className="w-full h-full object-cover" />
+                        <img src={t.artifactUrl} alt="artifact" className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Video size={20} className="text-primary/60" />
@@ -849,7 +849,7 @@ export default function MediaDashboard() {
                   className="group glass-card p-2 flex flex-col gap-2">
                   <div className="aspect-square rounded-md overflow-hidden bg-surface-elevated">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={asset.url} alt={asset.label ?? asset.filename} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                    <img src={asset.url} alt={asset.label ?? asset.filename} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] text-foreground truncate">{asset.label ?? asset.filename}</p>
@@ -1257,7 +1257,7 @@ export default function MediaDashboard() {
                     {item.fileUrl ? (
                       <div className="w-16 h-16 rounded-lg overflow-hidden border border-border bg-surface-elevated shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.fileUrl} alt={item.title} className="w-full h-full object-cover" />
+                        <img src={item.fileUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     ) : (
                       <div className="w-16 h-16 rounded-lg border border-border bg-surface-elevated shrink-0 flex items-center justify-center text-muted">

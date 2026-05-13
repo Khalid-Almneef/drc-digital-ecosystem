@@ -356,8 +356,8 @@ function ApplicationsInbox() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 size={20} className="animate-spin text-muted" />
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => <div key={i} className="glass-card h-24 animate-pulse" />)}
         </div>
       ) : rows.length === 0 ? (
         <div className="glass-card p-8 text-center text-sm text-muted">
@@ -374,7 +374,7 @@ function ApplicationsInbox() {
               <div className="flex items-start gap-3">
                 {app.memberAvatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={app.memberAvatarUrl} alt={app.memberName} className="h-10 w-10 rounded-full object-cover" />
+                  <img src={app.memberAvatarUrl} alt={app.memberName} loading="lazy" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-surface-elevated grid place-items-center text-xs text-muted">
                     {app.memberName.split(" ").map((part) => part[0]).join("").slice(0, 2)}

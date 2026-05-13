@@ -405,13 +405,13 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
                               <button
                                 disabled={busy}
                                 onClick={() => decide(r.registrationId, "rejected")}
-                                className="px-2 py-1 rounded-md bg-red-400/10 border border-red-400/30 text-red-400 text-[10px] font-semibold disabled:opacity-40"
+                                className="inline-flex items-center justify-center min-h-9 px-3 py-1.5 rounded-md bg-red-400/10 border border-red-400/30 text-red-400 text-xs font-semibold disabled:opacity-40"
                               >
                                 {busy ? <Loader2 size={10} className="animate-spin" /> : tr("Decline", "رفض")}
                               </button>
                               <button
                                 onClick={() => setConfirmDecline(null)}
-                                className="px-2 py-1 rounded-md bg-surface-elevated border border-border text-muted text-[10px]"
+                                className="inline-flex items-center justify-center min-h-9 px-3 py-1.5 rounded-md bg-surface-elevated border border-border text-muted text-xs"
                               >
                                 {tr("Cancel", "إلغاء")}
                               </button>
@@ -421,14 +421,14 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
                               <button
                                 disabled={busy}
                                 onClick={() => decide(r.registrationId, "accepted")}
-                                className="px-2 py-1 rounded-md bg-green-400/10 border border-green-400/30 text-green-400 text-[10px] font-semibold hover:bg-green-400/15 transition-colors disabled:opacity-40"
+                                className="inline-flex items-center justify-center min-h-9 px-3 py-1.5 rounded-md bg-green-400/10 border border-green-400/30 text-green-400 text-xs font-semibold hover:bg-green-400/15 transition-colors disabled:opacity-40"
                               >
                                 {tr("Accept", "قبول")}
                               </button>
                               <button
                                 disabled={busy}
                                 onClick={() => setConfirmDecline(r.registrationId)}
-                                className="px-2 py-1 rounded-md bg-red-400/10 border border-red-400/30 text-red-400 text-[10px] font-semibold hover:bg-red-400/15 transition-colors disabled:opacity-40"
+                                className="inline-flex items-center justify-center min-h-9 px-3 py-1.5 rounded-md bg-red-400/10 border border-red-400/30 text-red-400 text-xs font-semibold hover:bg-red-400/15 transition-colors disabled:opacity-40"
                               >
                                 {tr("Decline", "رفض")}
                               </button>
@@ -1051,7 +1051,9 @@ function CompanyVisitsTab() {
       <div>
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">{tr("Tracking", "متابعة الطلبات")}</h3>
         {loadingVisits ? (
-          <div className="glass-card flex min-h-[120px] items-center justify-center"><Loader2 size={18} className="animate-spin text-muted" /></div>
+          <div className="space-y-2">
+            {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
+          </div>
         ) : visits.length === 0 ? (
           <div className="glass-card p-6 text-center text-sm text-muted">{tr("No visit requests yet. Submit one above.", "لا توجد طلبات زيارة بعد. أرسل طلباً من الأعلى.")}</div>
         ) : (
@@ -1238,8 +1240,8 @@ function WorkshopRequestsInbox() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 text-muted">
-          {tr("Loading…", "يتم التحميل…")}
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
         </div>
       ) : rows.length === 0 ? (
         <div className="glass-card p-8 text-center text-sm text-muted">

@@ -210,7 +210,7 @@ export function LeaderTaskReviewPanel({
                   <div className="shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-border bg-surface-elevated">
                     {isImageUrl(t.artifactUrl) ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={t.artifactUrl} alt="" className="w-full h-full object-cover" />
+                      <img src={t.artifactUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Video size={20} className="text-primary/60" />

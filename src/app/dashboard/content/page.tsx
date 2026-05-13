@@ -946,7 +946,7 @@ function CollectionLivePreview({
                     <div className="overflow-hidden rounded-[24px] border border-border bg-surface-elevated">
                       {primaryImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={primaryImage} alt={title || "Preview image"} className="h-full min-h-[180px] w-full object-cover" />
+                        <img src={primaryImage} alt={title || "Preview image"} className="h-full min-h-[180px] w-full object-cover" loading="lazy" />
                       ) : (
                         <div className="flex min-h-[180px] items-center justify-center text-muted">
                           <ImageIcon size={22} />
@@ -957,7 +957,7 @@ function CollectionLivePreview({
                       <div className="overflow-hidden rounded-[22px] border border-border bg-surface-elevated">
                         {secondaryImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={secondaryImage} alt={`${title || "Preview image"} secondary`} className="h-full min-h-[120px] w-full object-cover" />
+                          <img src={secondaryImage} alt={`${title || "Preview image"} secondary`} className="h-full min-h-[120px] w-full object-cover" loading="lazy" />
                         ) : (
                           <div className="flex min-h-[120px] items-center justify-center text-muted">
                             <ImageIcon size={18} />
@@ -974,7 +974,7 @@ function CollectionLivePreview({
               {primaryImage && (
                 <div className="mb-4 overflow-hidden rounded-[22px] border border-border bg-surface-elevated">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={primaryImage} alt={title || "Preview image"} className="h-44 w-full object-cover" />
+                  <img src={primaryImage} alt={title || "Preview image"} className="h-44 w-full object-cover" loading="lazy" />
                 </div>
               )}
               <div className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary/90">
@@ -1247,7 +1247,7 @@ function CollectionEditorModal({
                     {previewImage ? (
                       <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-border bg-surface-elevated">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={previewImage} alt={previewTitle} className="h-full w-full object-cover" />
+                        <img src={previewImage} alt={previewTitle} className="h-full w-full object-cover" loading="lazy" />
                       </div>
                     ) : (
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-surface-elevated text-primary/80">
@@ -1351,7 +1351,7 @@ function CollectionEditorModal({
             {pickItemImage(item) && (
               <div className="relative mb-5 h-52 overflow-hidden rounded-[24px] border border-border bg-surface-elevated">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={pickItemImage(item)} alt={pickItemTitle(item, section.fields)} className="h-full w-full object-cover" />
+                <img src={pickItemImage(item)} alt={pickItemTitle(item, section.fields)} className="h-full w-full object-cover" loading="lazy" />
               </div>
             )}
 
@@ -1386,7 +1386,7 @@ function CollectionEditorModal({
                             {item[field.key] && (
                               <div className="relative overflow-hidden rounded-[20px] border border-border bg-surface-elevated">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={item[field.key]} alt={`${field.label} preview`} className="h-36 w-full object-cover" />
+                                <img src={item[field.key]} alt={`${field.label} preview`} className="h-36 w-full object-cover" loading="lazy" />
                               </div>
                             )}
                             <div className="flex flex-wrap items-center gap-2">

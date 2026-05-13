@@ -672,8 +672,8 @@ export default function HRDashboard() {
           </div>
 
           {membersLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 size={24} className="animate-spin text-muted" />
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
             </div>
           ) : (
             <div className="glass-card overflow-hidden">
@@ -747,8 +747,8 @@ export default function HRDashboard() {
       {activeTab === "applications" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           {appsLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 size={24} className="animate-spin text-muted" />
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => <div key={i} className="glass-card h-24 animate-pulse" />)}
             </div>
           ) : (
             <div className="space-y-3">
@@ -1063,8 +1063,8 @@ export default function HRDashboard() {
           </div>
 
           {hoursLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 size={24} className="animate-spin text-muted" />
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
             </div>
           ) : hours.length === 0 ? (
             <div className="glass-card p-10 text-center text-sm text-muted">
@@ -1309,8 +1309,8 @@ export default function HRDashboard() {
           </div>
 
           {hourTasksLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 size={24} className="animate-spin text-muted" />
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
             </div>
           ) : hourTasks.length === 0 ? (
             <div className="glass-card p-10 text-center text-sm text-muted">{tr("No hour tasks created yet.", "لا توجد مهام ساعات بعد.")}</div>
@@ -1454,8 +1454,8 @@ export default function HRDashboard() {
           </div>
 
           {announcementRequestsLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 size={24} className="animate-spin text-muted" />
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
             </div>
           ) : announcementRequests.length === 0 ? (
             <div className="glass-card p-10 text-center text-sm text-muted">No announcement requests yet.</div>

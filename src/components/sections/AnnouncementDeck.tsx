@@ -112,7 +112,7 @@ function NewsCard({ item, index, lang, t }: { item: Announcement; index: number;
           <div className="flex items-start gap-4">
             {item.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.imageUrl} alt={item.title} className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover" />
+              <img src={item.imageUrl} alt={item.title} className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover" loading="lazy" />
             ) : null}
             <div className="min-w-0 flex-1">
               <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-primary">{item.title}</h3>

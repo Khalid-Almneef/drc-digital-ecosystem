@@ -195,8 +195,8 @@ function RegistrationsModal({ session, onClose }: { session: MadaratSessionRow; 
 
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 size={20} className="animate-spin text-muted" />
+            <div className="space-y-3 p-4">
+              {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-surface-elevated/40 animate-pulse" />)}
             </div>
           ) : rows.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted">{tr("No registrations yet.", "لا توجد تسجيلات بعد.")}</div>
@@ -623,8 +623,8 @@ export default function MadaratDashboard() {
           </div>
 
           {sessionsLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 size={24} className="animate-spin text-muted" />
+            <div className="grid gap-6 xl:grid-cols-2">
+              {[0, 1].map((i) => <div key={i} className="glass-card h-48 animate-pulse" />)}
             </div>
           ) : (
             <div className="grid gap-6 xl:grid-cols-2">
@@ -646,7 +646,7 @@ export default function MadaratDashboard() {
                           <div className="flex items-start gap-3">
                             {session.imageUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={session.imageUrl} alt={session.title} className="h-14 w-14 shrink-0 rounded-lg border border-border object-cover" />
+                              <img src={session.imageUrl} alt={session.title} loading="lazy" width={56} height={56} className="h-14 w-14 shrink-0 rounded-lg border border-border object-cover" />
                             ) : null}
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-2">
@@ -843,8 +843,8 @@ export default function MadaratDashboard() {
           <div className="glass-card p-5">
             <h3 className="text-sm font-semibold text-foreground">{tr("Distribution and Tracking", "التوزيع والتتبّع")}</h3>
             {tasksLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 size={24} className="animate-spin text-muted" />
+              <div className="mt-4 space-y-3">
+                {[0, 1, 2].map((i) => <div key={i} className="h-20 rounded-xl bg-surface-elevated/40 animate-pulse" />)}
               </div>
             ) : tasks.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted">{tr("No Madarat support tasks created yet.", "لا توجد مهام دعم مدارات بعد.")}</p>

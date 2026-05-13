@@ -595,7 +595,7 @@ export default function DashboardOverview() {
                       <div className="flex items-start gap-3">
                         {announcement.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={announcement.imageUrl} alt={announcement.title} className="h-12 w-12 shrink-0 rounded-lg border border-border object-cover" />
+                          <img src={announcement.imageUrl} alt={announcement.title} loading="lazy" width={48} height={48} className="h-12 w-12 shrink-0 rounded-lg border border-border object-cover" />
                         ) : null}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-3">

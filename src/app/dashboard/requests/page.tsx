@@ -351,7 +351,11 @@ function RequestsList({
   }, [rows]);
 
   if (isLoading) {
-    return <div className="glass-card p-6 text-sm text-muted">{tr("Loading…", "جاري التحميل…")}</div>;
+    return (
+      <div className="space-y-3">
+        {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
+      </div>
+    );
   }
   if (sortedRows.length === 0) {
     return (

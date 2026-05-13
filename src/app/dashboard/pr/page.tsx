@@ -447,7 +447,9 @@ export default function PRDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
           <div className="space-y-3 max-h-[calc(100dvh-18rem)] overflow-y-auto pr-1">
             {loading ? (
-              <div className="glass-card p-6 text-sm text-muted">{tr("Loading sponsors…", "جارٍ تحميل الرعاة…")}</div>
+              <div className="space-y-3">
+                {[0, 1, 2].map((i) => <div key={i} className="glass-card h-24 animate-pulse" />)}
+              </div>
             ) : sponsors.length === 0 ? (
               <div className="glass-card p-6 text-sm text-muted">{tr("No sponsors yet.", "لا يوجد رعاة بعد.")}</div>
             ) : sponsors.map((sponsor, i) => {
@@ -603,7 +605,7 @@ export default function PRDashboard() {
                   <div className="flex flex-wrap items-start gap-3">
                     {event.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={event.imageUrl} alt={event.title} className="h-14 w-14 shrink-0 rounded-lg border border-border object-cover" />
+                      <img src={event.imageUrl} alt={event.title} loading="lazy" width={56} height={56} className="h-14 w-14 shrink-0 rounded-lg border border-border object-cover" />
                     ) : null}
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -768,7 +770,9 @@ function VisitIdeasInbox() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 text-muted">{tr("Loading…", "يتم التحميل…")}</div>
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
+        </div>
       ) : rows.length === 0 ? (
         <div className="glass-card p-8 text-center text-sm text-muted">
           {tr("No visit ideas in this list.", "لا توجد أفكار زيارات في هذه القائمة.")}

@@ -157,7 +157,7 @@ function MemberCard({
             <div className={`relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${gradient}`}>
               {member.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={member.avatarUrl} alt={displayName} className="absolute inset-0 h-full w-full object-cover" />
+                <img src={member.avatarUrl} alt={displayName} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
               ) : (
                 <>
                   <div className="absolute inset-0 bg-circuit opacity-30" />
@@ -544,7 +544,7 @@ export default function TeamPage() {
                     <div className={`h-24 bg-gradient-to-br ${DEPT_COLORS[m.departmentSlug ?? "executive"] ?? "from-primary/20 to-secondary/20"} relative overflow-hidden`}>
                       {m.avatarUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={m.avatarUrl} alt={displayMemberName(m.fullName, m.fullNameAr, lang as "en" | "ar")} className="absolute inset-0 h-full w-full object-cover" />
+                        <img src={m.avatarUrl} alt={displayMemberName(m.fullName, m.fullNameAr, lang as "en" | "ar")} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                       ) : (
                         <>
                           <div className="absolute inset-0 bg-circuit opacity-30" />
