@@ -84,6 +84,10 @@ interface VolunteerHourTaskRow {
   hours: number;
   participationDate: string;
   isActive: boolean;
+  isRepetitive: boolean;
+  assignedDepartmentId: number | null;
+  assignedDepartmentSlug: string | null;
+  assignedDepartmentName: string | null;
   registrationsCount?: number;
 }
 
@@ -223,7 +227,16 @@ export default function HRDashboard() {
     description: "",
     hours: "",
     participationDate: new Date().toISOString().slice(0, 10),
+    isRepetitive: false,
+    assignedDepartmentId: "" as "" | string,
   });
+  const { data: departmentOptions = [] } = useApi<DepartmentOption[]>("/api/departments");
+
+  // Hours review — accept-with-adjustment modal
+  const [adjustHour, setAdjustHour] = useState<HourRow | null>(null);
+  const [adjustValue, setAdjustValue] = useState<string>("");
+  const [adjustSaving, setAdjustSaving] = useState(false);
+  useEscape(adjustHour !== null, () => setAdjustHour(null));
 
   // ── Announcement requests ──
   const { data: announcementRequests = [], isLoading: announcementRequestsLoading, mutate: loadAnnouncementRequests } = useApi<AnnouncementRequestRow[]>("/api/announcement-requests");
@@ -338,6 +351,38 @@ export default function HRDashboard() {
     }
   }
 
+  function openAdjustModal(row: HourRow) {
+    setAdjustHour(row);
+    setAdjustValue(String(row.hours));
+  }
+
+  async function confirmAdjustment() {
+    if (!adjustHour) return;
+    const numeric = Number(adjustValue);
+    if (!Number.isFinite(numeric) || numeric <= 0) {
+      toast.error(tr("Enter a value greater than zero.", "أدخل قيمة أكبر من صفر."));
+      return;
+    }
+    setAdjustSaving(true);
+    try {
+      await api.patch(`/api/volunteer-hours/${adjustHour.id}/approve`, {
+        status: "approved",
+        hoursOverride: numeric,
+      });
+      toast.success(
+        numeric !== Number(adjustHour.hours)
+          ? tr(`Approved with ${numeric}h`, `تم الاعتماد بـ ${numeric} ساعة`)
+          : tr("Hours approved", "تم اعتماد الساعات"),
+      );
+      setAdjustHour(null);
+      void loadHoursApi();
+    } catch {
+      toast.error(tr("Could not approve with adjustment.", "تعذّر الاعتماد مع التعديل."));
+    } finally {
+      setAdjustSaving(false);
+    }
+  }
+
   // Bulk approve/reject for the visible hours queue.
   // Selection state is keyed by hour id and resets when the filter or page changes.
   const [bulkSelected, setBulkSelected] = useState<Set<number>>(new Set());
@@ -392,12 +437,18 @@ export default function HRDashboard() {
         description: hourTaskForm.description.trim() || undefined,
         hours: Number(hourTaskForm.hours),
         participationDate: hourTaskForm.participationDate,
+        isRepetitive: hourTaskForm.isRepetitive,
+        assignedDepartmentId: hourTaskForm.assignedDepartmentId
+          ? Number(hourTaskForm.assignedDepartmentId)
+          : null,
       });
       setHourTaskForm({
         title: "",
         description: "",
         hours: "",
         participationDate: new Date().toISOString().slice(0, 10),
+        isRepetitive: false,
+        assignedDepartmentId: "",
       });
       toast.success(tr("Hour task created", "تم إنشاء المهمة"));
       loadHourTasks();
@@ -1120,15 +1171,25 @@ export default function HRDashboard() {
                               <button
                                 onClick={() => decideHour(h.id, "approved")}
                                 disabled={decidingId === h.id}
-                                title="Approve"
+                                title={tr("Approve", "اعتماد")}
                                 className="p-1.5 rounded-md bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors disabled:opacity-40"
                               >
                                 {decidingId === h.id ? <Loader2 size={12} className="animate-spin" /> : <ThumbsUp size={12} />}
                               </button>
+                              {h.sourceType === "self_logged" && (
+                                <button
+                                  onClick={() => openAdjustModal(h)}
+                                  disabled={decidingId === h.id}
+                                  title={tr("Accept with adjustment", "قبول مع تعديل")}
+                                  className="px-2 py-1 rounded-md bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition-colors text-[10px] font-semibold border border-amber-500/20 disabled:opacity-40"
+                                >
+                                  {tr("Adjust", "تعديل")}
+                                </button>
+                              )}
                               <button
                                 onClick={() => decideHour(h.id, "rejected")}
                                 disabled={decidingId === h.id}
-                                title="Reject"
+                                title={tr("Reject", "رفض")}
                                 className="p-1.5 rounded-md bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-40"
                               >
                                 <ThumbsDown size={12} />
@@ -1202,6 +1263,37 @@ export default function HRDashboard() {
                   className="surface-input px-3 py-2 text-sm"
                 />
               </div>
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
+                  {tr("Assign to Department", "إسناد إلى لجنة")}
+                </label>
+                <select
+                  value={hourTaskForm.assignedDepartmentId}
+                  onChange={(e) => setHourTaskForm((prev) => ({ ...prev, assignedDepartmentId: e.target.value }))}
+                  className="surface-input px-3 py-2 text-sm"
+                >
+                  <option value="">{tr("Club-wide (all members)", "على مستوى النادي (لكل الأعضاء)")}</option>
+                  {departmentOptions.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {lang === "ar" ? d.nameAr || d.name : d.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-2 flex items-start gap-3 rounded-lg border border-border bg-surface-elevated/40 px-3 py-2.5">
+                <Toggle
+                  checked={hourTaskForm.isRepetitive}
+                  onChange={() => setHourTaskForm((prev) => ({ ...prev, isRepetitive: !prev.isRepetitive }))}
+                />
+                <div className="text-xs leading-5">
+                  <p className="font-medium text-foreground">
+                    {tr("Repetitive — members can log this task multiple times", "متكررة — يمكن للأعضاء تسجيل هذه المهمة أكثر من مرة")}
+                  </p>
+                  <p className="text-muted">
+                    {tr("Use for ongoing activities like weekly meeting attendance.", "تستخدم للأنشطة المستمرة كحضور الاجتماع الأسبوعي.")}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="mt-4">
@@ -1239,6 +1331,16 @@ export default function HRDashboard() {
                         {task.isActive ? tr("Open", "مفتوحة") : tr("Closed", "مغلقة")}
                       </span>
                       <span className="badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20">{task.hours}{tr("h", "س")}</span>
+                      {task.isRepetitive && (
+                        <span className="badge bg-amber-500/10 text-amber-300 border-amber-500/20">
+                          {tr("Repetitive", "متكررة")}
+                        </span>
+                      )}
+                      {task.assignedDepartmentId && (
+                        <span className="badge bg-primary/10 text-primary border-primary/20">
+                          {task.assignedDepartmentName ?? task.assignedDepartmentSlug}
+                        </span>
+                      )}
                     </div>
                     <p className="mt-1 text-xs text-muted">
                       {new Date(task.participationDate).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -1477,6 +1579,67 @@ export default function HRDashboard() {
             onClose={() => setRegisterOpen(false)}
             onCreated={() => { setRegisterOpen(false); void loadMembers(); }}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {adjustHour && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+            onClick={() => !adjustSaving && setAdjustHour(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass-card w-full max-w-sm p-5"
+            >
+              <h3 className="text-sm font-semibold text-foreground">
+                {tr("Accept with adjustment", "قبول مع تعديل")}
+              </h3>
+              <p className="mt-1 text-xs text-muted">
+                {tr(
+                  `Member submitted ${adjustHour.hours}h for "${adjustHour.title}". Enter the credited amount.`,
+                  `أرسل العضو ${adjustHour.hours} ساعة لـ "${adjustHour.title}". أدخل العدد المعتمد.`,
+                )}
+              </p>
+              <label className="mt-3 block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
+                {tr("Credited hours", "الساعات المعتمدة")}
+              </label>
+              <input
+                type="number"
+                min="0.25"
+                step="0.25"
+                value={adjustValue}
+                onChange={(e) => setAdjustValue(e.target.value)}
+                className="surface-input px-3 py-2 text-sm w-full"
+                autoFocus
+              />
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAdjustHour(null)}
+                  disabled={adjustSaving}
+                  className="btn-secondary min-h-11 px-4 py-2 text-xs"
+                >
+                  {tr("Cancel", "إلغاء")}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmAdjustment}
+                  disabled={adjustSaving || !adjustValue}
+                  className="btn-primary inline-flex min-h-11 items-center gap-2 px-4 py-2 text-xs disabled:opacity-50"
+                >
+                  {adjustSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                  {tr("Confirm", "تأكيد")}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

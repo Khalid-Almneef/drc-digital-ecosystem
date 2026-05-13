@@ -10,6 +10,8 @@ const Patch = z.object({
   hours: z.number().positive().optional(),
   participationDate: z.string().min(1).optional(),
   isActive: z.boolean().optional(),
+  isRepetitive: z.boolean().optional(),
+  assignedDepartmentId: z.number().int().positive().nullable().optional(),
 }).refine((value) => Object.values(value).some((entry) => entry !== undefined), {
   message: "At least one field is required.",
 });
@@ -36,6 +38,8 @@ export const PATCH = handle(async (req, ctx) => {
     if (body.hours !== undefined) task.hours = body.hours;
     if (body.participationDate !== undefined) task.participationDate = body.participationDate;
     if (body.isActive !== undefined) task.isActive = body.isActive;
+    if (body.isRepetitive !== undefined) task.isRepetitive = body.isRepetitive;
+    if (body.assignedDepartmentId !== undefined) task.assignedDepartmentId = body.assignedDepartmentId ?? null;
     task.updatedAt = new Date().toISOString();
     return ok({ success: true });
   }
@@ -61,6 +65,14 @@ export const PATCH = handle(async (req, ctx) => {
   if (body.isActive !== undefined) {
     params.push(body.isActive);
     sets.push(`is_active = $${params.length}`);
+  }
+  if (body.isRepetitive !== undefined) {
+    params.push(body.isRepetitive);
+    sets.push(`is_repetitive = $${params.length}`);
+  }
+  if (body.assignedDepartmentId !== undefined) {
+    params.push(body.assignedDepartmentId ?? null);
+    sets.push(`assigned_department_id = $${params.length}`);
   }
   params.push(opportunityId);
   const result = await query(

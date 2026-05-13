@@ -79,7 +79,12 @@ interface VolunteerHourTask {
   hours: number;
   participationDate: string;
   isActive: boolean;
+  isRepetitive: boolean;
+  assignedDepartmentId: number | null;
+  assignedDepartmentSlug: string | null;
+  assignedDepartmentName: string | null;
   myRegistrationStatus: "pending" | "approved" | "rejected" | null;
+  myRegistrationCount: number;
 }
 
 interface AnnouncementItem {
@@ -713,25 +718,44 @@ export default function DashboardOverview() {
                 <div className="mt-3 space-y-3">
                   {hourTasks.length === 0 ? (
                     <p className="text-sm text-muted">{tr("No open hour tasks right now.", "ما فيه مهام ساعات مفتوحة حاليًا.")}</p>
-                  ) : hourTasks.slice(0, 4).map((task) => (
+                  ) : hourTasks.slice(0, 4).map((task) => {
+                    // Repetitive tasks stay registrable even after prior logs.
+                    const blockedByPrior = !task.isRepetitive && Boolean(task.myRegistrationStatus);
+                    return (
                     <div key={task.opportunityId} className="rounded-xl border border-border bg-background/35 p-3">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="text-sm font-medium text-foreground">{task.title}</p>
                             <span className="badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20">{task.hours}h</span>
-                            {task.myRegistrationStatus ? <span className={hourStatusClass[task.myRegistrationStatus]}>{hourStatusLabel(task.myRegistrationStatus, lang)}</span> : null}
+                            {task.isRepetitive && (
+                              <span className="badge bg-amber-500/10 text-amber-300 border-amber-500/20">
+                                {tr("Repetitive", "متكررة")}
+                              </span>
+                            )}
+                            {task.assignedDepartmentId && (
+                              <span className="badge bg-primary/10 text-primary border-primary/20">
+                                {task.assignedDepartmentName ?? task.assignedDepartmentSlug}
+                              </span>
+                            )}
+                            {task.myRegistrationStatus && !task.isRepetitive ? <span className={hourStatusClass[task.myRegistrationStatus]}>{hourStatusLabel(task.myRegistrationStatus, lang)}</span> : null}
+                            {task.isRepetitive && task.myRegistrationCount > 0 ? (
+                              <span className="badge bg-surface-elevated text-muted border-border">
+                                {tr(`Logged ${task.myRegistrationCount}×`, `سُجِّلت ${task.myRegistrationCount}×`)}
+                              </span>
+                            ) : null}
                           </div>
                           <p className="mt-1 text-xs text-muted">{formatDate(task.participationDate, lang)}</p>
                           {task.description ? <p className="mt-2 text-xs leading-5 text-muted">{task.description}</p> : null}
                         </div>
-                        <button onClick={() => handleRegisterHourTask(task)} disabled={Boolean(task.myRegistrationStatus) || registeringHourTaskId === task.opportunityId} className="btn-primary inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 text-xs disabled:opacity-50">
+                        <button onClick={() => handleRegisterHourTask(task)} disabled={blockedByPrior || registeringHourTaskId === task.opportunityId} className="btn-primary inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 text-xs disabled:opacity-50">
                           {registeringHourTaskId === task.opportunityId ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-                          {task.myRegistrationStatus ? hourStatusLabel(task.myRegistrationStatus, lang) : tr("Register", "تسجيل")}
+                          {blockedByPrior ? hourStatusLabel(task.myRegistrationStatus!, lang) : tr("Register", "تسجيل")}
                         </button>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

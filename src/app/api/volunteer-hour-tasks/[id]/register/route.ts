@@ -13,12 +13,17 @@ export const POST = handle(async (_req, ctx) => {
     const task = store.volunteerHourTasks.find((entry) => entry.opportunityId === opportunityId);
     if (!task) return err(404, "Volunteer hour task not found");
     if (!task.isActive) return err(400, "This volunteer hour task is closed.");
-    const existing = store.volunteerHours.find((hour) =>
-      hour.memberId === session.memberId &&
-      hour.sourceType === "hour_task" &&
-      hour.sourceId === opportunityId,
-    );
-    if (existing) return err(409, "You already registered for this volunteer hour task.");
+    if (task.assignedDepartmentId != null && task.assignedDepartmentId !== session.departmentId) {
+      return err(403, "This volunteer hour task is restricted to another department.");
+    }
+    if (!task.isRepetitive) {
+      const existing = store.volunteerHours.find((hour) =>
+        hour.memberId === session.memberId &&
+        hour.sourceType === "hour_task" &&
+        hour.sourceId === opportunityId,
+      );
+      if (existing) return err(409, "You already registered for this volunteer hour task.");
+    }
 
     const id = nextMockId("volunteerHour");
     const row = {
@@ -44,18 +49,40 @@ export const POST = handle(async (_req, ctx) => {
     hours: string;
     participationDate: string;
     isActive: boolean;
+    isRepetitive: boolean;
+    assignedDepartmentId: number | null;
   }>(
     `SELECT title,
             description,
             hours,
             participation_date AS "participationDate",
-            is_active AS "isActive"
+            is_active AS "isActive",
+            is_repetitive AS "isRepetitive",
+            assigned_department_id AS "assignedDepartmentId"
        FROM volunteer_hour_tasks
       WHERE opportunity_id = $1`,
     [opportunityId],
   );
   if (!task) return err(404, "Volunteer hour task not found");
   if (!task.isActive) return err(400, "This volunteer hour task is closed.");
+  if (task.assignedDepartmentId != null && task.assignedDepartmentId !== session.departmentId) {
+    return err(403, "This volunteer hour task is restricted to another department.");
+  }
+
+  // Non-repetitive tasks must enforce one-per-member at the application layer
+  // now that the cross-row unique index has been dropped (see migration 042).
+  if (!task.isRepetitive) {
+    const dup = await queryOne<{ exists: boolean }>(
+      `SELECT TRUE AS exists
+         FROM volunteer_hours
+        WHERE member_id = $1
+          AND source_type = 'hour_task'
+          AND source_id = $2
+        LIMIT 1`,
+      [session.memberId, opportunityId],
+    );
+    if (dup) return err(409, "You already registered for this volunteer hour task.");
+  }
 
   const inserted = await query<{
     id: number;
@@ -70,7 +97,6 @@ export const POST = handle(async (_req, ctx) => {
     `INSERT INTO volunteer_hours
        (member_id, hours, title, description, participation_date, approval_status, source_type, source_id)
      VALUES ($1, $2, $3, $4, $5, 'pending', 'hour_task', $6)
-     ON CONFLICT (member_id, source_type, source_id) WHERE source_id IS NOT NULL DO NOTHING
      RETURNING volunthr_id AS "id",
                hours,
                title,
@@ -88,6 +114,5 @@ export const POST = handle(async (_req, ctx) => {
       opportunityId,
     ],
   );
-  if (!inserted.rows[0]) return err(409, "You already registered for this volunteer hour task.");
   return ok(inserted.rows[0], { status: 201 });
 });
