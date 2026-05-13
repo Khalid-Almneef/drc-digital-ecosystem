@@ -21,6 +21,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { BulkUploadCard } from "@/components/dashboard/BulkUploadCard";
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { useApi } from "@/lib/hooks/useApi";
 
 interface PRPromoEvent {
@@ -451,7 +452,11 @@ export default function PRDashboard() {
                 {[0, 1, 2].map((i) => <div key={i} className="glass-card h-24 animate-pulse" />)}
               </div>
             ) : sponsors.length === 0 ? (
-              <div className="glass-card p-6 text-sm text-muted">{tr("No sponsors yet.", "لا يوجد رعاة بعد.")}</div>
+              <EmptyState
+                icon={Handshake}
+                title={tr("No sponsors yet", "لا يوجد رعاة بعد")}
+                body={tr("Add potential sponsors to start tracking outreach.", "أضف رعاة محتملين لبدء متابعة التواصل.")}
+              />
             ) : sponsors.map((sponsor, i) => {
               const meta = statusMeta(sponsor.status);
               return (
@@ -774,9 +779,11 @@ function VisitIdeasInbox() {
           {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
         </div>
       ) : rows.length === 0 ? (
-        <div className="glass-card p-8 text-center text-sm text-muted">
-          {tr("No visit ideas in this list.", "لا توجد أفكار زيارات في هذه القائمة.")}
-        </div>
+        <EmptyState
+          icon={Megaphone}
+          title={tr("No visit ideas in this list", "لا توجد أفكار زيارات في هذه القائمة")}
+          body={tr("Visit suggestions from departments appear here for coordination.", "تظهر هنا اقتراحات الزيارات من الأقسام للتنسيق.")}
+        />
       ) : (
         <div className="space-y-3">
           {rows.map((idea) => (

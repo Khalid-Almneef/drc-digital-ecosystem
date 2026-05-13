@@ -853,6 +853,17 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
+/* Zero-specificity fallback so any interactive element without an explicit
+   focus style still gets a visible ring. Component overrides above and in
+   utility classes still take precedence. */
+@layer base {
+  :where(button, a, [role="button"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--primary) 60%, transparent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
 html.theme-switching *,
 html.theme-switching *::before,
 html.theme-switching *::after {

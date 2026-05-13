@@ -9,6 +9,7 @@ import { useApi } from "@/lib/hooks/useApi";
 import { api } from "@/lib/client";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ChangeRequestInbox } from "@/components/dashboard/ChangeRequestInbox";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import {
   ServiceRequestRow,
   ServiceRequestType,
@@ -68,6 +69,10 @@ export default function RequestsPage() {
   const [scope, setScope] = useState<Scope>("inbox");
   const [section, setSection] = useState<Section>("service");
   const { data: rows = [], isLoading, mutate } = useApi<ServiceRequestRow[]>(`/api/service-requests?scope=${scope}`);
+  const { data: inboxAll = [] } = useApi<ServiceRequestRow[]>(`/api/service-requests?scope=inbox`);
+  const { data: changeRequests = [] } = useApi<{ status: string }[]>(`/api/change-requests?scope=inbox`);
+  const pendingService = inboxAll.filter((r) => r.status === "pending").length;
+  const pendingApprovals = changeRequests.filter((r) => r.status === "pending").length;
 
   if (!isAnyLeader) {
     return (
@@ -90,7 +95,7 @@ export default function RequestsPage() {
         )}
       />
 
-      <SectionSwitch section={section} setSection={setSection} />
+      <SectionSwitch section={section} setSection={setSection} pendingService={pendingService} pendingApprovals={pendingApprovals} />
 
       {section === "service" ? (
         <>
@@ -109,12 +114,12 @@ export default function RequestsPage() {
 
 // ─── Section switch ────────────────────────────────────────────────────────
 
-function SectionSwitch({ section, setSection }: { section: Section; setSection: (s: Section) => void }) {
+function SectionSwitch({ section, setSection, pendingService, pendingApprovals }: { section: Section; setSection: (s: Section) => void; pendingService: number; pendingApprovals: number }) {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const sections: { key: Section; label: string; labelAr: string; icon: React.ElementType }[] = [
-    { key: "service",   label: "Service Requests",  labelAr: "طلبات الخدمات",  icon: Send },
-    { key: "approvals", label: "Change Approvals",  labelAr: "اعتماد التغييرات", icon: FileCheck2 },
+  const sections: { key: Section; label: string; labelAr: string; icon: React.ElementType; count: number }[] = [
+    { key: "service",   label: "Service Requests",  labelAr: "طلبات الخدمات",  icon: Send, count: pendingService },
+    { key: "approvals", label: "Change Approvals",  labelAr: "اعتماد التغييرات", icon: FileCheck2, count: pendingApprovals },
   ];
   return (
     <div className="tab-rail w-fit" role="tablist" aria-label={tr("Requests sections", "أقسام الطلبات")}>
@@ -130,6 +135,9 @@ function SectionSwitch({ section, setSection }: { section: Section; setSection: 
         >
           <s.icon size={13} className="me-1.5" />
           {lang === "ar" ? s.labelAr : s.label}
+          {s.count > 0 && (
+            <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{s.count}</span>
+          )}
         </button>
       ))}
     </div>
@@ -359,13 +367,17 @@ function RequestsList({
   }
   if (sortedRows.length === 0) {
     return (
-      <div className="glass-card p-6 text-sm text-muted text-center">
-        {scope === "inbox"
-          ? tr("Nothing in your inbox yet.", "لا يوجد شيء في الوارد حتى الآن.")
-          : scope === "outbox"
-            ? tr("You haven't sent any requests yet.", "لم ترسل أي طلب حتى الآن.")
-            : tr("No related requests.", "لا توجد طلبات مرتبطة.")}
-      </div>
+      <EmptyState
+        icon={scope === "outbox" ? Send : Inbox}
+        title={
+          scope === "inbox"
+            ? tr("Nothing in your inbox yet", "لا يوجد شيء في الوارد حتى الآن")
+            : scope === "outbox"
+              ? tr("You haven't sent any requests yet", "لم ترسل أي طلب حتى الآن")
+              : tr("No related requests", "لا توجد طلبات مرتبطة")
+        }
+        body={tr("Cross-department service requests will appear here.", "تظهر هنا طلبات الخدمة بين الأقسام.")}
+      />
     );
   }
 

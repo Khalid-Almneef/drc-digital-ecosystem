@@ -17,6 +17,7 @@ import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPa
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { api } from "@/lib/client";
 
 // ─── Types (Projects) ─────────────────────────────────────────────────────────
@@ -360,13 +361,17 @@ function ApplicationsInbox() {
           {[0, 1, 2].map((i) => <div key={i} className="glass-card h-24 animate-pulse" />)}
         </div>
       ) : rows.length === 0 ? (
-        <div className="glass-card p-8 text-center text-sm text-muted">
-          {statusFilter === "pending"
-            ? tr("No pending applications.", "لا توجد طلبات قيد المراجعة.")
-            : statusFilter === "accepted"
-              ? tr("No accepted applications yet.", "لم يُقبل أي طلب بعد.")
-              : tr("No rejected applications.", "لا توجد طلبات مرفوضة.")}
-        </div>
+        <EmptyState
+          icon={Lightbulb}
+          title={
+            statusFilter === "pending"
+              ? tr("No pending applications", "لا توجد طلبات قيد المراجعة")
+              : statusFilter === "accepted"
+                ? tr("No accepted applications yet", "لم يُقبل أي طلب بعد")
+                : tr("No rejected applications", "لا توجد طلبات مرفوضة")
+          }
+          body={tr("Project applications appear here when members request to join.", "تظهر طلبات الانضمام للمشاريع هنا عندما يطلب الأعضاء الانضمام.")}
+        />
       ) : (
         <div className="space-y-3">
           {rows.map((app) => (
@@ -505,6 +510,9 @@ export default function InnovationDashboard() {
               className="tab-pill"
             >
               {label}
+              {key === "applications" && openApplications > 0 ? (
+                <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{openApplications}</span>
+              ) : null}
             </button>
           ))}
         </div>

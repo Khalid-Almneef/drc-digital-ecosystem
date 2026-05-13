@@ -13,6 +13,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { api } from "@/lib/client";
 import { toExternalUrl } from "@/lib/url";
 import { useApi } from "@/lib/hooks/useApi";
@@ -1055,7 +1056,11 @@ function CompanyVisitsTab() {
             {[0, 1, 2].map((i) => <div key={i} className="glass-card h-20 animate-pulse" />)}
           </div>
         ) : visits.length === 0 ? (
-          <div className="glass-card p-6 text-center text-sm text-muted">{tr("No visit requests yet. Submit one above.", "لا توجد طلبات زيارة بعد. أرسل طلباً من الأعلى.")}</div>
+          <EmptyState
+            icon={Building2}
+            title={tr("No visit requests yet", "لا توجد طلبات زيارة بعد")}
+            body={tr("Submit one above to request an industry visit.", "أرسل طلباً من الأعلى لطلب زيارة صناعية.")}
+          />
         ) : (
           <div className="space-y-2 max-h-[calc(100dvh-30rem)] overflow-y-auto pr-1">
             {visits.map((req) => (

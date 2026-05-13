@@ -21,6 +21,7 @@ import { MotmLeaderboardPanel } from "@/components/dashboard/MotmLeaderboardPane
 import { FormsManager } from "@/components/dashboard/FormsManager";
 import { AlumniManager } from "@/components/dashboard/AlumniManager";
 import { EndorsementsLeaderboard } from "@/components/dashboard/EndorsementsLeaderboard";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -639,7 +640,7 @@ export default function HRDashboard() {
                     }`}
                   >
                     {TAB_LABELS[tab]}
-                    {tab === "applications" && pendingApps > 0 ? <span className="badge badge-warning">{pendingApps}</span> : null}
+                    {tab === "applications" && pendingApps > 0 ? <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{pendingApps}</span> : null}
                   </button>
                 );
               })}
@@ -753,7 +754,11 @@ export default function HRDashboard() {
           ) : (
             <div className="space-y-3">
               {applications.length === 0 && (
-                <p className="text-sm text-muted text-center py-10">No applications yet.</p>
+                <EmptyState
+                  icon={UserPlus}
+                  title={tr("No applications yet", "لا توجد طلبات بعد")}
+                  body={tr("New member applications will appear here for review.", "ستظهر طلبات الانضمام الجديدة هنا للمراجعة.")}
+                />
               )}
               {applications.map((app, i) => (
                 <motion.div
