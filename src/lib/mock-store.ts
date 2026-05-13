@@ -154,6 +154,8 @@ export interface MockVolunteerHourTask {
   hours: number;
   participationDate: string;
   isActive: boolean;
+  isRepetitive: boolean;
+  assignedDepartmentId: number | null;
   createdBy: number | null;
   createdAt: string;
   updatedAt: string;
@@ -329,6 +331,8 @@ export interface MockLiveWorkshop {
   createdAt: string;
 }
 
+export type MockLiveWorkshopRegistrationStatus = "pending" | "accepted" | "rejected";
+
 export interface MockLiveWorkshopRegistration {
   registrationId: number;
   liveWorkshopId: number;
@@ -339,6 +343,7 @@ export interface MockLiveWorkshopRegistration {
   department: string | null;
   notes: string | null;
   registeredAt: string;
+  status: MockLiveWorkshopRegistrationStatus;
 }
 
 export interface MockMadaratSession {
@@ -1582,6 +1587,8 @@ function seedStore(): MockStore {
       hours: 3,
       participationDate: "2026-04-18",
       isActive: true,
+      isRepetitive: false,
+      assignedDepartmentId: null,
       createdBy: 68,
       createdAt: "2026-04-17T09:00:00.000Z",
       updatedAt: "2026-04-17T09:00:00.000Z",
@@ -1988,7 +1995,7 @@ const events: MockEvent[] = [
   ];
 
   const liveWorkshopRegistrations: MockLiveWorkshopRegistration[] = [
-    { registrationId: 1, liveWorkshopId: 1, fullName: "Reem Alotaibi", email: "reem.alotaibi@student.ksu.edu.sa", universityId: "443100001", phone: null, department: "Computer Science", notes: null, registeredAt: "2026-04-16T09:00:00.000Z" },
+    { registrationId: 1, liveWorkshopId: 1, fullName: "Reem Alotaibi", email: "reem.alotaibi@student.ksu.edu.sa", universityId: "443100001", phone: null, department: "Computer Science", notes: null, registeredAt: "2026-04-16T09:00:00.000Z", status: "accepted" },
   ];
 
   const madaratSessions: MockMadaratSession[] = [

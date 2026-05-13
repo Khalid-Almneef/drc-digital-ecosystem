@@ -37,6 +37,7 @@ export const POST = handle(async (req, ctx) => {
       department: b.department ?? null,
       notes: b.notes ?? null,
       registeredAt: new Date().toISOString(),
+      status: "pending",
     });
     return ok({ success: true, message: "Registration successful" }, { status: 201 });
   }

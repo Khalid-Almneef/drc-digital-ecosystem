@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Calendar, Clock, MapPin, Users, X, CheckCircle, AlertCircle, Radio, FolderOpen, ListVideo, Maximize2 } from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
@@ -12,6 +12,7 @@ import { workshops as fallbackWorkshops, CATEGORY_COLORS } from "@/data/workshop
 import { api } from "@/lib/client";
 import { toExternalUrl } from "@/lib/url";
 import { DriveVideoPlayer } from "@/components/workshops/DriveVideoPlayer";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,7 @@ interface LiveWorkshop {
   registrationOpen: boolean;
   registrationCount: number;
   membersOnly?: boolean;
+  myRegistrationStatus?: "pending" | "accepted" | "rejected" | null;
 }
 
 interface WorkshopSession {
@@ -329,8 +331,32 @@ function LiveCard({ workshop, onRegister, index }: { workshop: LiveWorkshop; onR
           )}
         </div>
 
+        {/* My registration status (when signed in & already registered) */}
+        {!past && workshop.myRegistrationStatus && (
+          <div className="mb-3">
+            {workshop.myRegistrationStatus === "pending" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+                {lang === "ar" ? "بانتظار المراجعة" : "Awaiting review"}
+              </span>
+            )}
+            {workshop.myRegistrationStatus === "accepted" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
+                <CheckCircle size={11} />
+                {lang === "ar" ? "مقبول" : "Accepted"}
+              </span>
+            )}
+            {workshop.myRegistrationStatus === "rejected" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-400/10 text-red-400 border border-red-400/20">
+                <AlertCircle size={11} />
+                {lang === "ar" ? "غير موافق عليه" : "Not approved"}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* CTA */}
-        {!past && workshop.registrationOpen && !full && (
+        {!past && workshop.registrationOpen && !full && !workshop.myRegistrationStatus && (
           <button
             onClick={onRegister}
             className="btn-primary px-5 py-2.5 text-sm w-full sm:w-auto"
@@ -338,7 +364,7 @@ function LiveCard({ workshop, onRegister, index }: { workshop: LiveWorkshop; onR
             {t("workshops.live.cta")}
           </button>
         )}
-        {!past && full && (
+        {!past && full && !workshop.myRegistrationStatus && (
           <p className="text-xs text-amber-400/80">{t("workshops.live.fullnote")}</p>
         )}
       </div>
@@ -350,6 +376,7 @@ function LiveCard({ workshop, onRegister, index }: { workshop: LiveWorkshop; onR
 
 export default function WorkshopsPage() {
   const { lang, t } = useLang();
+  const { isAuthenticated } = useAuth();
   const [liveWorkshops, setLiveWorkshops] = useState<LiveWorkshop[]>([]);
   const [recordedWorkshops, setRecordedWorkshops] = useState<RecordedWorkshop[]>([]);
   const [loadingLive, setLoadingLive] = useState(true);
@@ -374,12 +401,17 @@ export default function WorkshopsPage() {
     { title: t("workshops.modes.path.title"), body: t("workshops.modes.path.desc") },
   ];
 
-  useEffect(() => {
-    api.get<LiveWorkshop[]>("/api/live-workshops/public")
+  const reloadLive = useCallback(() => {
+    return api.get<LiveWorkshop[]>("/api/live-workshops/public")
       .then((res) => setLiveWorkshops(res ?? []))
       .catch(() => {}) // silently fall back to empty (DB not connected yet)
       .finally(() => setLoadingLive(false));
   }, []);
+
+  useEffect(() => {
+    setLoadingLive(true);
+    void reloadLive();
+  }, [reloadLive, isAuthenticated]);
 
   useEffect(() => {
     api.get<RecordedWorkshop[]>("/api/workshops/public")
@@ -664,7 +696,13 @@ export default function WorkshopsPage() {
       {/* Registration modal */}
       <AnimatePresence>
         {activeReg && (
-          <RegistrationModal workshop={activeReg} onClose={() => setActiveReg(null)} />
+          <RegistrationModal
+            workshop={activeReg}
+            onClose={() => {
+              setActiveReg(null);
+              void reloadLive();
+            }}
+          />
         )}
       </AnimatePresence>
 

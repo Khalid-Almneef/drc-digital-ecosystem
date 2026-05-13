@@ -8,6 +8,7 @@ import {
   FolderOpen, ListVideo, ExternalLink, Building2, Send, Loader2,
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { LeaderTaskReviewPanel } from "@/components/dashboard/LeaderTaskReviewPanel";
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
@@ -290,6 +291,8 @@ function CreateModal({ onClose, onSaved, editing }: CreateModalProps) {
 
 // ─── Registrations viewer ─────────────────────────────────────────────────────
 
+type RegStatus = "pending" | "accepted" | "rejected";
+
 interface Registration {
   registrationId: number;
   fullName: string;
@@ -298,14 +301,58 @@ interface Registration {
   phone: string | null;
   department: string | null;
   registeredAt: string;
+  status: RegStatus;
+}
+
+function StatusBadge({ status, lang }: { status: RegStatus; lang: string }) {
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
+  if (status === "accepted") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
+        {tr("Accepted", "مقبول")}
+      </span>
+    );
+  }
+  if (status === "rejected") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-400/10 text-red-400 border border-red-400/20">
+        {tr("Rejected", "مرفوض")}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
+      {tr("Pending", "قيد المراجعة")}
+    </span>
+  );
 }
 
 function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => void }) {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const { data: regs = [], isLoading: loading } = useApi<Registration[]>(
+  const { data: regs = [], isLoading: loading, mutate } = useApi<Registration[]>(
     `/api/live-workshops/${workshopId}/registrations`,
   );
+  const [acting, setActing] = useState<Record<number, boolean>>({});
+  const [confirmDecline, setConfirmDecline] = useState<number | null>(null);
+
+  const decide = async (regId: number, status: "accepted" | "rejected") => {
+    setActing((s) => ({ ...s, [regId]: true }));
+    try {
+      await api.patch(`/api/live-workshops/${workshopId}/registrations/${regId}`, { status });
+      toast.success(
+        status === "accepted"
+          ? tr("Registration accepted", "تم قبول التسجيل")
+          : tr("Registration declined", "تم رفض التسجيل"),
+      );
+      await mutate();
+    } catch (e) {
+      toast.error((e as { message?: string }).message ?? tr("Action failed", "فشل الإجراء"));
+    } finally {
+      setActing((s) => ({ ...s, [regId]: false }));
+      setConfirmDecline(null);
+    }
+  };
 
   return (
     <motion.div
@@ -318,7 +365,7 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 16 }}
         transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-2xl glass-card relative max-h-[85vh] flex flex-col"
+        className="w-full max-w-3xl glass-card relative max-h-[85vh] flex flex-col"
       >
         <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
           <h2 className="text-base font-bold text-foreground">{tr("Registrations", "التسجيلات")}</h2>
@@ -334,23 +381,68 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
             <table className="w-full text-xs">
               <thead className="border-b border-border">
                 <tr className="text-[10px] uppercase tracking-wider text-muted">
-                  {[tr("Name", "الاسم"), tr("Email", "البريد"), tr("Uni ID", "الرقم الجامعي"), tr("Dept", "القسم"), tr("Registered", "تاريخ التسجيل")].map(h => (
+                  {[tr("Name", "الاسم"), tr("Email", "البريد"), tr("Uni ID", "الرقم الجامعي"), tr("Dept", "القسم"), tr("Status", "الحالة"), tr("Actions", "الإجراءات")].map(h => (
                     <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {regs.map((r, i) => (
-                  <tr key={r.registrationId} className={`border-b border-border/50 ${i % 2 === 0 ? "" : "bg-surface-elevated/30"}`}>
-                    <td className="px-4 py-2.5 text-foreground font-medium">{r.fullName}</td>
-                    <td className="px-4 py-2.5 text-muted">{r.email}</td>
-                    <td className="px-4 py-2.5 text-muted">{r.universityId ?? "—"}</td>
-                    <td className="px-4 py-2.5 text-muted">{r.department ?? "—"}</td>
-                    <td className="px-4 py-2.5 text-muted">
-                      {new Date(r.registeredAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}
-                    </td>
-                  </tr>
-                ))}
+                {regs.map((r, i) => {
+                  const busy = !!acting[r.registrationId];
+                  const isConfirming = confirmDecline === r.registrationId;
+                  return (
+                    <tr key={r.registrationId} className={`border-b border-border/50 ${i % 2 === 0 ? "" : "bg-surface-elevated/30"}`}>
+                      <td className="px-4 py-2.5 text-foreground font-medium">{r.fullName}</td>
+                      <td className="px-4 py-2.5 text-muted">{r.email}</td>
+                      <td className="px-4 py-2.5 text-muted">{r.universityId ?? "—"}</td>
+                      <td className="px-4 py-2.5 text-muted">{r.department ?? "—"}</td>
+                      <td className="px-4 py-2.5"><StatusBadge status={r.status} lang={lang} /></td>
+                      <td className="px-4 py-2.5">
+                        {r.status === "pending" ? (
+                          isConfirming ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-muted">{tr("Confirm?", "تأكيد؟")}</span>
+                              <button
+                                disabled={busy}
+                                onClick={() => decide(r.registrationId, "rejected")}
+                                className="px-2 py-1 rounded-md bg-red-400/10 border border-red-400/30 text-red-400 text-[10px] font-semibold disabled:opacity-40"
+                              >
+                                {busy ? <Loader2 size={10} className="animate-spin" /> : tr("Decline", "رفض")}
+                              </button>
+                              <button
+                                onClick={() => setConfirmDecline(null)}
+                                className="px-2 py-1 rounded-md bg-surface-elevated border border-border text-muted text-[10px]"
+                              >
+                                {tr("Cancel", "إلغاء")}
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                disabled={busy}
+                                onClick={() => decide(r.registrationId, "accepted")}
+                                className="px-2 py-1 rounded-md bg-green-400/10 border border-green-400/30 text-green-400 text-[10px] font-semibold hover:bg-green-400/15 transition-colors disabled:opacity-40"
+                              >
+                                {tr("Accept", "قبول")}
+                              </button>
+                              <button
+                                disabled={busy}
+                                onClick={() => setConfirmDecline(r.registrationId)}
+                                className="px-2 py-1 rounded-md bg-red-400/10 border border-red-400/30 text-red-400 text-[10px] font-semibold hover:bg-red-400/15 transition-colors disabled:opacity-40"
+                              >
+                                {tr("Decline", "رفض")}
+                              </button>
+                            </div>
+                          )
+                        ) : (
+                          <span className="text-[10px] text-muted">
+                            {new Date(r.registeredAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -1261,16 +1353,162 @@ function WorkshopRequestsInbox() {
 interface DevProject {
   projectId: number;
   title: string;
+  description: string | null;
   status: string;
   taskCount?: number | null;
   doneCount?: number | null;
   departmentSlug: string | null;
+  departmentName?: string | null;
+  leadMemberId?: number | null;
+  leadName?: string | null;
+  leadAvatarUrl?: string | null;
+  techStack?: string[] | null;
+  startDate?: string | null;
+  targetEndDate?: string | null;
+  completedDate?: string | null;
+  applicationsEnabled?: boolean;
+  isPublished?: boolean;
+  githubUrl?: string | null;
+}
+
+function DevProjectDetailModal({ project, onClose, onMutate }: { project: DevProject; onClose: () => void; onMutate: () => void }) {
+  const { lang } = useLang();
+  const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
+  const { user } = useAuth();
+  const [claiming, setClaiming] = useState(false);
+  const canClaimLead = !project.leadMemberId && !!user;
+
+  const claimLead = async () => {
+    if (!user) return;
+    setClaiming(true);
+    try {
+      await api.patch(`/api/projects/${project.projectId}`, { leadMemberId: Number(user.id) });
+      toast.success(tr("You are now the project lead", "أنت قائد المشروع الآن"));
+      onMutate();
+      onClose();
+    } catch (e) {
+      toast.error((e as { message?: string }).message ?? tr("Failed to claim lead", "تعذّر التعيين"));
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  const fmtDate = (iso: string | null | undefined) => iso ? new Date(iso).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 16 }}
+        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-2xl glass-card relative max-h-[85vh] flex flex-col"
+      >
+        <div className="flex items-start justify-between p-6 border-b border-border shrink-0 gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                {project.status}
+              </span>
+              {project.applicationsEnabled && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
+                  {tr("Applications open", "التقديم مفتوح")}
+                </span>
+              )}
+              {project.isPublished === false && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-elevated text-muted border border-border">
+                  {tr("Draft", "مسودة")}
+                </span>
+              )}
+            </div>
+            <h2 className="text-base font-bold text-foreground leading-snug">{project.title}</h2>
+          </div>
+          <button onClick={onClose} className="text-muted hover:text-foreground transition-colors shrink-0"><X size={16} /></button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-6 space-y-5">
+          {project.description && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Description", "الوصف")}</p>
+              <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{project.description}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">{tr("Project lead", "قائد المشروع")}</p>
+              <p className="text-foreground">{project.leadName ?? tr("Unassigned", "غير معيّن")}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">{tr("Department", "القسم")}</p>
+              <p className="text-foreground">{project.departmentName ?? project.departmentSlug ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">{tr("Start date", "تاريخ البدء")}</p>
+              <p className="text-foreground">{fmtDate(project.startDate)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">{tr("Target end", "التاريخ المستهدف")}</p>
+              <p className="text-foreground">{fmtDate(project.targetEndDate)}</p>
+            </div>
+            {project.completedDate && (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">{tr("Completed", "اكتمل")}</p>
+                <p className="text-foreground">{fmtDate(project.completedDate)}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">{tr("Tasks", "المهام")}</p>
+              <p className="text-foreground">{(project.doneCount ?? 0)}/{(project.taskCount ?? 0)}</p>
+            </div>
+          </div>
+
+          {project.techStack && project.techStack.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Tech stack", "التقنيات")}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {project.techStack.map((tech) => (
+                  <span key={tech} className="px-2 py-0.5 rounded-full text-[10px] bg-surface-elevated border border-border text-foreground/80">{tech}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t border-border shrink-0 flex flex-wrap gap-2 justify-end">
+          {canClaimLead && (
+            <button
+              onClick={claimLead}
+              disabled={claiming}
+              className="px-3 py-2 rounded-lg bg-primary/15 border border-primary/30 text-primary text-xs font-semibold inline-flex items-center gap-1.5 disabled:opacity-50"
+            >
+              {claiming ? <Loader2 size={12} className="animate-spin" /> : <Users size={12} />}
+              {tr("Make me project lead", "عيّنّي قائداً للمشروع")}
+            </button>
+          )}
+          <a
+            href={`/dashboard/innovation/projects/${project.projectId}`}
+            className="px-3 py-2 rounded-lg bg-surface-elevated border border-border text-foreground text-xs font-semibold inline-flex items-center gap-1.5 hover:border-primary/30 transition-colors"
+          >
+            <ExternalLink size={12} />
+            {tr("Open full project", "فتح المشروع كاملاً")}
+          </a>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 }
 
 function DevProjectsPanel() {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const { data: projects = [], isLoading: loading } = useApi<DevProject[]>("/api/projects?department=development");
+  const { data: projects = [], isLoading: loading, mutate } = useApi<DevProject[]>("/api/projects?department=development");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const selected = selectedId != null ? projects.find((p) => p.projectId === selectedId) ?? null : null;
 
   if (loading) {
     return (
@@ -1298,12 +1536,15 @@ function DevProjectsPanel() {
         const done = project.doneCount ?? 0;
         const progress = total > 0 ? Math.round((done / total) * 100) : 0;
         return (
-          <motion.div
+          <motion.button
             key={project.projectId}
+            type="button"
+            onClick={() => setSelectedId(project.projectId)}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="glass-card p-5 card-hover"
+            className="glass-card p-5 card-hover w-full text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40"
+            aria-label={tr(`Open project ${project.title}`, `فتح مشروع ${project.title}`)}
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -1331,9 +1572,18 @@ function DevProjectsPanel() {
                 />
               </div>
             ) : null}
-          </motion.div>
+          </motion.button>
         );
       })}
+      <AnimatePresence>
+        {selected && (
+          <DevProjectDetailModal
+            project={selected}
+            onClose={() => setSelectedId(null)}
+            onMutate={() => { void mutate(); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

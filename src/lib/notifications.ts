@@ -14,6 +14,7 @@ export type NotificationCategory =
   | "announcement_published"
   | "expense_decision"
   | "membership_approved"
+  | "workshop_registration_decision"
   | "system";
 
 export interface NotificationInput {

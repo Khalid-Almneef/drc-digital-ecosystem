@@ -28,6 +28,7 @@ export const GET = handle(async (_req, ctx) => {
         department: r.department,
         notes: r.notes,
         registeredAt: r.registeredAt,
+        status: r.status,
       }));
     return ok(rows);
   }
@@ -41,7 +42,8 @@ export const GET = handle(async (_req, ctx) => {
        phone,
        department,
        notes,
-       registered_at     AS "registeredAt"
+       registered_at     AS "registeredAt",
+       status
      FROM live_workshop_registrations
      WHERE live_workshop_id = $1
      ORDER BY registered_at ASC`,
