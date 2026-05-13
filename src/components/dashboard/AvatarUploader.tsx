@@ -146,7 +146,7 @@ export function AvatarUploader({
             <Trash2 size={11} /> {tr("Remove", "إزالة")}
           </button>
         )}
-        <p className="text-[10px] text-muted/70">
+        <p className="text-[11px] text-muted/70">
           {tr("PNG / JPG / WEBP — up to 5 MB", "PNG / JPG / WEBP — حتى 5 ميغابايت")}
         </p>
       </div>

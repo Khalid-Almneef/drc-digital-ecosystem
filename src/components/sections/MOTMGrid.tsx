@@ -55,7 +55,7 @@ function MOTMCard({ member, index, lang }: { member: MonthMember; index: number;
       ref={ref}
       initial={{ opacity: 0.8, y: 14 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.8, y: 14 }}
-      transition={{ duration: 0.5, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, delay: Math.min(index, 6) * 0.06, ease: [0.16, 1, 0.3, 1] }}
       className="glass-card flex items-center gap-3 p-4"
     >
       <div className="flex h-11 w-11 items-center justify-center border border-primary/20 bg-primary/10">

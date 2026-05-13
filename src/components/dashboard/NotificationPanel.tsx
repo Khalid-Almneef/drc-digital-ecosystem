@@ -191,7 +191,7 @@ export function NotificationPanel({ collapsed = false }: { collapsed?: boolean }
                                 {notification.body}
                               </p>
                             )}
-                            <p className="mt-1 text-[10px] text-muted/70">
+                            <p className="mt-1 text-[11px] tabular-nums text-muted/70">
                               {relativeTime(notification.createdAt, lang)}
                             </p>
                           </div>

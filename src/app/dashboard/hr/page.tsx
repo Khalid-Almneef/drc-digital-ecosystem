@@ -640,7 +640,7 @@ export default function HRDashboard() {
                     }`}
                   >
                     {TAB_LABELS[tab]}
-                    {tab === "applications" && pendingApps > 0 ? <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{pendingApps}</span> : null}
+                    {tab === "applications" && pendingApps > 0 ? <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">{pendingApps}</span> : null}
                   </button>
                 );
               })}
@@ -696,12 +696,12 @@ export default function HRDashboard() {
                         key={member.memberId}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: i * 0.03 }}
+                        transition={{ delay: Math.min(i, 6) * 0.03 }}
                         className="border-b border-border/50 hover:bg-surface-elevated/50 transition-colors"
                       >
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center text-[10px] font-medium text-muted shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center text-[11px] font-medium text-muted shrink-0">
                               {member.fullName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                             </div>
                             <div>
@@ -765,7 +765,7 @@ export default function HRDashboard() {
                   key={app.applicationId}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
+                  transition={{ delay: Math.min(i, 6) * 0.05 }}
                   className="glass-card p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4"
                 >
                   <div className="flex items-start gap-4">
@@ -779,7 +779,7 @@ export default function HRDashboard() {
                       {app.preferredDepartments.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {app.preferredDepartments.map((d) => (
-                            <span key={d.id} className="text-[10px] bg-surface-elevated border border-border rounded-full px-2 py-0.5 text-muted">
+                            <span key={d.id} className="text-[11px] bg-surface-elevated border border-border rounded-full px-2 py-0.5 text-muted">
                               {d.name}
                             </span>
                           ))}
@@ -1140,7 +1140,7 @@ export default function HRDashboard() {
                         key={h.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: i * 0.02 }}
+                        transition={{ delay: Math.min(i, 6) * 0.02 }}
                         className={`border-b border-border/50 hover:bg-surface-elevated/50 transition-colors ${bulkSelected.has(h.id) ? "bg-primary/5" : ""}`}
                       >
                         <td className="px-3 py-3.5">
@@ -1186,7 +1186,7 @@ export default function HRDashboard() {
                                   onClick={() => openAdjustModal(h)}
                                   disabled={decidingId === h.id}
                                   title={tr("Accept with adjustment", "قبول مع تعديل")}
-                                  className="px-2 py-1 rounded-md bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition-colors text-[10px] font-semibold border border-amber-500/20 disabled:opacity-40"
+                                  className="px-2 py-1 rounded-md bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition-colors text-[11px] font-semibold border border-amber-500/20 disabled:opacity-40"
                                 >
                                   {tr("Adjust", "تعديل")}
                                 </button>
@@ -1326,7 +1326,7 @@ export default function HRDashboard() {
                   key={task.opportunityId}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.04 }}
+                  transition={{ delay: Math.min(index, 6) * 0.04 }}
                   className="glass-card p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
                 >
                   <div>
@@ -1471,7 +1471,7 @@ export default function HRDashboard() {
                   key={request.requestId}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.04 }}
+                  transition={{ delay: Math.min(index, 6) * 0.04 }}
                   className="glass-card p-5"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">

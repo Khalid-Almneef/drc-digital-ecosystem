@@ -689,13 +689,13 @@ export default function MediaDashboard() {
             ) : (
               <div className="space-y-2">
                 {submissions.slice(0, 5).map((t, i) => (
-                  <motion.div key={t.taskId} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                  <motion.div key={t.taskId} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 6) * 0.04 }}
                     className="glass-card p-3 flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-foreground truncate">{t.title}</p>
-                      <p className="text-[10px] text-muted">{t.assigneeName ?? tr("Unassigned", "غير معيَّن")} · {t.submittedAt ? fmtDate(t.submittedAt) : "—"}</p>
+                      <p className="text-[11px] text-muted">{t.assigneeName ?? tr("Unassigned", "غير معيَّن")} · {t.submittedAt ? fmtDate(t.submittedAt) : "—"}</p>
                     </div>
-                    <button onClick={() => setTab("submissions")} className="btn-primary px-2 py-1 text-[10px] shrink-0">{tr("Review", "مراجعة")}</button>
+                    <button onClick={() => setTab("submissions")} className="btn-primary px-2 py-1 text-[11px] shrink-0">{tr("Review", "مراجعة")}</button>
                   </motion.div>
                 ))}
                 {submissions.length > 5 && (
@@ -736,7 +736,7 @@ export default function MediaDashboard() {
             <div className="space-y-3 max-h-[calc(100dvh-16rem)] overflow-y-auto pr-1">
               {submissions.map((t, i) => (
                 <motion.div key={t.taskId} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
+                  transition={{ delay: Math.min(i, 6) * 0.05 }}
                   className="glass-card p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                   {/* Artifact preview */}
                   {t.artifactUrl && (
@@ -756,13 +756,13 @@ export default function MediaDashboard() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span className="text-sm font-medium text-foreground">{t.title}</span>
-                      <span className={`badge ${PRIORITY_COLORS[t.priority] ?? "badge"} text-[10px]`}>{t.priority}</span>
+                      <span className={`badge ${PRIORITY_COLORS[t.priority] ?? "badge"} text-[11px]`}>{t.priority}</span>
                       {t.creditHours > 0 && (
-                        <span className="badge badge-success text-[10px]">{t.creditHours}h credit</span>
+                        <span className="badge badge-success text-[11px]">{t.creditHours}h credit</span>
                       )}
                     </div>
                     {t.artifactNotes && <p className="text-xs text-muted mb-1 line-clamp-2">{t.artifactNotes}</p>}
-                    <p className="text-[10px] text-muted">
+                    <p className="text-[11px] text-muted">
                       By <span className="text-foreground">{t.assigneeName ?? "Unknown"}</span>
                       {t.submittedAt ? ` · submitted ${fmtDate(t.submittedAt)}` : ""}
                     </p>
@@ -845,20 +845,20 @@ export default function MediaDashboard() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {assets.map((asset, i) => (
-                <motion.div key={asset.assetId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
+                <motion.div key={asset.assetId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i, 6) * 0.03 }}
                   className="group glass-card p-2 flex flex-col gap-2">
                   <div className="aspect-square rounded-md overflow-hidden bg-surface-elevated">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={asset.url} alt={asset.label ?? asset.filename} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] text-foreground truncate">{asset.label ?? asset.filename}</p>
+                    <p className="text-[11px] text-foreground truncate">{asset.label ?? asset.filename}</p>
                     <p className="text-[9px] text-muted">{fmtSize(asset.sizeBytes)}{asset.uploadedBy ? ` · ${asset.uploadedBy}` : ""}</p>
                   </div>
                   <div className="flex gap-1">
                     <button
                       onClick={() => copyUrl(asset)}
-                      className="flex-1 py-1 text-[10px] rounded bg-surface-elevated hover:bg-primary/10 hover:text-primary text-muted transition-colors flex items-center justify-center gap-0.5"
+                      className="flex-1 py-1 text-[11px] rounded bg-surface-elevated hover:bg-primary/10 hover:text-primary text-muted transition-colors flex items-center justify-center gap-0.5"
                       title="Copy URL"
                     >
                       {copied === asset.assetId ? <Check size={10} /> : <Copy size={10} />}
@@ -969,18 +969,18 @@ export default function MediaDashboard() {
                           <span className={`badge ${PRIORITY_COLORS[t.priority]} text-[9px]`}>{t.priority}</span>
                           {t.creditHours > 0 && <span className="badge badge-success text-[9px]">{t.creditHours}h</span>}
                         </div>
-                        <p className="text-[10px] text-muted mt-1.5">
+                        <p className="text-[11px] text-muted mt-1.5">
                           {t.assigneeName ?? "Unassigned"}
                           {t.dueDate ? ` · due ${fmtDate(t.dueDate)}` : ""}
                         </p>
                         {status === "review" && t.artifactUrl && (
                           <div className="flex gap-1.5 mt-2">
                             <a href={t.artifactUrl} target="_blank" rel="noopener noreferrer"
-                              className="btn-secondary px-2 py-0.5 text-[10px] inline-flex items-center gap-1">
+                              className="btn-secondary px-2 py-0.5 text-[11px] inline-flex items-center gap-1">
                               <ExternalLink size={9} /> View
                             </a>
                             <button onClick={() => approveSubmission(t.taskId)} disabled={reviewing === t.taskId}
-                              className="btn-primary px-2 py-0.5 text-[10px] inline-flex items-center gap-1">
+                              className="btn-primary px-2 py-0.5 text-[11px] inline-flex items-center gap-1">
                               {reviewing === t.taskId ? <Loader2 size={9} className="animate-spin" /> : <Check size={9} />} Approve
                             </button>
                           </div>
@@ -988,7 +988,7 @@ export default function MediaDashboard() {
                       </div>
                     ))}
                     {colTasks.length === 0 && (
-                      <p className="text-[10px] text-muted/50 text-center py-4 border border-dashed border-border rounded-lg">{tr("Empty", "فارغة")}</p>
+                      <p className="text-[11px] text-muted/50 text-center py-4 border border-dashed border-border rounded-lg">{tr("Empty", "فارغة")}</p>
                     )}
                   </div>
                 </div>
@@ -1267,9 +1267,9 @@ export default function MediaDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <p className="text-sm font-medium text-foreground">{item.title}</p>
-                        <span className="badge text-[10px]">{item.type}</span>
-                        <span className="badge badge-primary text-[10px]">{item.platform ?? "other"}</span>
-                        <span className={`badge text-[10px] ${
+                        <span className="badge text-[11px]">{item.type}</span>
+                        <span className="badge badge-primary text-[11px]">{item.platform ?? "other"}</span>
+                        <span className={`badge text-[11px] ${
                           item.status === "published"
                             ? "badge-success"
                             : item.status === "scheduled"
@@ -1282,37 +1282,37 @@ export default function MediaDashboard() {
                         </span>
                       </div>
                       {item.description && <p className="text-xs text-muted line-clamp-2 mb-1">{item.description}</p>}
-                      <p className="text-[10px] text-muted">
+                      <p className="text-[11px] text-muted">
                         {item.assignedToName ?? "Unassigned"}
                         {item.scheduledDate ? ` · scheduled ${fmtDate(item.scheduledDate)}` : ""}
                         {item.publishedDate ? ` · published ${fmtDate(item.publishedDate)}` : ""}
                       </p>
                       {item.status === "published" && (
-                        <p className="text-[10px] text-muted mt-1">
+                        <p className="text-[11px] text-muted mt-1">
                           {item.views} views · {item.likes} likes · {item.shares} shares
                         </p>
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
                       {item.fileUrl && (
-                        <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary px-2 py-1 text-[10px] inline-flex items-center gap-1">
+                        <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary px-2 py-1 text-[11px] inline-flex items-center gap-1">
                           <ExternalLink size={10} />
                           Asset
                         </a>
                       )}
                       {item.status !== "published" && (
-                        <button onClick={() => updateSocialStatus(item, "published")} disabled={socialUpdating === item.contentId} className="btn-primary px-2 py-1 text-[10px] inline-flex items-center gap-1">
+                        <button onClick={() => updateSocialStatus(item, "published")} disabled={socialUpdating === item.contentId} className="btn-primary px-2 py-1 text-[11px] inline-flex items-center gap-1">
                           {socialUpdating === item.contentId ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />}
                           Publish
                         </button>
                       )}
                       {item.status === "draft" && (
-                        <button onClick={() => updateSocialStatus(item, "scheduled")} disabled={socialUpdating === item.contentId} className="btn-secondary px-2 py-1 text-[10px]">
+                        <button onClick={() => updateSocialStatus(item, "scheduled")} disabled={socialUpdating === item.contentId} className="btn-secondary px-2 py-1 text-[11px]">
                           Schedule
                         </button>
                       )}
                       {item.status !== "archived" && (
-                        <button onClick={() => updateSocialStatus(item, "archived")} disabled={socialUpdating === item.contentId} className="btn-secondary px-2 py-1 text-[10px]">
+                        <button onClick={() => updateSocialStatus(item, "archived")} disabled={socialUpdating === item.contentId} className="btn-secondary px-2 py-1 text-[11px]">
                           Archive
                         </button>
                       )}

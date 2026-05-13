@@ -428,7 +428,7 @@ function NewTaskModal({
                   <option key={m.memberId} value={m.memberId}>{m.fullName} · {m.departmentName}</option>
                 ))}
               </select>
-              <p className="mt-1 text-[10px] text-muted">{tr("Any club member can be assigned, not only current project members.", "يمكن تعيين أي عضو في النادي، ليس فقط أعضاء المشروع الحاليين.")}</p>
+              <p className="mt-1 text-[11px] text-muted">{tr("Any club member can be assigned, not only current project members.", "يمكن تعيين أي عضو في النادي، ليس فقط أعضاء المشروع الحاليين.")}</p>
             </div>
             <div>
               <label className={labelCls}>{tr("Due Date", "تاريخ الاستحقاق")}</label>
@@ -623,14 +623,14 @@ export default function ProjectTrackPage() {
               <div className="space-y-2">
                 {project.members.map((m) => (
                   <div key={m.memberId} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center text-[10px] font-medium text-muted shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center text-[11px] font-medium text-muted shrink-0">
                       {initials(m.fullName)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-foreground truncate">
                         <MemberLink memberId={m.memberId} name={m.fullName} />
                       </p>
-                      <p className="text-[10px] text-muted capitalize">{m.role}</p>
+                      <p className="text-[11px] text-muted capitalize">{m.role}</p>
                     </div>
                     <button
                       onClick={() => removeMember(m.memberId)}
@@ -707,7 +707,7 @@ export default function ProjectTrackPage() {
                         {d.title}
                       </p>
                       {d.dueDate && (
-                        <p className="text-[10px] text-muted mt-0.5 flex items-center gap-1">
+                        <p className="text-[11px] text-muted mt-0.5 flex items-center gap-1">
                           <Calendar size={9} /> {new Date(d.dueDate).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>
                       )}
@@ -784,7 +784,7 @@ export default function ProjectTrackPage() {
                           <td className="px-5 py-3 text-sm text-foreground">{t.title}</td>
                           <td className="px-5 py-3 text-xs text-muted">{t.assigneeName ?? "—"}</td>
                           <td className="px-5 py-3">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full capitalize ${priorityCls[t.priority]}`}>{t.priority}</span>
+                            <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full capitalize ${priorityCls[t.priority]}`}>{t.priority}</span>
                           </td>
                           <td className="px-5 py-3">
                             <span className={taskStatusCls[t.status]}>{t.status.replace("_", " ")}</span>

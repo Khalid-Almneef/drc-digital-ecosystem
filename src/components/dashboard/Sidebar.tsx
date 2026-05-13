@@ -136,7 +136,7 @@ export function Sidebar() {
         {!collapsed && (
           <div className="min-w-0">
             <span className="font-bold text-sm text-foreground">{dashboardTitle}</span>
-            <span className="block text-[10px] text-muted truncate">{dashboardSubtitle}</span>
+            <span className="block text-[11px] text-muted truncate">{dashboardSubtitle}</span>
           </div>
         )}
       </div>
@@ -187,13 +187,13 @@ export function Sidebar() {
 
         {/* User info */}
         <div className={`rounded-xl border border-border bg-surface-elevated px-3 py-3 ${collapsed ? "flex justify-center" : "flex items-center gap-3"}`}>
-          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${deptColors[user.department]} flex items-center justify-center text-[10px] font-bold text-white shrink-0`}>
+          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${deptColors[user.department]} flex items-center justify-center text-[11px] font-bold text-white shrink-0`}>
             {user.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0 text-start">
               <p className="text-xs font-medium text-foreground truncate">{user.name}</p>
-              <p className="text-[10px] text-muted truncate">
+              <p className="text-[11px] text-muted truncate">
                 {userPositionLabel} · {userDepartmentLabel}
               </p>
             </div>

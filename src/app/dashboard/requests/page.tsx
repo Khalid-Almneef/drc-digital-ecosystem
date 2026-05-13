@@ -136,7 +136,7 @@ function SectionSwitch({ section, setSection, pendingService, pendingApprovals }
           <s.icon size={13} className="me-1.5" />
           {lang === "ar" ? s.labelAr : s.label}
           {s.count > 0 && (
-            <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{s.count}</span>
+            <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">{s.count}</span>
           )}
         </button>
       ))}
@@ -232,7 +232,7 @@ function Composer({ onCreated }: { onCreated: () => void }) {
               </option>
             ))}
           </select>
-          <p className="mt-1 text-[10px] text-muted/70">
+          <p className="mt-1 text-[11px] text-muted/70">
             {requestType === "other"
               ? tr("Other → any department.", "أخرى ← أي لجنة.")
               : tr(`${validTargets.length} valid target${validTargets.length === 1 ? "" : "s"} for this type.`, `${validTargets.length} لجنة مؤهلة لهذا النوع.`)}
@@ -323,7 +323,7 @@ function Tabs({ scope, setScope, isAdmin }: { scope: Scope; setScope: (s: Scope)
         );
       })}
       {isAdmin && (
-        <span className="text-[10px] text-muted/70 ms-2">
+        <span className="text-[11px] text-muted/70 ms-2">
           {tr("Tip: Admins see every request across the club.", "ملاحظة: الإدارة ترى كل الطلبات.")}
         </span>
       )}

@@ -66,7 +66,7 @@ export function MotmStatCard({ memberId }: { memberId: number }) {
           {stats.history.slice(0, 8).map((h, i) => (
             <span
               key={i}
-              className="rounded-full border border-border bg-background/40 px-2.5 py-0.5 text-[10px] text-muted"
+              className="rounded-full border border-border bg-background/40 px-2.5 py-0.5 text-[11px] text-muted"
             >
               {(lang === "ar" ? MONTH_AR : MONTH_EN)[h.month]} {h.year}
               {h.role === "leader" && " • L"}

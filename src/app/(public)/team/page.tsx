@@ -536,7 +536,7 @@ export default function TeamPage() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] as const }}
+                    transition={{ duration: 0.5, delay: Math.min(i, 6) * 0.08, ease: [0.16, 1, 0.3, 1] as const }}
                     onClick={() => setMotmFocus(m.memberId)}
                     className="glass-card overflow-hidden card-hover w-52 text-left transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                     aria-label={`${displayMemberName(m.fullName, m.fullNameAr, lang as "en" | "ar")} — ${lang === "ar" ? "عرض التفاصيل" : "view details"}`}

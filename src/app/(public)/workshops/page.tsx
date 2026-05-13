@@ -155,7 +155,7 @@ function RegistrationModal({ workshop, onClose }: RegModalProps) {
         ) : (
           <>
             <div className="mb-6">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 mb-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 mb-3">
                 <Radio size={10} className="animate-pulse" /> {t("workshops.modal.live")}
               </span>
               <h2 className="text-lg font-bold text-foreground leading-snug">{workshop.title}</h2>
@@ -259,7 +259,7 @@ function LiveCard({ workshop, onRegister, index }: { workshop: LiveWorkshop; onR
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, delay: Math.min(index, 6) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       className="card-feature overflow-hidden card-hover group"
     >
       {/* Top color bar */}
@@ -270,27 +270,27 @@ function LiveCard({ workshop, onRegister, index }: { workshop: LiveWorkshop; onR
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex flex-wrap gap-2">
             {past ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-surface-elevated text-muted border border-border">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-elevated text-muted border border-border">
                 {t("workshops.badge.completed")}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
                 {t("workshops.badge.upcoming")}
               </span>
             )}
             {!past && workshop.registrationOpen && !full && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
                 {t("workshops.badge.open")}
               </span>
             )}
             {!past && !workshop.registrationOpen && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-surface-elevated text-muted border border-border">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-elevated text-muted border border-border">
                 {t("workshops.badge.closed")}
               </span>
             )}
             {full && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
                 {t("workshops.badge.full")}
               </span>
             )}
@@ -564,7 +564,7 @@ export default function WorkshopsPage() {
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
-                  transition={{ duration: 0.6, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.6, delay: Math.min(i, 6) * 0.08, ease: [0.16, 1, 0.3, 1] }}
                   style={{ "--card-accent": accent } as React.CSSProperties}
                   className="card-feature card-accent-top overflow-hidden card-hover group"
                 >
@@ -630,7 +630,7 @@ export default function WorkshopsPage() {
                                     <Play size={9} fill="currentColor" className={`shrink-0 transition-colors ${isExpanded ? "text-primary" : "text-muted"}`} />
                                     <span className="line-clamp-1">{lang === "ar" && session.titleAr ? session.titleAr : session.title}</span>
                                   </span>
-                                  {session.durationMin && <span className="shrink-0 font-mono text-[10px]">{session.durationMin}m</span>}
+                                  {session.durationMin && <span className="shrink-0 font-mono text-[11px]">{session.durationMin}m</span>}
                                 </button>
                                 <button
                                   type="button"

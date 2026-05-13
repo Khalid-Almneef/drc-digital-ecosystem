@@ -65,7 +65,7 @@ function ProjectCard({ project, index, lang, t }: { project: FeaturedProject; in
       ref={ref}
       initial={{ opacity: 0.8, y: 18 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.8, y: 18 }}
-      transition={{ duration: 0.55, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.55, delay: Math.min(index, 6) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       className="card-feature overflow-hidden group"
     >
       <div className="relative h-52 overflow-hidden bg-gradient-to-br from-surface-elevated via-secondary/[0.06] to-primary/[0.04]">

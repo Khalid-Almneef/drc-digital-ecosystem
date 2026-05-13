@@ -169,7 +169,7 @@ export default function FinanceDashboard() {
                 key={department.slug}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.04 }}
+                transition={{ delay: Math.min(index, 6) * 0.04 }}
                 className="glass-card p-5"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -262,14 +262,14 @@ export default function FinanceDashboard() {
                 key={request.requestId}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.04 }}
+                transition={{ delay: Math.min(index, 6) * 0.04 }}
                 className="glass-card p-5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h4 className="text-base font-semibold text-foreground">{request.title}</h4>
-                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${STATUS_TONE[request.status]}`}>
+                      <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${STATUS_TONE[request.status]}`}>
                         {request.status}
                       </span>
                     </div>

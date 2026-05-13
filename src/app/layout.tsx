@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { MotionRoot } from "@/components/MotionRoot";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -124,7 +125,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AuthProvider>
           <ThemeProvider initialTheme={theme}>
             <LanguageProvider initialLang={lang}>
-              {children}
+              <MotionRoot>{children}</MotionRoot>
               <Toaster
                 position="bottom-right"
                 toastOptions={{

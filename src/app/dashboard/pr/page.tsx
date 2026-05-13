@@ -397,7 +397,7 @@ export default function PRDashboard() {
                     >
                       {GROUPS[key].label}
                       {showBadge && (
-                        <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
+                        <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">
                           {pendingVisitCount}
                         </span>
                       )}
@@ -425,7 +425,7 @@ export default function PRDashboard() {
                       >
                         {TAB_LABELS[tab]}
                         {showBadge && (
-                          <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
+                          <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">
                             {pendingVisitCount}
                           </span>
                         )}
@@ -464,14 +464,14 @@ export default function PRDashboard() {
                   key={sponsor.sponsorId}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
+                  transition={{ delay: Math.min(i, 6) * 0.03 }}
                   className="glass-card p-5 card-hover"
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-base font-semibold text-foreground">{sponsor.name}</h3>
-                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize ${tierColors[sponsor.tier]}`}>
+                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border capitalize ${tierColors[sponsor.tier]}`}>
                           {sponsor.tier}
                         </span>
                         <span className={meta.className}>{meta.label}</span>

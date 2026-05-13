@@ -62,7 +62,7 @@ function HighlightCard({ item, Icon, index, lang }: { item: HomeHighlightItem; I
       ref={ref}
       initial={{ opacity: 0.8, y: 18 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.8, y: 18 }}
-      transition={{ duration: 0.55, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.55, delay: Math.min(index, 6) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       className="card-feature p-7 group"
     >
       <div className="mb-5 flex h-12 w-12 items-center justify-center border border-primary/20 bg-primary/10 transition-colors group-hover:bg-primary/[0.15] group-hover:border-primary/30">

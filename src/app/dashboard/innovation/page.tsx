@@ -401,7 +401,7 @@ function ApplicationsInbox() {
                   {app.note && (
                     <p className="mt-2 text-xs leading-5 text-muted whitespace-pre-wrap">{app.note}</p>
                   )}
-                  <p className="mt-2 text-[10px] text-muted/60">
+                  <p className="mt-2 text-[11px] text-muted/60">
                     {tr("Submitted", "مُقدَّم")}: {new Date(app.createdAt).toLocaleDateString(lang === "ar" ? "ar" : "en-US")}
                   </p>
                 </div>
@@ -511,7 +511,7 @@ export default function InnovationDashboard() {
             >
               {label}
               {key === "applications" && openApplications > 0 ? (
-                <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{openApplications}</span>
+                <span className="ms-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">{openApplications}</span>
               ) : null}
             </button>
           ))}

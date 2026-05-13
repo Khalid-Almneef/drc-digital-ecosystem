@@ -93,11 +93,11 @@ export function FormsManager({ tr }: { tr: (en: string, ar: string) => string })
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="truncate text-sm font-semibold text-foreground">{f.title}</p>
-                  <span className="badge bg-surface-elevated text-muted border-border text-[10px]">{f.audience}</span>
+                  <span className="badge bg-surface-elevated text-muted border-border text-[11px]">{f.audience}</span>
                   {f.isOpen ? (
-                    <span className="badge badge-success text-[10px]">{tr("open", "مفتوح")}</span>
+                    <span className="badge badge-success text-[11px]">{tr("open", "مفتوح")}</span>
                   ) : (
-                    <span className="badge bg-red-500/10 text-red-300 border-red-500/20 text-[10px]">{tr("closed", "مغلق")}</span>
+                    <span className="badge bg-red-500/10 text-red-300 border-red-500/20 text-[11px]">{tr("closed", "مغلق")}</span>
                   )}
                 </div>
                 {f.description && <p className="mt-1 line-clamp-1 text-xs text-muted">{f.description}</p>}
@@ -255,7 +255,7 @@ function FormBuilderModal({ tr, onClose, onCreated }: { tr: (en: string, ar: str
               {questions.map((q, idx) => (
                 <div key={idx} className="rounded-xl border border-border bg-surface-elevated/35 p-3">
                   <div className="flex items-start gap-2">
-                    <span className="mt-2 text-[10px] text-muted">{idx + 1}.</span>
+                    <span className="mt-2 text-[11px] text-muted">{idx + 1}.</span>
                     <div className="flex-1 space-y-2">
                       <input
                         className="dashboard-field"

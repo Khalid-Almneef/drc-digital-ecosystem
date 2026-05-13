@@ -31,7 +31,7 @@ export function ThemeToggle({ showLabel = false, collapsed = false }: ThemeToggl
           <span className="flex-1 text-left">
             {theme === "dark" ? "Light Mode" : "Dark Mode"}
           </span>
-          <span className="rounded-md border border-border px-1.5 py-0.5 text-[10px] font-bold text-foreground">
+          <span className="rounded-md border border-border px-1.5 py-0.5 text-[11px] font-bold text-foreground">
             {theme === "dark" ? "LIGHT" : "DARK"}
           </span>
         </>

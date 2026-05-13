@@ -309,20 +309,20 @@ function StatusBadge({ status, lang }: { status: RegStatus; lang: string }) {
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   if (status === "accepted") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
         {tr("Accepted", "مقبول")}
       </span>
     );
   }
   if (status === "rejected") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-400/10 text-red-400 border border-red-400/20">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-400/10 text-red-400 border border-red-400/20">
         {tr("Rejected", "مرفوض")}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
       {tr("Pending", "قيد المراجعة")}
     </span>
   );
@@ -402,7 +402,7 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
                         {r.status === "pending" ? (
                           isConfirming ? (
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] text-muted">{tr("Confirm?", "تأكيد؟")}</span>
+                              <span className="text-[11px] text-muted">{tr("Confirm?", "تأكيد؟")}</span>
                               <button
                                 disabled={busy}
                                 onClick={() => decide(r.registrationId, "rejected")}
@@ -436,7 +436,7 @@ function RegList({ workshopId, onClose }: { workshopId: number; onClose: () => v
                             </div>
                           )
                         ) : (
-                          <span className="text-[10px] text-muted">
+                          <span className="text-[11px] text-muted">
                             {new Date(r.registeredAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}
                           </span>
                         )}
@@ -539,7 +539,7 @@ function LiveWorkshopsTab() {
                 key={w.liveWorkshopId}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
+                transition={{ delay: Math.min(i, 6) * 0.04 }}
                 className={`glass-card p-4 ${past_ ? "opacity-60" : ""}`}
               >
                 <div className="flex items-start gap-4">
@@ -573,7 +573,7 @@ function LiveWorkshopsTab() {
                       className="flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors"
                     >
                       <Users size={12} />
-                      <span className="font-medium">{spots}</span>
+                      <span className="font-medium tabular-nums">{spots}</span>
                       <Eye size={10} />
                     </button>
 
@@ -865,7 +865,7 @@ function RecordedWorkshopsTab() {
       ) : (
         <div className="space-y-3 max-h-[calc(100dvh-22rem)] overflow-y-auto pr-1">
           {workshops.map((workshop, index) => (
-            <motion.div key={workshop.workshopId} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }} className="glass-card p-5">
+            <motion.div key={workshop.workshopId} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index, 6) * 0.04 }} className="glass-card p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -1418,16 +1418,16 @@ function DevProjectDetailModal({ project, onClose, onMutate }: { project: DevPro
         <div className="flex items-start justify-between p-6 border-b border-border shrink-0 gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
                 {project.status}
               </span>
               {project.applicationsEnabled && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
                   {tr("Applications open", "التقديم مفتوح")}
                 </span>
               )}
               {project.isPublished === false && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-elevated text-muted border border-border">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-surface-elevated text-muted border border-border">
                   {tr("Draft", "مسودة")}
                 </span>
               )}
@@ -1479,7 +1479,7 @@ function DevProjectDetailModal({ project, onClose, onMutate }: { project: DevPro
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Tech stack", "التقنيات")}</p>
               <div className="flex flex-wrap gap-1.5">
                 {project.techStack.map((tech) => (
-                  <span key={tech} className="px-2 py-0.5 rounded-full text-[10px] bg-surface-elevated border border-border text-foreground/80">{tech}</span>
+                  <span key={tech} className="px-2 py-0.5 rounded-full text-[11px] bg-surface-elevated border border-border text-foreground/80">{tech}</span>
                 ))}
               </div>
             </div>
@@ -1549,7 +1549,7 @@ function DevProjectsPanel() {
             onClick={() => setSelectedId(project.projectId)}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
+            transition={{ delay: Math.min(i, 6) * 0.05 }}
             className="glass-card p-5 card-hover w-full text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40"
             aria-label={tr(`Open project ${project.title}`, `فتح مشروع ${project.title}`)}
           >

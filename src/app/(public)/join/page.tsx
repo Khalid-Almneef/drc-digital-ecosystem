@@ -251,7 +251,7 @@ export default function JoinPage() {
                 initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] as const }}
+                transition={{ duration: 0.5, delay: Math.min(i, 6) * 0.07, ease: [0.16, 1, 0.3, 1] as const }}
                 className="glass-card p-7 card-hover group"
               >
                 <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
@@ -289,7 +289,7 @@ export default function JoinPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] as const }}
+                transition={{ duration: 0.5, delay: Math.min(i, 6) * 0.08, ease: [0.16, 1, 0.3, 1] as const }}
                 className="glass-card p-7 group card-hover"
               >
                 <div className="flex items-start gap-4">
@@ -661,7 +661,7 @@ export default function JoinPage() {
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.4, delay: i * 0.06 }}
+                transition={{ duration: 0.4, delay: Math.min(i, 6) * 0.06 }}
                 className="glass-card p-6"
               >
                 <h4 className="text-sm font-semibold text-foreground flex items-start gap-3">

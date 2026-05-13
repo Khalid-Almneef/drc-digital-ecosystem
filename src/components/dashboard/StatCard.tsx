@@ -41,14 +41,14 @@ export function StatCard({ label, value, change, icon: Icon, color, tone, href, 
       <div className="mt-2 flex items-end justify-between gap-2">
         <p
           data-stat-value
-          className="text-2xl font-semibold tracking-[-0.02em] text-foreground sm:text-[1.6rem]"
+          className="text-2xl font-semibold tabular-nums tracking-[-0.02em] text-foreground sm:text-[1.6rem]"
         >
           {value}
         </p>
         <div className="flex items-center gap-1.5">
           {change && (
             <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                 change.startsWith("+") ? "bg-emerald-400/10 text-emerald-300" : "bg-red-400/10 text-red-300"
               }`}
             >

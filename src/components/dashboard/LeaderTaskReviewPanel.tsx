@@ -175,7 +175,7 @@ export function LeaderTaskReviewPanel({
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-foreground">{headerTitle}</h3>
-          <span className="text-[10px] text-muted">
+          <span className="text-[11px] text-muted">
             {tr(`${counts.review} pending`, `${counts.review} قيد المراجعة`)}
           </span>
         </div>
@@ -203,7 +203,7 @@ export function LeaderTaskReviewPanel({
                 key={t.taskId}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
+                transition={{ delay: Math.min(i, 6) * 0.04 }}
                 className="glass-card p-4 flex flex-col gap-4 sm:flex-row sm:items-center"
               >
                 {t.artifactUrl ? (
@@ -222,11 +222,11 @@ export function LeaderTaskReviewPanel({
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-foreground">{t.title}</span>
-                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${PRIORITY_TONE[t.priority]}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${PRIORITY_TONE[t.priority]}`}>
                       {tr(t.priority, t.priority)}
                     </span>
                     {t.creditHours > 0 ? (
-                      <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] text-emerald-300">
+                      <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[11px] text-emerald-300">
                         {tr(`${t.creditHours}h credit`, `${t.creditHours} ساعة`)}
                       </span>
                     ) : null}
@@ -234,7 +234,7 @@ export function LeaderTaskReviewPanel({
                   {t.artifactNotes ? (
                     <p className="text-xs text-muted mb-1 line-clamp-2">{t.artifactNotes}</p>
                   ) : null}
-                  <p className="text-[10px] text-muted">
+                  <p className="text-[11px] text-muted">
                     {tr("By", "بواسطة")}{" "}
                     <span className="text-foreground">{t.assigneeName ?? tr("Unknown", "غير معروف")}</span>
                     {t.submittedAt ? ` · ${tr("submitted", "أُرسل")} ${fmtDate(t.submittedAt, lang)}` : ""}
@@ -324,7 +324,7 @@ export function LeaderTaskReviewPanel({
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium text-foreground truncate">{t.title}</span>
-                      <span className={`rounded-full border px-2 py-0.5 text-[10px] ${STATUS_TONE[t.status]}`}>
+                      <span className={`rounded-full border px-2 py-0.5 text-[11px] ${STATUS_TONE[t.status]}`}>
                         {tr(t.status.replace("_", " "), t.status)}
                       </span>
                     </div>
@@ -335,7 +335,7 @@ export function LeaderTaskReviewPanel({
                     </p>
                   </div>
                   {t.status === "in_progress" || t.status === "todo" ? (
-                    <span className="text-[10px] text-muted inline-flex items-center gap-1">
+                    <span className="text-[11px] text-muted inline-flex items-center gap-1">
                       <Clock size={10} />
                       {tr("created", "أُنشئت")} {fmtDate(t.createdAt, lang)}
                     </span>

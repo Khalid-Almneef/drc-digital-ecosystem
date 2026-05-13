@@ -56,7 +56,7 @@ function PulseCard({ item, index, t }: { item: PulseItem; index: number; t: (key
       ref={ref}
       initial={{ opacity: 0.8, y: 16 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.8, y: 16 }}
-      transition={{ duration: 0.5, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, delay: Math.min(index, 6) * 0.05, ease: [0.16, 1, 0.3, 1] }}
       className="card-feature p-6"
     >
       <div className={`mb-4 h-1.5 w-full bg-gradient-to-r ${item.tone}`} />

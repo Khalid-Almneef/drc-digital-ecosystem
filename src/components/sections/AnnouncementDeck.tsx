@@ -105,7 +105,7 @@ function NewsCard({ item, index, lang, t }: { item: Announcement; index: number;
       ref={ref}
       initial={{ opacity: 0.8, y: 16 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.8, y: 16 }}
-      transition={{ duration: 0.5, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, delay: Math.min(index, 6) * 0.07, ease: [0.16, 1, 0.3, 1] }}
     >
       {(() => {
         const inner = (

@@ -304,7 +304,7 @@ export default function FinanceReportsPage() {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-base font-semibold text-foreground">{request.title}</h3>
-                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${STATUS_TONE[request.status]}`}>
+                        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${STATUS_TONE[request.status]}`}>
                           {request.status}
                         </span>
                       </div>
@@ -412,7 +412,7 @@ export default function FinanceReportsPage() {
                   <div key={entry.historyId} className="rounded-2xl border border-border bg-surface-elevated/50 p-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-sm font-semibold text-foreground">{entry.title}</h3>
-                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${STATUS_TONE[entry.toStatus]}`}>
+                      <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${STATUS_TONE[entry.toStatus]}`}>
                         {entry.fromStatus} to {entry.toStatus}
                       </span>
                     </div>

@@ -120,7 +120,7 @@ function MediaCard({ item, index, lang, t }: { item: MediaWallItem; index: numbe
       ref={ref}
       initial={{ opacity: 0.8, y: 14 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.8, y: 14 }}
-      transition={{ duration: 0.5, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, delay: Math.min(index, 6) * 0.05, ease: [0.16, 1, 0.3, 1] }}
     >
       {item.href ? (
         <Link href={item.href} className="glass-card group block overflow-hidden">

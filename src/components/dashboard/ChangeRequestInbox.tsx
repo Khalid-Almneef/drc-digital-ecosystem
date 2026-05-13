@@ -124,7 +124,7 @@ export function ChangeRequestInbox() {
                 key={row.requestId}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
+                transition={{ delay: Math.min(i, 6) * 0.03 }}
                 className="glass-card p-4 sm:p-5"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

@@ -310,10 +310,10 @@ export function DepartmentBudgetPanel({
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-sm font-semibold text-foreground">{request.title}</p>
-                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${STATUS_TONE[request.status]}`}>
+                          <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${STATUS_TONE[request.status]}`}>
                             {request.status}
                           </span>
-                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${PRIORITY_TONE[request.priority]}`}>
+                          <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${PRIORITY_TONE[request.priority]}`}>
                             {request.priority}
                           </span>
                         </div>

@@ -403,7 +403,7 @@ export default function LeadersDashboard() {
                   key={card.department.slug}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
+                  transition={{ delay: Math.min(index, 6) * 0.03 }}
                   className="glass-card p-5"
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -565,7 +565,7 @@ export default function LeadersDashboard() {
                   key={announcement.announcementId}
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.03 }}
+                  transition={{ delay: Math.min(index, 6) * 0.03 }}
                   className="glass-card p-3"
                 >
                   <div className="flex items-start gap-2">
@@ -576,13 +576,13 @@ export default function LeadersDashboard() {
                     <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: PRIORITY_COLORS[announcement.priority] }} />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-foreground">{announcement.title}</p>
-                      {announcement.body && <p className="mt-0.5 line-clamp-2 text-[10px] text-muted">{announcement.body}</p>}
+                      {announcement.body && <p className="mt-0.5 line-clamp-2 text-[11px] text-muted">{announcement.body}</p>}
                       {announcement.linkUrl && (
-                        <a href={toExternalUrl(announcement.linkUrl)} target="_blank" rel="noreferrer" className="mt-0.5 inline-block text-[10px] text-primary hover:underline">
+                        <a href={toExternalUrl(announcement.linkUrl)} target="_blank" rel="noreferrer" className="mt-0.5 inline-block text-[11px] text-primary hover:underline">
                           {tr("Open link", "فتح الرابط")} ↗
                         </a>
                       )}
-                      <p className="mt-0.5 text-[10px] text-muted/60">
+                      <p className="mt-0.5 text-[11px] text-muted/60">
                         <MemberLink memberId={announcement.authorId} name={announcement.authorName ?? tr("Unknown", "غير معروف")} underline={false} className="text-muted/60" />
                         {" · "}
                         {fmtDate(announcement.createdAt)}
@@ -638,7 +638,7 @@ export default function LeadersDashboard() {
                 {latestContentUpdates.map((row) => (
                   <div key={row.key} className="rounded-xl border border-border bg-surface-elevated/35 px-3 py-2">
                     <p className="text-xs font-medium text-foreground">{row.key}</p>
-                    <p className="mt-0.5 text-[10px] text-muted">{row.updatedAt ? fmtDate(row.updatedAt) : "No date"}</p>
+                    <p className="mt-0.5 text-[11px] text-muted">{row.updatedAt ? fmtDate(row.updatedAt) : "No date"}</p>
                   </div>
                 ))}
               </div>

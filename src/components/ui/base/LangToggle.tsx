@@ -30,7 +30,7 @@ export function LangToggle({ showLabel = false, collapsed = false }: LangToggleP
           <span className="flex-1 text-left">
             {lang === "en" ? "Language" : "اللغة"}
           </span>
-          <span className="rounded-md border border-border px-1.5 py-0.5 text-[10px] font-bold text-foreground">
+          <span className="rounded-md border border-border px-1.5 py-0.5 text-[11px] font-bold text-foreground">
             {lang === "en" ? "AR" : "EN"}
           </span>
         </>
@@ -44,7 +44,7 @@ export function LangToggle({ showLabel = false, collapsed = false }: LangToggleP
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            className="text-[10px] font-bold"
+            className="text-[11px] font-bold"
           >
             {lang === "en" ? "ع" : "EN"}
           </motion.span>

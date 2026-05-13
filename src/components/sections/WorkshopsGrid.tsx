@@ -69,7 +69,7 @@ function WorkshopCard({ workshop, index, lang, t }: { workshop: Workshop; index:
       ref={ref}
       initial={{ opacity: 0.8, y: 18 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.8, y: 18 }}
-      transition={{ duration: 0.55, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.55, delay: Math.min(index, 6) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       style={{ "--card-accent": accent } as CSSProperties}
       className="card-feature card-accent-top overflow-hidden group"
     >

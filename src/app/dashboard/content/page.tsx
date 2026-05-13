@@ -927,7 +927,7 @@ function CollectionLivePreview({
                   {!!pills.length && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {pills.map((pill) => (
-                        <span key={pill} className="rounded-full border border-border bg-surface-elevated px-2.5 py-1 text-[10px] text-muted">
+                        <span key={pill} className="rounded-full border border-border bg-surface-elevated px-2.5 py-1 text-[11px] text-muted">
                           {pill}
                         </span>
                       ))}
@@ -987,7 +987,7 @@ function CollectionLivePreview({
               {!!pills.length && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {pills.map((pill) => (
-                    <span key={pill} className="rounded-full border border-border bg-surface-elevated px-2.5 py-1 text-[10px] text-muted">
+                    <span key={pill} className="rounded-full border border-border bg-surface-elevated px-2.5 py-1 text-[11px] text-muted">
                       {pill}
                     </span>
                   ))}
@@ -1264,11 +1264,11 @@ function CollectionEditorModal({
                         </div>
                         <div className="flex items-center gap-2">
                           {dragOverIndex === index && dragIndex !== null && dragIndex !== index && (
-                            <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
+                            <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
                               {tr("Drop", "أفلت هنا")}
                             </span>
                           )}
-                          <span className="rounded-full border border-border bg-surface-elevated px-2 py-0.5 text-[10px] text-muted">
+                          <span className="rounded-full border border-border bg-surface-elevated px-2 py-0.5 text-[11px] text-muted">
                             {index + 1}
                           </span>
                         </div>

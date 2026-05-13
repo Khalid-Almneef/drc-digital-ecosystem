@@ -292,14 +292,14 @@ export function MemberPerformancePanel({
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={row.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
-                      <span className="text-[10px] font-semibold text-primary">{initials}</span>
+                      <span className="text-[11px] font-semibold text-primary">{initials}</span>
                     )}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
                       {lang === "ar" ? (row.fullNameAr || row.fullName || "—") : (row.fullName || row.fullNameAr || "—")}
                     </p>
-                    <p className="text-[10px] text-muted truncate">
+                    <p className="text-[11px] text-muted truncate">
                       {tr(POSITION_LABELS[row.position]?.[0] ?? row.position, POSITION_LABELS[row.position]?.[1] ?? row.position)}
                     </p>
                   </div>
@@ -308,14 +308,14 @@ export function MemberPerformancePanel({
                 <div className="flex flex-col">
                   <p className="text-sm font-semibold text-foreground">{row.hoursApproved.toFixed(0)}h</p>
                   {row.hoursPending > 0 ? (
-                    <p className="text-[10px] text-amber-300">+{row.hoursPending.toFixed(0)}h {tr("pending", "معلقة")}</p>
+                    <p className="text-[11px] text-amber-300">+{row.hoursPending.toFixed(0)}h {tr("pending", "معلقة")}</p>
                   ) : null}
                 </div>
 
                 <div className="flex flex-col">
                   <p className="text-sm font-semibold text-foreground">{row.tasksDone}<span className="text-muted text-xs">/{row.tasksAssigned}</span></p>
                   {row.tasksInReview > 0 ? (
-                    <p className="text-[10px] text-amber-300">{row.tasksInReview} {tr("in review", "قيد المراجعة")}</p>
+                    <p className="text-[11px] text-amber-300">{row.tasksInReview} {tr("in review", "قيد المراجعة")}</p>
                   ) : null}
                 </div>
 

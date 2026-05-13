@@ -140,7 +140,7 @@ export default function EventsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
-                  transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] as const }}
+                  transition={{ duration: 0.5, delay: Math.min(i, 6) * 0.08, ease: [0.16, 1, 0.3, 1] as const }}
                   role="button"
                   tabIndex={0}
                   onClick={() => setSelectedEvent(event)}
@@ -272,7 +272,7 @@ export default function EventsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-60px" }}
-                    transition={{ duration: 0.5, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] as const }}
+                    transition={{ duration: 0.5, delay: Math.min(i, 6) * 0.06, ease: [0.16, 1, 0.3, 1] as const }}
                     role="button"
                     tabIndex={0}
                     onClick={() => setSelectedEvent(event)}
