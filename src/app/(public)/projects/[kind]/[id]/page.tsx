@@ -3,13 +3,11 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowUpRight,
   CalendarDays,
   GitBranch,
-  Link2,
   MapPin,
   Trophy,
   Users,
@@ -90,57 +88,6 @@ function formatDateRange(startTime: string, endTime: string | null, lang: "en" |
   const startClock = start.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
   const endClock = end ? end.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" }) : null;
   return endClock ? `${date} · ${startClock} - ${endClock}` : `${date} · ${startClock}`;
-}
-
-function MemberDialog({
-  member,
-  onClose,
-}: {
-  member: Contributor;
-  onClose: () => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 18, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 18, scale: 0.96 }}
-        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md rounded-[1.2rem] border border-border bg-surface p-5 shadow-[0_24px_80px_rgba(0,0,0,0.38)]"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/70">
-          Team Member
-        </p>
-        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-foreground">
-          {firstAndLastName(member.fullName)}
-        </h2>
-        {member.bio ? (
-          <p className="mt-4 text-sm leading-7 text-muted">{member.bio}</p>
-        ) : (
-          <p className="mt-4 text-sm leading-7 text-muted">No public profile summary available yet.</p>
-        )}
-        {member.linkedinUrl ? (
-          <a
-            href={toExternalUrl(member.linkedinUrl)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-4 py-2 text-sm text-primary transition-colors hover:border-primary/35 hover:text-primary-bright"
-          >
-            <Link2 size={14} />
-            LinkedIn
-            <ArrowUpRight size={13} />
-          </a>
-        ) : null}
-      </motion.div>
-    </motion.div>
-  );
 }
 
 function ProjectApplicationPanel({
@@ -255,7 +202,6 @@ export default function ArchiveDetailPage() {
   const [project, setProject] = useState<ProjectItem | null>(null);
   const [eventItem, setEventItem] = useState<EventItem | null>(null);
   const [config, setConfig] = useState<ArchiveConfig>(normalizeArchiveConfig(null));
-  const [selectedMember, setSelectedMember] = useState<Contributor | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -441,15 +387,19 @@ export default function ArchiveDetailPage() {
                   {project.contributors.length > 0 ? (
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       {project.contributors.map((member) => (
-                        <button
+                        <Link
                           key={member.memberId}
-                          type="button"
-                          onClick={() => setSelectedMember(member)}
-                          className="rounded-[1.2rem] border border-border bg-surface/50 p-4 text-left transition-colors hover:border-primary/20 hover:bg-surface-elevated"
+                          href={`/team/${member.memberId}`}
+                          className="group rounded-[1.2rem] border border-border bg-surface/50 p-4 text-left transition-colors hover:border-primary/20 hover:bg-surface-elevated"
                         >
-                          <p className="text-sm font-semibold text-foreground">{firstAndLastName(member.fullName)}</p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-primary/70">{member.role}</p>
-                        </button>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground">{firstAndLastName(member.fullName)}</p>
+                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-primary/70">{member.role}</p>
+                            </div>
+                            <ArrowUpRight size={14} className="mt-0.5 shrink-0 text-muted transition-colors group-hover:text-primary" />
+                          </div>
+                        </Link>
                       ))}
                     </div>
                   ) : (
@@ -537,10 +487,6 @@ export default function ArchiveDetailPage() {
           </aside>
         </div>
       </div>
-
-      <AnimatePresence>
-        {selectedMember ? <MemberDialog member={selectedMember} onClose={() => setSelectedMember(null)} /> : null}
-      </AnimatePresence>
     </div>
   );
 }

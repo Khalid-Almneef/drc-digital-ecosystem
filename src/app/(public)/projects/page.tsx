@@ -185,7 +185,6 @@ function ArchiveCollection({
   const filters: Array<{ key: ArchiveFilter; label: string }> = [
     { key: "all", label: t("projects.filter.all") },
     { key: "projects", label: t("projects.section.projects.title") },
-    { key: "events", label: t("projects.section.events.title") },
     { key: "competitions", label: t("projects.section.competitions.title") },
   ];
   const title =
@@ -315,9 +314,9 @@ export default function ProjectsPage() {
   }, [config, events]);
 
   const allCards = useMemo(() => {
-    const combined = [...projectCards, ...eventCards.events, ...eventCards.competitions];
+    const combined = [...projectCards, ...eventCards.competitions];
     return combined.sort(sectionNaturalSort);
-  }, [eventCards.competitions, eventCards.events, projectCards]);
+  }, [eventCards.competitions, projectCards]);
 
   const visibleCards = useMemo(() => {
     if (activeFilter === "all") return allCards;
