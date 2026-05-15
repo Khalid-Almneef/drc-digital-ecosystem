@@ -2,8 +2,82 @@ import { z } from "zod";
 import { err, handle, ok, parseBody } from "@/lib/api";
 import { query, queryOne } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { getMockStore, isMockMode, nextMockId } from "@/lib/mock-store";
+import { departmentById, findMockMember, getMockStore, isMockMode, nextMockId } from "@/lib/mock-store";
 import { emitNotification } from "@/lib/notifications";
+
+export const GET = handle(async (_req, ctx) => {
+  await requireSession();
+  const { id } = await ctx.params;
+  const taskId = Number(id);
+  if (!Number.isFinite(taskId)) return err(400, "Invalid task id");
+
+  if (isMockMode()) {
+    const store = getMockStore();
+    const task = store.tasks.find((t) => t.taskId === taskId);
+    if (!task) return err(404, "Task not found");
+    const assignee = task.assignedTo ? findMockMember(task.assignedTo) : null;
+    const creator = task.createdBy ? findMockMember(task.createdBy) : null;
+    const project = task.projectId ? store.projects.find((p) => p.projectId === task.projectId) : null;
+    return ok({
+      taskId: task.taskId,
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      assignedTo: task.assignedTo,
+      assigneeName: assignee?.fullName ?? null,
+      assigneeAvatar: assignee?.avatarUrl ?? null,
+      createdBy: task.createdBy,
+      creatorName: creator?.fullName ?? null,
+      dueDate: task.dueDate,
+      artifactUrl: task.artifactUrl,
+      artifactNotes: task.artifactNotes,
+      submittedAt: task.submittedAt,
+      creditHours: task.creditHours,
+      completedAt: task.completedAt,
+      createdAt: task.createdAt,
+      projectId: task.projectId,
+      projectTitle: project?.title ?? null,
+      departmentId: task.departmentId,
+      departmentSlug: departmentById(task.departmentId)?.slug ?? null,
+      departmentName: departmentById(task.departmentId)?.name ?? null,
+    });
+  }
+
+  const row = await queryOne(
+    `SELECT t.task_id AS "taskId",
+            t.title,
+            t.description,
+            t.status::text AS status,
+            t.priority::text AS priority,
+            t.assigned_to AS "assignedTo",
+            ap.full_name AS "assigneeName",
+            ap.avatar_url AS "assigneeAvatar",
+            t.created_by AS "createdBy",
+            cp.full_name AS "creatorName",
+            t.due_date AS "dueDate",
+            t.artifact_url AS "artifactUrl",
+            t.artifact_notes AS "artifactNotes",
+            t.submitted_at AS "submittedAt",
+            t.credit_hours AS "creditHours",
+            t.completed_at AS "completedAt",
+            t.created_at AS "createdAt",
+            t.project_id AS "projectId",
+            p.title AS "projectTitle",
+            t.department_id AS "departmentId",
+            d.slug::text AS "departmentSlug",
+            d.name AS "departmentName"
+       FROM tasks t
+       LEFT JOIN projects    p  ON p.project_id   = t.project_id
+       LEFT JOIN departments d  ON d.department_id = t.department_id
+       LEFT JOIN profiles    ap ON ap.member_id   = t.assigned_to
+       LEFT JOIN profiles    cp ON cp.member_id   = t.created_by
+      WHERE t.task_id = $1`,
+    [taskId],
+  );
+  if (!row) return err(404, "Task not found");
+  return ok(row);
+});
 
 const Patch = z.object({
   title: z.string().optional(),
@@ -18,10 +92,15 @@ const Patch = z.object({
   departmentId: z.number().int().nullable().optional(),
 });
 
-function canManageTask(session: { position: string; departmentId: number | null }, taskDepartmentId: number | null) {
+function canManageTask(
+  session: { position: string; departmentId: number | null; memberId: number },
+  task: { departmentId: number | null; createdBy: number | null },
+) {
   if (session.position === "president" || session.position === "vice_president") return true;
-  if (!taskDepartmentId || session.departmentId !== taskDepartmentId) return false;
-  return ["dept_leader", "dept_vice_leader", "sub_leader"].includes(session.position);
+  const isLeader = ["dept_leader", "dept_vice_leader", "sub_leader"].includes(session.position);
+  if (!isLeader) return false;
+  if (task.createdBy === session.memberId) return true;
+  return task.departmentId != null && session.departmentId === task.departmentId;
 }
 
 function isMemberSubmissionPatch(body: z.infer<typeof Patch>) {
@@ -39,7 +118,7 @@ export const PATCH = handle(async (req, ctx) => {
     const store = getMockStore();
     const task = store.tasks.find((t) => t.taskId === Number(id));
     if (!task) return ok({ success: true });
-    const isManager = canManageTask(s, task.departmentId);
+    const isManager = canManageTask(s, { departmentId: task.departmentId, createdBy: task.createdBy });
     const isAssignee = task.assignedTo === s.memberId;
     if (!isManager && !(isAssignee && isMemberSubmissionPatch(b))) {
       return err(403, "Only the assigned member or committee leaders can update this task");
@@ -115,12 +194,13 @@ export const PATCH = handle(async (req, ctx) => {
     }
     return ok({ success: true });
   }
-  const existing = await queryOne<{ assignedTo: number | null; departmentId: number | null }>(
-    `SELECT assigned_to AS "assignedTo", department_id AS "departmentId" FROM tasks WHERE task_id = $1`,
+  const existing = await queryOne<{ assignedTo: number | null; departmentId: number | null; createdBy: number | null }>(
+    `SELECT assigned_to AS "assignedTo", department_id AS "departmentId", created_by AS "createdBy"
+       FROM tasks WHERE task_id = $1`,
     [id],
   );
   if (!existing) return ok({ success: true });
-  const isManager = canManageTask(s, existing.departmentId);
+  const isManager = canManageTask(s, { departmentId: existing.departmentId, createdBy: existing.createdBy });
   const isAssignee = existing.assignedTo === s.memberId;
   if (!isManager && !(isAssignee && isMemberSubmissionPatch(b))) {
     return err(403, "Only the assigned member or committee leaders can update this task");
@@ -182,17 +262,17 @@ export const DELETE = handle(async (_req, ctx) => {
   if (isMockMode()) {
     const store = getMockStore();
     const task = store.tasks.find((t) => t.taskId === Number(id));
-    if (task && !canManageTask(s, task.departmentId)) {
+    if (task && !canManageTask(s, { departmentId: task.departmentId, createdBy: task.createdBy })) {
       return err(403, "Only committee leaders can delete tasks");
     }
     store.tasks = store.tasks.filter((t) => t.taskId !== Number(id));
     return ok({ success: true });
   }
-  const existing = await queryOne<{ departmentId: number | null }>(
-    `SELECT department_id AS "departmentId" FROM tasks WHERE task_id = $1`,
+  const existing = await queryOne<{ departmentId: number | null; createdBy: number | null }>(
+    `SELECT department_id AS "departmentId", created_by AS "createdBy" FROM tasks WHERE task_id = $1`,
     [id],
   );
-  if (existing && !canManageTask(s, existing.departmentId)) {
+  if (existing && !canManageTask(s, { departmentId: existing.departmentId, createdBy: existing.createdBy })) {
     return err(403, "Only committee leaders can delete tasks");
   }
   await query(`DELETE FROM tasks WHERE task_id = $1`, [id]);

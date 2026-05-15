@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { err, handle, ok, parseBody } from "@/lib/api";
-import { query } from "@/lib/db";
+import { query, queryOne } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { getMockStore, isMockMode } from "@/lib/mock-store";
+import { departmentById, getMockStore, isMockMode } from "@/lib/mock-store";
 
 const Patch = z.object({
   title: z.string().min(1).optional(),
@@ -21,6 +21,46 @@ function canManage(session: Awaited<ReturnType<typeof requireSession>>) {
   const isHr = (session.position === "dept_leader" || session.position === "dept_vice_leader") && session.departmentSlug === "hr";
   return isAdmin || isHr;
 }
+
+export const GET = handle(async (_req, ctx) => {
+  await requireSession();
+  const { id } = await ctx.params;
+  const opportunityId = Number(id);
+  if (!Number.isFinite(opportunityId)) return err(400, "Invalid task id");
+
+  if (isMockMode()) {
+    const task = getMockStore().volunteerHourTasks.find((entry) => entry.opportunityId === opportunityId);
+    if (!task) return err(404, "Volunteer hour task not found");
+    const department = task.assignedDepartmentId ? departmentById(task.assignedDepartmentId) : null;
+    return ok({
+      ...task,
+      assignedDepartmentSlug: department?.slug ?? null,
+      assignedDepartmentName: department?.name ?? null,
+    });
+  }
+
+  const row = await queryOne(
+    `SELECT t.opportunity_id AS "opportunityId",
+            t.title,
+            t.description,
+            t.hours,
+            t.participation_date AS "participationDate",
+            t.is_active AS "isActive",
+            t.is_repetitive AS "isRepetitive",
+            t.assigned_department_id AS "assignedDepartmentId",
+            d.slug::text AS "assignedDepartmentSlug",
+            d.name AS "assignedDepartmentName",
+            t.created_by AS "createdBy",
+            t.created_at AS "createdAt",
+            t.updated_at AS "updatedAt"
+       FROM volunteer_hour_tasks t
+       LEFT JOIN departments d ON d.department_id = t.assigned_department_id
+      WHERE t.opportunity_id = $1`,
+    [opportunityId],
+  );
+  if (!row) return err(404, "Volunteer hour task not found");
+  return ok(row);
+});
 
 export const PATCH = handle(async (req, ctx) => {
   const session = await requireSession();
@@ -80,6 +120,29 @@ export const PATCH = handle(async (req, ctx) => {
         SET ${sets.join(", ")}, updated_at = NOW()
       WHERE opportunity_id = $${params.length}`,
     params,
+  );
+  if (result.rowCount === 0) return err(404, "Volunteer hour task not found");
+  return ok({ success: true });
+});
+
+export const DELETE = handle(async (_req, ctx) => {
+  const session = await requireSession();
+  if (!canManage(session)) return err(403, "Forbidden");
+  const { id } = await ctx.params;
+  const opportunityId = Number(id);
+  if (!Number.isFinite(opportunityId)) return err(400, "Invalid task id");
+
+  if (isMockMode()) {
+    const store = getMockStore();
+    const target = store.volunteerHourTasks.find((entry) => entry.opportunityId === opportunityId);
+    if (!target) return err(404, "Volunteer hour task not found");
+    store.volunteerHourTasks = store.volunteerHourTasks.filter((entry) => entry.opportunityId !== opportunityId);
+    return ok({ success: true });
+  }
+
+  const result = await query(
+    `DELETE FROM volunteer_hour_tasks WHERE opportunity_id = $1`,
+    [opportunityId],
   );
   if (result.rowCount === 0) return err(404, "Volunteer hour task not found");
   return ok({ success: true });

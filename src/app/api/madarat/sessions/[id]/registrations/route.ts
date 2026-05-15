@@ -32,7 +32,8 @@ export const GET = handle(async (_req, ctx) => {
             msr.phone,
             msr.department,
             msr.notes,
-            msr.registered_at AS "registeredAt"
+            msr.registered_at AS "registeredAt",
+            msr.attended AS "attended"
        FROM madarat_session_registrations msr
        LEFT JOIN users ureg ON LOWER(ureg.email) = LOWER(msr.email)
        LEFT JOIN profiles preg ON preg.member_id = ureg.member_id
@@ -83,6 +84,7 @@ export const POST = handle(async (req, ctx) => {
       department: body.department || null,
       notes: body.notes || null,
       registeredAt: new Date().toISOString(),
+      attended: false,
     });
     return ok({ success: true }, { status: 201 });
   }

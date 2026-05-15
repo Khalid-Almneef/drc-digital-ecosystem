@@ -14,7 +14,9 @@ import {
   ChevronDown, ChevronUp, Check, X, Save, ExternalLink,
   ThumbsUp, ThumbsDown, Shield, CalendarDays, Megaphone,
   Mail, Plus, Download, Upload, FileSpreadsheet, AlertTriangle,
+  Pencil, Trash2,
 } from "lucide-react";
+import Link from "next/link";
 import { api } from "@/lib/client";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { MotmLeaderboardPanel } from "@/components/dashboard/MotmLeaderboardPanel";
@@ -231,6 +233,8 @@ export default function HRDashboard() {
     isRepetitive: false,
     assignedDepartmentId: "" as "" | string,
   });
+  const [editingHourTaskId, setEditingHourTaskId] = useState<number | null>(null);
+  const [deletingHourTaskId, setDeletingHourTaskId] = useState<number | null>(null);
   const { data: departmentOptions = [] } = useApi<DepartmentOption[]>("/api/departments");
 
   // Hours review — accept-with-adjustment modal
@@ -429,11 +433,22 @@ export default function HRDashboard() {
   // Clear selection whenever the filter changes — selected ids may not be visible anymore.
   useEffect(() => { setBulkSelected(new Set()); }, [hoursFilter]);
 
-  async function createHourTask() {
+  function resetHourTaskForm() {
+    setHourTaskForm({
+      title: "",
+      description: "",
+      hours: "",
+      participationDate: new Date().toISOString().slice(0, 10),
+      isRepetitive: false,
+      assignedDepartmentId: "",
+    });
+  }
+
+  async function submitHourTask() {
     if (!hourTaskForm.title.trim() || !hourTaskForm.hours || !hourTaskForm.participationDate) return;
     setHourTaskSaving(true);
     try {
-      await api.post("/api/volunteer-hour-tasks", {
+      const payload = {
         title: hourTaskForm.title.trim(),
         description: hourTaskForm.description.trim() || undefined,
         hours: Number(hourTaskForm.hours),
@@ -442,21 +457,59 @@ export default function HRDashboard() {
         assignedDepartmentId: hourTaskForm.assignedDepartmentId
           ? Number(hourTaskForm.assignedDepartmentId)
           : null,
-      });
-      setHourTaskForm({
-        title: "",
-        description: "",
-        hours: "",
-        participationDate: new Date().toISOString().slice(0, 10),
-        isRepetitive: false,
-        assignedDepartmentId: "",
-      });
-      toast.success(tr("Hour task created", "تم إنشاء المهمة"));
+      };
+      if (editingHourTaskId == null) {
+        await api.post("/api/volunteer-hour-tasks", payload);
+        toast.success(tr("Hour task created", "تم إنشاء المهمة"));
+      } else {
+        await api.patch(`/api/volunteer-hour-tasks/${editingHourTaskId}`, payload);
+        toast.success(tr("Hour task updated", "تم تحديث المهمة"));
+      }
+      resetHourTaskForm();
+      setEditingHourTaskId(null);
       loadHourTasks();
     } catch {
-      toast.error(tr("Create failed. Please try again.", "فشل الإنشاء. حاول مرة أخرى."));
+      toast.error(tr("Save failed. Please try again.", "فشل الحفظ. حاول مرة أخرى."));
     } finally {
       setHourTaskSaving(false);
+    }
+  }
+
+  function startEditHourTask(task: VolunteerHourTaskRow) {
+    setEditingHourTaskId(task.opportunityId);
+    setHourTaskForm({
+      title: task.title,
+      description: task.description ?? "",
+      hours: String(task.hours),
+      participationDate: task.participationDate.slice(0, 10),
+      isRepetitive: task.isRepetitive,
+      assignedDepartmentId: task.assignedDepartmentId ? String(task.assignedDepartmentId) : "",
+    });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  function cancelEditHourTask() {
+    setEditingHourTaskId(null);
+    resetHourTaskForm();
+  }
+
+  async function deleteHourTask(task: VolunteerHourTaskRow) {
+    const confirmMsg = lang === "ar"
+      ? `هل تريد حذف المهمة "${task.title}"؟ لا يمكن التراجع.`
+      : `Delete hour task "${task.title}"? This cannot be undone.`;
+    if (!window.confirm(confirmMsg)) return;
+    setDeletingHourTaskId(task.opportunityId);
+    try {
+      await api.delete(`/api/volunteer-hour-tasks/${task.opportunityId}`);
+      if (editingHourTaskId === task.opportunityId) cancelEditHourTask();
+      loadHourTasks();
+      toast.success(tr("Hour task deleted", "تم حذف المهمة"));
+    } catch {
+      toast.error(tr("Delete failed. Please try again.", "فشل الحذف. حاول مرة أخرى."));
+    } finally {
+      setDeletingHourTaskId(null);
     }
   }
 
@@ -1226,7 +1279,18 @@ export default function HRDashboard() {
           </div>
 
           <div className="panel-soft mb-5 p-5">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-4">{tr("Create Hour Task", "إنشاء مهمة ساعات")}</h4>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                {editingHourTaskId != null
+                  ? tr("Edit Hour Task", "تعديل مهمة الساعات")
+                  : tr("Create Hour Task", "إنشاء مهمة ساعات")}
+              </h4>
+              {editingHourTaskId != null && (
+                <button onClick={cancelEditHourTask} className="btn-secondary px-3 py-1.5 text-xs">
+                  {tr("Cancel edit", "إلغاء التعديل")}
+                </button>
+              )}
+            </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Title", "العنوان")}</label>
@@ -1303,12 +1367,12 @@ export default function HRDashboard() {
 
             <div className="mt-4">
               <button
-                onClick={createHourTask}
+                onClick={submitHourTask}
                 disabled={hourTaskSaving}
                 className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5"
               >
-                {hourTaskSaving ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
-                {tr("Create Task", "إنشاء المهمة")}
+                {hourTaskSaving ? <Loader2 size={11} className="animate-spin" /> : editingHourTaskId != null ? <Pencil size={11} /> : <Save size={11} />}
+                {editingHourTaskId != null ? tr("Save changes", "حفظ التغييرات") : tr("Create Task", "إنشاء المهمة")}
               </button>
             </div>
           </div>
@@ -1353,7 +1417,31 @@ export default function HRDashboard() {
                     </p>
                     {task.description && <p className="mt-2 text-sm text-muted max-w-2xl">{task.description}</p>}
                   </div>
-                  <div className="flex items-end gap-3">
+                  <div className="flex flex-wrap items-end gap-2">
+                    <Link
+                      href={`/dashboard/hr/hour-tasks/${task.opportunityId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary inline-flex items-center justify-center px-2.5 py-2"
+                      title={tr("Open in new tab", "فتح في نافذة جديدة")}
+                    >
+                      <ExternalLink size={12} />
+                    </Link>
+                    <button
+                      onClick={() => startEditHourTask(task)}
+                      className="btn-secondary inline-flex items-center justify-center px-2.5 py-2"
+                      title={tr("Edit task", "تعديل المهمة")}
+                    >
+                      <Pencil size={12} />
+                    </button>
+                    <button
+                      onClick={() => deleteHourTask(task)}
+                      disabled={deletingHourTaskId === task.opportunityId}
+                      className="btn-secondary inline-flex items-center justify-center px-2.5 py-2 text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+                      title={tr("Delete task", "حذف المهمة")}
+                    >
+                      {deletingHourTaskId === task.opportunityId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                    </button>
                     <button
                       onClick={() => toggleHourTask(task.opportunityId, task.isActive)}
                       disabled={togglingHourTaskId === task.opportunityId}

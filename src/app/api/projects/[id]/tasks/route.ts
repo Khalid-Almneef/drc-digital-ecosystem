@@ -47,7 +47,8 @@ export const GET = handle(async (_req, ctx) => {
   const { rows } = await query(
     `SELECT t.task_id AS "taskId", t.title, t.description, t.status::text AS status,
             t.priority::text AS priority, t.due_date AS "dueDate",
-            t.assigned_to AS "assignedTo", p.full_name AS "assigneeName"
+            t.assigned_to AS "assignedTo", p.full_name AS "assigneeName",
+            t.credit_hours AS "creditHours"
        FROM tasks t
        LEFT JOIN profiles p ON p.member_id = t.assigned_to
       WHERE t.project_id = $1 ORDER BY t.created_at DESC`,

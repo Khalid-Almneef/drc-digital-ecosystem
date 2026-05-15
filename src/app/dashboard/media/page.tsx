@@ -16,10 +16,11 @@ import {
   HomeHeroBannerItem,
   parseCollection,
 } from "@/lib/public-content";
+import Link from "next/link";
 import {
   Camera, Eye, Video, Plus, Trash2, Check, Loader2,
   Upload, Copy, ExternalLink, Send, RotateCcw, Image as ImageIcon,
-  Save, Users, Inbox, Library, Settings, Briefcase,
+  Save, Users, Inbox, Library, Settings, Briefcase, Pencil, X,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -321,6 +322,7 @@ export default function MediaDashboard() {
   const [newCredits, setNewCredits] = useState("");
   const [taskSaving, setTaskSaving] = useState(false);
   const [deletingTask, setDeletingTask] = useState<number | null>(null);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
   // ── Social ──
   const { data: handlesData, mutate: loadHandles } = useApi<{ json: SocialHandles | null }>("/api/site-content/social.handles");
@@ -486,26 +488,62 @@ export default function MediaDashboard() {
     }
   }
 
-  // ─── Create task ──────────────────────────────────────────────────────────
+  // ─── Create / edit task ───────────────────────────────────────────────────
 
-  async function createTask() {
+  function resetTaskForm() {
+    setNewTitle(""); setNewDesc(""); setNewAssignee(""); setNewDue("");
+    setNewPriority("medium"); setNewCredits("");
+  }
+
+  function startEditTask(task: Task) {
+    setEditingTaskId(task.taskId);
+    setNewTitle(task.title);
+    setNewDesc(task.description ?? "");
+    setNewAssignee(task.assignedTo ?? "");
+    setNewDue(task.dueDate ? task.dueDate.slice(0, 10) : "");
+    setNewPriority(task.priority);
+    setNewCredits(task.creditHours ? String(task.creditHours) : "");
+    setShowCreate(true);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelEditTask() {
+    setEditingTaskId(null);
+    resetTaskForm();
+    setShowCreate(false);
+  }
+
+  async function submitTask() {
     if (!newTitle.trim()) return;
     setTaskSaving(true);
     try {
-      await api.post("/api/tasks", {
-        title: newTitle.trim(),
-        description: newDesc.trim() || undefined,
-        assignedTo: newAssignee || undefined,
-        dueDate: newDue || undefined,
-        priority: newPriority,
-        creditHours: newCredits ? Number(newCredits) : undefined,
-      });
-      setNewTitle(""); setNewDesc(""); setNewAssignee(""); setNewDue("");
-      setNewPriority("medium"); setNewCredits(""); setShowCreate(false);
-      toast.success(tr("Task created", "تم إنشاء المهمة"));
+      if (editingTaskId == null) {
+        await api.post("/api/tasks", {
+          title: newTitle.trim(),
+          description: newDesc.trim() || undefined,
+          assignedTo: newAssignee || undefined,
+          dueDate: newDue || undefined,
+          priority: newPriority,
+          creditHours: newCredits ? Number(newCredits) : undefined,
+        });
+        toast.success(tr("Task created", "تم إنشاء المهمة"));
+      } else {
+        await api.patch(`/api/tasks/${editingTaskId}`, {
+          title: newTitle.trim(),
+          description: newDesc.trim() || "",
+          assignedTo: newAssignee === "" ? null : Number(newAssignee),
+          dueDate: newDue || null,
+          priority: newPriority,
+          creditHours: newCredits ? Number(newCredits) : 0,
+        });
+        toast.success(tr("Task updated", "تم تحديث المهمة"));
+      }
+      resetTaskForm();
+      setEditingTaskId(null);
+      setShowCreate(false);
       loadTasks();
     } catch {
-      toast.error(tr("Create failed. Please try again.", "فشل الإنشاء. حاول مرة أخرى."));
+      toast.error(tr("Save failed. Please try again.", "فشل الحفظ. حاول مرة أخرى."));
     } finally { setTaskSaving(false); }
   }
 
@@ -895,9 +933,15 @@ export default function MediaDashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs text-muted">Create and track work assigned to media members.</p>
-            <button onClick={() => setShowCreate((v) => !v)} className="btn-primary px-3 py-1.5 text-xs inline-flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                if (editingTaskId != null) cancelEditTask();
+                else setShowCreate((v) => !v);
+              }}
+              className="btn-primary px-3 py-1.5 text-xs inline-flex items-center gap-1.5"
+            >
               <Plus size={12} />
-              New Task
+              {editingTaskId != null ? tr("Cancel edit", "إلغاء التعديل") : tr("New Task", "مهمة جديدة")}
             </button>
           </div>
 
@@ -931,12 +975,12 @@ export default function MediaDashboard() {
                     className="text-xs bg-surface-elevated border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50" />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={createTask} disabled={taskSaving || !newTitle.trim()}
+                  <button onClick={submitTask} disabled={taskSaving || !newTitle.trim()}
                     className="btn-primary px-3 py-1.5 text-xs flex-1 inline-flex items-center justify-center gap-1.5">
                     {taskSaving && <Loader2 size={11} className="animate-spin" />}
-                    {tr("Create", "إنشاء")}
+                    {editingTaskId != null ? tr("Save changes", "حفظ التغييرات") : tr("Create", "إنشاء")}
                   </button>
-                  <button onClick={() => setShowCreate(false)} className="btn-secondary px-3 py-1.5 text-xs flex-1">{tr("Cancel", "إلغاء")}</button>
+                  <button onClick={cancelEditTask} className="btn-secondary px-3 py-1.5 text-xs flex-1">{tr("Cancel", "إلغاء")}</button>
                 </div>
               </motion.div>
             )}
@@ -960,10 +1004,32 @@ export default function MediaDashboard() {
                       <div key={t.taskId} className="glass-card p-3">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-xs font-medium text-foreground leading-snug">{t.title}</p>
-                          <button onClick={() => deleteTask(t)} disabled={deletingTask === t.taskId}
-                            className="shrink-0 p-1 rounded hover:bg-error/10 text-muted hover:text-error transition-colors">
-                            {deletingTask === t.taskId ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
-                          </button>
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            <Link
+                              href={`/dashboard/tasks/${t.taskId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
+                              title={tr("Open in new tab", "فتح في نافذة جديدة")}
+                            >
+                              <ExternalLink size={10} />
+                            </Link>
+                            <button
+                              onClick={() => startEditTask(t)}
+                              className="p-1 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
+                              title={tr("Edit task", "تعديل المهمة")}
+                            >
+                              <Pencil size={10} />
+                            </button>
+                            <button
+                              onClick={() => deleteTask(t)}
+                              disabled={deletingTask === t.taskId}
+                              className="p-1 rounded hover:bg-error/10 text-muted hover:text-error transition-colors"
+                              title={tr("Delete task", "حذف المهمة")}
+                            >
+                              {deletingTask === t.taskId ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                            </button>
+                          </div>
                         </div>
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                           <span className={`badge ${PRIORITY_COLORS[t.priority]} text-[9px]`}>{t.priority}</span>

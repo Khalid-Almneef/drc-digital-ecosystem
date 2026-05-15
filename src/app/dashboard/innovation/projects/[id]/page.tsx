@@ -58,10 +58,13 @@ interface Deliverable {
 interface Task {
   taskId: number;
   title: string;
+  description: string | null;
   status: "todo" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high" | "urgent";
   dueDate: string | null;
+  assignedTo: number | null;
   assigneeName: string | null;
+  creditHours: number;
 }
 
 interface AllMember {
@@ -346,39 +349,61 @@ function AssignMemberModal({
   );
 }
 
-// ─── New Task Modal ───────────────────────────────────────────────────────────
+// ─── Task Modal (create / edit) ───────────────────────────────────────────────
 
-function NewTaskModal({
+function TaskFormModal({
   projectId,
+  task,
   onClose,
-  onCreated,
+  onSaved,
 }: {
   projectId: number;
+  task: Task | null;
   onClose: () => void;
-  onCreated: () => void;
+  onSaved: () => void;
 }) {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [f, setF] = useState({ title: "", priority: "medium", assignedTo: "", dueDate: "", creditHours: "" });
+  const isEdit = task != null;
+  const [f, setF] = useState({
+    title: task?.title ?? "",
+    description: task?.description ?? "",
+    priority: task?.priority ?? "medium",
+    assignedTo: task?.assignedTo != null ? String(task.assignedTo) : "",
+    dueDate: task?.dueDate ? task.dueDate.slice(0, 10) : "",
+    creditHours: task && task.creditHours > 0 ? String(task.creditHours) : "",
+  });
   const [saving, setSaving] = useState(false);
   const { data: allMembers = [] } = useApi<AllMember[]>("/api/members");
 
   const set = (k: keyof typeof f) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
       setF((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post(`/api/projects/${projectId}/tasks`, {
-        title: f.title,
-        priority: f.priority,
-        assignedTo: f.assignedTo ? Number(f.assignedTo) : undefined,
-        dueDate: f.dueDate || undefined,
-        creditHours: f.creditHours ? Number(f.creditHours) : undefined,
-      });
-      onCreated();
+      if (isEdit && task) {
+        await api.patch(`/api/tasks/${task.taskId}`, {
+          title: f.title,
+          description: f.description || "",
+          priority: f.priority,
+          assignedTo: f.assignedTo ? Number(f.assignedTo) : null,
+          dueDate: f.dueDate || null,
+          creditHours: f.creditHours ? Number(f.creditHours) : 0,
+        });
+      } else {
+        await api.post(`/api/projects/${projectId}/tasks`, {
+          title: f.title,
+          description: f.description || undefined,
+          priority: f.priority,
+          assignedTo: f.assignedTo ? Number(f.assignedTo) : undefined,
+          dueDate: f.dueDate || undefined,
+          creditHours: f.creditHours ? Number(f.creditHours) : undefined,
+        });
+      }
+      onSaved();
       onClose();
     } finally {
       setSaving(false);
@@ -398,11 +423,23 @@ function NewTaskModal({
         className="w-full max-w-md glass-card p-6 relative"
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground"><X size={18} /></button>
-        <h2 className="text-base font-bold text-foreground mb-4">{tr("New Task", "مهمة جديدة")}</h2>
+        <h2 className="text-base font-bold text-foreground mb-4">
+          {isEdit ? tr("Edit Task", "تعديل المهمة") : tr("New Task", "مهمة جديدة")}
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <label className={labelCls}>{tr("Title *", "العنوان *")}</label>
             <input required value={f.title} onChange={set("title")} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>{tr("Description", "الوصف")}</label>
+            <textarea
+              value={f.description}
+              onChange={set("description")}
+              rows={2}
+              className={`${inputCls} resize-none`}
+              placeholder={tr("Optional", "اختياري")}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -438,7 +475,8 @@ function NewTaskModal({
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose} className="btn-secondary px-4 py-2 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
             <button type="submit" disabled={saving} className="btn-primary px-4 py-2 text-sm flex-1 disabled:opacity-60 flex items-center justify-center gap-2">
-              {saving ? <Loader2 size={13} className="animate-spin" /> : null} {tr("Create", "إنشاء")}
+              {saving ? <Loader2 size={13} className="animate-spin" /> : null}
+              {isEdit ? tr("Save changes", "حفظ التغييرات") : tr("Create", "إنشاء")}
             </button>
           </div>
         </form>
@@ -470,6 +508,19 @@ export default function ProjectTrackPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [newTaskOpen, setNewTaskOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null);
+
+  async function deleteTask(t: Task) {
+    if (!confirm(tr(`Delete task "${t.title}"? This cannot be undone.`, `هل تريد حذف المهمة "${t.title}"؟ لا يمكن التراجع.`))) return;
+    setDeletingTaskId(t.taskId);
+    try {
+      await api.delete(`/api/tasks/${t.taskId}`);
+      void loadTasks();
+    } finally {
+      setDeletingTaskId(null);
+    }
+  }
 
   // Deliverable add form
   const [addTitle, setAddTitle] = useState("");
@@ -776,6 +827,7 @@ export default function ProjectTrackPage() {
                         <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Assignee", "المسؤول")}</th>
                         <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Priority", "الأولوية")}</th>
                         <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Status", "الحالة")}</th>
+                        <th className="text-right text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Actions", "إجراءات")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -788,6 +840,34 @@ export default function ProjectTrackPage() {
                           </td>
                           <td className="px-5 py-3">
                             <span className={taskStatusCls[t.status]}>{t.status.replace("_", " ")}</span>
+                          </td>
+                          <td className="px-5 py-3">
+                            <div className="flex items-center justify-end gap-1">
+                              <a
+                                href={`/dashboard/tasks/${t.taskId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
+                                title={tr("Open in new tab", "فتح في نافذة جديدة")}
+                              >
+                                <ExternalLink size={12} />
+                              </a>
+                              <button
+                                onClick={() => setEditingTask(t)}
+                                className="p-1.5 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
+                                title={tr("Edit task", "تعديل المهمة")}
+                              >
+                                <Edit2 size={12} />
+                              </button>
+                              <button
+                                onClick={() => deleteTask(t)}
+                                disabled={deletingTaskId === t.taskId}
+                                className="p-1.5 rounded hover:bg-error/10 text-muted hover:text-error transition-colors disabled:opacity-50"
+                                title={tr("Delete task", "حذف المهمة")}
+                              >
+                                {deletingTaskId === t.taskId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -854,10 +934,19 @@ export default function ProjectTrackPage() {
           />
         )}
         {newTaskOpen && (
-          <NewTaskModal
+          <TaskFormModal
             projectId={projectId}
+            task={null}
             onClose={() => setNewTaskOpen(false)}
-            onCreated={loadTasks}
+            onSaved={loadTasks}
+          />
+        )}
+        {editingTask && (
+          <TaskFormModal
+            projectId={projectId}
+            task={editingTask}
+            onClose={() => setEditingTask(null)}
+            onSaved={loadTasks}
           />
         )}
       </AnimatePresence>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
   Clock3,
+  ExternalLink,
   GraduationCap,
   Loader2,
   Megaphone,
@@ -15,6 +16,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import Link from "next/link";
 import { useLang } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/hooks/useApi";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -63,6 +65,7 @@ interface MadaratRegistration {
   department: string | null;
   notes: string | null;
   registeredAt: string;
+  attended: boolean;
 }
 
 interface MemberOption {
@@ -167,10 +170,42 @@ function fmtDateTime(iso: string) {
 function RegistrationsModal({ session, onClose }: { session: MadaratSessionRow; onClose: () => void }) {
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const { data, isLoading: loading } = useApi<MadaratRegistration[]>(
+  const { data, isLoading: loading, mutate } = useApi<MadaratRegistration[]>(
     `/api/madarat/sessions/${session.sessionId}/registrations`,
   );
   const rows = data ?? [];
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  async function toggleAttendance(row: MadaratRegistration) {
+    setBusyId(row.registrationId);
+    try {
+      await api.patch(`/api/madarat/sessions/${session.sessionId}/registrations/${row.registrationId}`, {
+        attended: !row.attended,
+      });
+      mutate();
+    } catch {
+      toast.error(tr("Update failed. Please try again.", "فشل التحديث. حاول مرة أخرى."));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function removeRegistration(row: MadaratRegistration) {
+    const confirmMsg = lang === "ar"
+      ? `هل تريد حذف تسجيل "${row.fullName}"؟ لا يمكن التراجع.`
+      : `Delete registration for "${row.fullName}"? This cannot be undone.`;
+    if (!window.confirm(confirmMsg)) return;
+    setBusyId(row.registrationId);
+    try {
+      await api.delete(`/api/madarat/sessions/${session.sessionId}/registrations/${row.registrationId}`);
+      mutate();
+      toast.success(tr("Registration removed", "تم حذف التسجيل"));
+    } catch {
+      toast.error(tr("Delete failed. Please try again.", "فشل الحذف. حاول مرة أخرى."));
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   return (
     <motion.div
@@ -209,16 +244,39 @@ function RegistrationsModal({ session, onClose }: { session: MadaratSessionRow; 
                   <th className="px-4 py-3">{tr("Gender", "الجنس")}</th>
                   <th className="px-4 py-3">{tr("Department", "القسم")}</th>
                   <th className="px-4 py-3">{tr("Registered", "تاريخ التسجيل")}</th>
+                  <th className="px-4 py-3 text-right">{tr("Actions", "إجراءات")}</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row, index) => (
                   <tr key={row.registrationId} className={index % 2 === 0 ? "" : "bg-surface-elevated/25"}>
-                    <td className="px-4 py-3 text-foreground">{row.fullName}</td>
+                    <td className="px-4 py-3 text-foreground">
+                      <div className="flex items-center gap-2.5">
+                        <Toggle
+                          checked={row.attended}
+                          onChange={() => toggleAttendance(row)}
+                          disabled={busyId === row.registrationId}
+                        />
+                        <span>{row.fullName}</span>
+                        <span className={`text-[10px] uppercase tracking-wider ${row.attended ? "text-emerald-500" : "text-muted"}`}>
+                          {row.attended ? tr("Present", "حاضر") : tr("Not present", "غير حاضر")}
+                        </span>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-muted">{row.email}</td>
                     <td className="px-4 py-3 text-muted">{row.gender ? row.gender.replace(/_/g, " ") : "—"}</td>
                     <td className="px-4 py-3 text-muted">{row.department ?? "—"}</td>
                     <td className="px-4 py-3 text-muted">{fmtDateTime(row.registeredAt)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => removeRegistration(row)}
+                        disabled={busyId === row.registrationId}
+                        className="btn-secondary inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+                        title={tr("Delete registration", "حذف التسجيل")}
+                      >
+                        {busyId === row.registrationId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -400,6 +458,8 @@ export default function MadaratDashboard() {
   const [taskForm, setTaskForm] = useState(TASK_FORM);
   const [taskSaving, setTaskSaving] = useState(false);
   const [updatingTaskId, setUpdatingTaskId] = useState<number | null>(null);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null);
 
   const inputCls = "dashboard-field";
   const selectCls = "dashboard-select";
@@ -527,26 +587,77 @@ export default function MadaratDashboard() {
     }
   }
 
-  async function createTask() {
+  async function submitTask() {
     if (!taskForm.title) return;
     setTaskSaving(true);
     try {
       const departmentIdMap: Record<string, number> = { hr: 2, pr: 6, media: 5 };
-      await api.post("/api/madarat/tasks", {
-        title: taskForm.title,
-        description: taskForm.description || undefined,
-        departmentId: departmentIdMap[taskForm.departmentSlug],
-        assignedTo: taskForm.assignedTo ? Number(taskForm.assignedTo) : undefined,
-        dueDate: taskForm.dueDate || undefined,
-        priority: taskForm.priority,
-      });
+      if (editingTaskId == null) {
+        await api.post("/api/madarat/tasks", {
+          title: taskForm.title,
+          description: taskForm.description || undefined,
+          departmentId: departmentIdMap[taskForm.departmentSlug],
+          assignedTo: taskForm.assignedTo ? Number(taskForm.assignedTo) : undefined,
+          dueDate: taskForm.dueDate || undefined,
+          priority: taskForm.priority,
+        });
+        toast.success(tr("Task created", "تم إنشاء المهمة"));
+      } else {
+        await api.patch(`/api/tasks/${editingTaskId}`, {
+          title: taskForm.title,
+          description: taskForm.description || "",
+          departmentId: departmentIdMap[taskForm.departmentSlug],
+          assignedTo: taskForm.assignedTo ? Number(taskForm.assignedTo) : null,
+          dueDate: taskForm.dueDate || null,
+          priority: taskForm.priority,
+        });
+        toast.success(tr("Task updated", "تم تحديث المهمة"));
+      }
       setTaskForm(TASK_FORM);
-      toast.success(tr("Task created", "تم إنشاء المهمة"));
+      setEditingTaskId(null);
       loadTasks();
     } catch {
-      toast.error(tr("Create failed. Please try again.", "فشل الإنشاء. حاول مرة أخرى."));
+      toast.error(tr("Save failed. Please try again.", "فشل الحفظ. حاول مرة أخرى."));
     } finally {
       setTaskSaving(false);
+    }
+  }
+
+  function startEditTask(task: MadaratTaskRow) {
+    setEditingTaskId(task.taskId);
+    setTaskForm({
+      title: task.title,
+      description: task.description ?? "",
+      departmentSlug: (task.departmentSlug ?? "hr") as "hr" | "pr" | "media",
+      assignedTo: task.assignedTo ? String(task.assignedTo) : "",
+      dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
+      priority: task.priority,
+    });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  function cancelEditTask() {
+    setEditingTaskId(null);
+    setTaskForm(TASK_FORM);
+  }
+
+  async function deleteTask(task: MadaratTaskRow) {
+    const confirmMsg = lang === "ar"
+      ? `هل تريد حذف المهمة "${task.title}"؟ لا يمكن التراجع.`
+      : `Delete task "${task.title}"? This cannot be undone.`;
+    if (!window.confirm(confirmMsg)) return;
+    setDeletingTaskId(task.taskId);
+    try {
+      await api.delete(`/api/tasks/${task.taskId}`);
+      if (editingTaskId === task.taskId) cancelEditTask();
+      loadTasks();
+      toast.success(tr("Task deleted", "تم حذف المهمة"));
+    } catch {
+      toast.error(tr("Delete failed. Please try again.", "فشل الحذف. حاول مرة أخرى."));
+    } finally {
+      setDeletingTaskId(null);
     }
   }
 
@@ -784,8 +895,21 @@ export default function MadaratDashboard() {
           </div>
 
           <div className="glass-card p-5">
-            <h3 className="text-sm font-semibold text-foreground">{tr("Create Support Task", "إنشاء مهمة دعم")}</h3>
-            <p className="mt-1 text-xs text-muted">{tr("Distribute work from Madarat to HR, PR, or Media and track status back here.", "وزّع العمل من مدارات إلى HR أو العلاقات العامة أو الإعلام وتابع الحالة من هنا.")}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {editingTaskId != null
+                    ? tr("Edit Support Task", "تعديل مهمة الدعم")
+                    : tr("Create Support Task", "إنشاء مهمة دعم")}
+                </h3>
+                <p className="mt-1 text-xs text-muted">{tr("Distribute work from Madarat to HR, PR, or Media and track status back here.", "وزّع العمل من مدارات إلى HR أو العلاقات العامة أو الإعلام وتابع الحالة من هنا.")}</p>
+              </div>
+              {editingTaskId != null && (
+                <button onClick={cancelEditTask} className="btn-secondary px-3 py-1.5 text-xs">
+                  {tr("Cancel edit", "إلغاء التعديل")}
+                </button>
+              )}
+            </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
@@ -833,9 +957,9 @@ export default function MadaratDashboard() {
             </div>
 
             <div className="mt-4">
-              <button onClick={createTask} disabled={taskSaving} className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
-                {taskSaving ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
-                {tr("Create Task", "إنشاء المهمة")}
+              <button onClick={submitTask} disabled={taskSaving} className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
+                {taskSaving ? <Loader2 size={11} className="animate-spin" /> : editingTaskId != null ? <Pencil size={11} /> : <Plus size={11} />}
+                {editingTaskId != null ? tr("Save changes", "حفظ التغييرات") : tr("Create Task", "إنشاء المهمة")}
               </button>
             </div>
           </div>
@@ -880,6 +1004,30 @@ export default function MadaratDashboard() {
                           <option value="review">{tr("Review", "للمراجعة")}</option>
                           <option value="done">{tr("Done", "تم")}</option>
                         </select>
+                        <Link
+                          href={`/dashboard/tasks/${task.taskId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-secondary inline-flex items-center justify-center px-2.5 py-1.5"
+                          title={tr("Open in new tab", "فتح في نافذة جديدة")}
+                        >
+                          <ExternalLink size={12} />
+                        </Link>
+                        <button
+                          onClick={() => startEditTask(task)}
+                          className="btn-secondary inline-flex items-center justify-center px-2.5 py-1.5"
+                          title={tr("Edit task", "تعديل المهمة")}
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          onClick={() => deleteTask(task)}
+                          disabled={deletingTaskId === task.taskId}
+                          className="btn-secondary inline-flex items-center justify-center px-2.5 py-1.5 text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+                          title={tr("Delete task", "حذف المهمة")}
+                        >
+                          {deletingTaskId === task.taskId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                        </button>
                       </div>
                     </div>
                   </div>

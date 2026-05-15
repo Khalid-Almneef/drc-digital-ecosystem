@@ -375,6 +375,7 @@ export interface MockMadaratRegistration {
   department: string | null;
   notes: string | null;
   registeredAt: string;
+  attended: boolean;
 }
 
 export interface MockServiceRequest {
@@ -2038,10 +2039,10 @@ const events: MockEvent[] = [
   ];
 
   const madaratRegistrations: MockMadaratRegistration[] = [
-    { registrationId: 1, sessionId: 1, fullName: "Reem Alotaibi", email: "reem.alotaibi@student.ksu.edu.sa", universityId: "443100001", phone: null, department: "Computer Science", notes: null, registeredAt: "2026-04-18T11:00:00.000Z" },
-    { registrationId: 2, sessionId: 1, fullName: "Faisal Ahmed", email: "faisal@drc.club", universityId: "443100014", phone: "0500000014", department: "Public Relations", notes: "Interested in outreach careers.", registeredAt: "2026-04-18T13:30:00.000Z" },
-    { registrationId: 3, sessionId: 2, fullName: "Sara Alharbi", email: "sara@drc.club", universityId: "443100011", phone: null, department: "Media", notes: null, registeredAt: "2026-04-03T09:15:00.000Z" },
-    { registrationId: 4, sessionId: 2, fullName: "Omar Salem", email: "omar@drc.club", universityId: "443100012", phone: null, department: "Development", notes: null, registeredAt: "2026-04-04T12:20:00.000Z" },
+    { registrationId: 1, sessionId: 1, fullName: "Reem Alotaibi", email: "reem.alotaibi@student.ksu.edu.sa", universityId: "443100001", phone: null, department: "Computer Science", notes: null, registeredAt: "2026-04-18T11:00:00.000Z", attended: false },
+    { registrationId: 2, sessionId: 1, fullName: "Faisal Ahmed", email: "faisal@drc.club", universityId: "443100014", phone: "0500000014", department: "Public Relations", notes: "Interested in outreach careers.", registeredAt: "2026-04-18T13:30:00.000Z", attended: false },
+    { registrationId: 3, sessionId: 2, fullName: "Sara Alharbi", email: "sara@drc.club", universityId: "443100011", phone: null, department: "Media", notes: null, registeredAt: "2026-04-03T09:15:00.000Z", attended: false },
+    { registrationId: 4, sessionId: 2, fullName: "Omar Salem", email: "omar@drc.club", universityId: "443100012", phone: null, department: "Development", notes: null, registeredAt: "2026-04-04T12:20:00.000Z", attended: false },
   ];
 
   const serviceRequests: MockServiceRequest[] = [
