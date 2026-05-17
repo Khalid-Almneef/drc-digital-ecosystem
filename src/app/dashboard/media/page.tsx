@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback, useMemo, useRef, type Dispatch, type 
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { MemberMultiSelect } from "@/components/dashboard/MemberMultiSelect";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { useEscape } from "@/lib/hooks/useEscape";
 import { useApi } from "@/lib/hooks/useApi";
@@ -292,6 +294,7 @@ function HomepageMediaEditor({
 
 export default function MediaDashboard() {
   const { lang } = useLang();
+  const { isAnyLeader } = useAuth();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [tab, setTab] = useState<TabId>("overview");
 
@@ -316,7 +319,7 @@ export default function MediaDashboard() {
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle]     = useState("");
   const [newDesc, setNewDesc]       = useState("");
-  const [newAssignee, setNewAssignee] = useState<number | "">("");
+  const [newAssigneeIds, setNewAssigneeIds] = useState<number[]>([]);
   const [newDue, setNewDue]         = useState("");
   const [newPriority, setNewPriority] = useState<"low" | "medium" | "high" | "urgent">("medium");
   const [newCredits, setNewCredits] = useState("");
@@ -491,7 +494,7 @@ export default function MediaDashboard() {
   // ─── Create / edit task ───────────────────────────────────────────────────
 
   function resetTaskForm() {
-    setNewTitle(""); setNewDesc(""); setNewAssignee(""); setNewDue("");
+    setNewTitle(""); setNewDesc(""); setNewAssigneeIds([]); setNewDue("");
     setNewPriority("medium"); setNewCredits("");
   }
 
@@ -499,7 +502,7 @@ export default function MediaDashboard() {
     setEditingTaskId(task.taskId);
     setNewTitle(task.title);
     setNewDesc(task.description ?? "");
-    setNewAssignee(task.assignedTo ?? "");
+    setNewAssigneeIds(task.assignedTo != null ? [task.assignedTo] : []);
     setNewDue(task.dueDate ? task.dueDate.slice(0, 10) : "");
     setNewPriority(task.priority);
     setNewCredits(task.creditHours ? String(task.creditHours) : "");
@@ -518,20 +521,39 @@ export default function MediaDashboard() {
     setTaskSaving(true);
     try {
       if (editingTaskId == null) {
-        await api.post("/api/tasks", {
-          title: newTitle.trim(),
-          description: newDesc.trim() || undefined,
-          assignedTo: newAssignee || undefined,
-          dueDate: newDue || undefined,
-          priority: newPriority,
-          creditHours: newCredits ? Number(newCredits) : undefined,
-        });
-        toast.success(tr("Task created", "تم إنشاء المهمة"));
+        // Multi-assign: one POST per selected assignee, parallel. None → one
+        // unassigned task.
+        const targets: Array<number | null> = newAssigneeIds.length > 0 ? newAssigneeIds : [null];
+        const results = await Promise.allSettled(
+          targets.map((memberId) =>
+            api.post("/api/tasks", {
+              title: newTitle.trim(),
+              description: newDesc.trim() || undefined,
+              assignedTo: memberId ?? undefined,
+              dueDate: newDue || undefined,
+              priority: newPriority,
+              creditHours: newCredits ? Number(newCredits) : undefined,
+            }),
+          ),
+        );
+        const failed = results.filter((r) => r.status === "rejected").length;
+        const created = results.length - failed;
+        if (failed === 0) {
+          toast.success(
+            created === 1
+              ? tr("Task created", "تم إنشاء المهمة")
+              : tr(`${created} tasks created`, `تم إنشاء ${created} مهام`),
+          );
+        } else if (created > 0) {
+          toast.error(tr(`${created} created · ${failed} failed`, `${created} نجحت · ${failed} فشلت`));
+        } else {
+          throw new Error("All assignments failed");
+        }
       } else {
         await api.patch(`/api/tasks/${editingTaskId}`, {
           title: newTitle.trim(),
           description: newDesc.trim() || "",
-          assignedTo: newAssignee === "" ? null : Number(newAssignee),
+          assignedTo: newAssigneeIds[0] ?? null,
           dueDate: newDue || null,
           priority: newPriority,
           creditHours: newCredits ? Number(newCredits) : 0,
@@ -933,16 +955,18 @@ export default function MediaDashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs text-muted">Create and track work assigned to media members.</p>
-            <button
-              onClick={() => {
-                if (editingTaskId != null) cancelEditTask();
-                else setShowCreate((v) => !v);
-              }}
-              className="btn-primary px-3 py-1.5 text-xs inline-flex items-center gap-1.5"
-            >
-              <Plus size={12} />
-              {editingTaskId != null ? tr("Cancel edit", "إلغاء التعديل") : tr("New Task", "مهمة جديدة")}
-            </button>
+            {isAnyLeader && (
+              <button
+                onClick={() => {
+                  if (editingTaskId != null) cancelEditTask();
+                  else setShowCreate((v) => !v);
+                }}
+                className="btn-primary px-3 py-1.5 text-xs inline-flex items-center gap-1.5"
+              >
+                <Plus size={12} />
+                {editingTaskId != null ? tr("Cancel edit", "إلغاء التعديل") : tr("New Task", "مهمة جديدة")}
+              </button>
+            )}
           </div>
 
           {/* Create form */}
@@ -954,12 +978,22 @@ export default function MediaDashboard() {
                   className="w-full text-sm bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50" />
                 <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder={tr("Description (optional)", "الوصف (اختياري)")} rows={2}
                   className="w-full text-xs bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50 resize-none" />
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <select value={newAssignee} onChange={(e) => setNewAssignee(e.target.value ? Number(e.target.value) : "")}
-                    className="text-xs bg-surface-elevated border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50 col-span-2 sm:col-span-1">
-                    <option value="">{tr("Assignee…", "المسؤول…")}</option>
-                    {members.map((m) => <option key={m.memberId} value={m.memberId}>{m.fullName}</option>)}
-                  </select>
+                <div>
+                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    {editingTaskId == null
+                      ? tr("Assignees (one task per person)", "المكلَّفون (مهمة لكل شخص)")
+                      : tr("Assignee", "المسؤول")}
+                  </p>
+                  <MemberMultiSelect
+                    members={members.map((m) => ({ memberId: m.memberId, fullName: m.fullName }))}
+                    value={editingTaskId == null ? newAssigneeIds : newAssigneeIds.slice(0, 1)}
+                    onChange={(next) => setNewAssigneeIds(editingTaskId == null ? next : next.slice(-1))}
+                    lang={lang as "en" | "ar"}
+                    placeholder={tr("Search media members…", "ابحث عن أعضاء الإعلام…")}
+                    emptyHint={["Unassigned (open to the team)", "غير معيَّن (مفتوحة للفريق)"]}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
                   <select value={newPriority} onChange={(e) => setNewPriority(e.target.value as typeof newPriority)}
                     className="text-xs bg-surface-elevated border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-primary/50">
                     <option value="low">{tr("Low", "منخفضة")}</option>
@@ -1014,21 +1048,25 @@ export default function MediaDashboard() {
                             >
                               <ExternalLink size={10} />
                             </Link>
-                            <button
-                              onClick={() => startEditTask(t)}
-                              className="p-1 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
-                              title={tr("Edit task", "تعديل المهمة")}
-                            >
-                              <Pencil size={10} />
-                            </button>
-                            <button
-                              onClick={() => deleteTask(t)}
-                              disabled={deletingTask === t.taskId}
-                              className="p-1 rounded hover:bg-error/10 text-muted hover:text-error transition-colors"
-                              title={tr("Delete task", "حذف المهمة")}
-                            >
-                              {deletingTask === t.taskId ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
-                            </button>
+                            {isAnyLeader && (
+                              <>
+                                <button
+                                  onClick={() => startEditTask(t)}
+                                  className="p-1 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
+                                  title={tr("Edit task", "تعديل المهمة")}
+                                >
+                                  <Pencil size={10} />
+                                </button>
+                                <button
+                                  onClick={() => deleteTask(t)}
+                                  disabled={deletingTask === t.taskId}
+                                  className="p-1 rounded hover:bg-error/10 text-muted hover:text-error transition-colors"
+                                  title={tr("Delete task", "حذف المهمة")}
+                                >
+                                  {deletingTask === t.taskId ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">

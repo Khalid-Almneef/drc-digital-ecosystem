@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,6 +10,7 @@ import {
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ImageUrlInput } from "@/components/dashboard/ImageUrlInput";
 import { MemberLink } from "@/components/dashboard/MemberLink";
+import { MemberMultiSelect } from "@/components/dashboard/MemberMultiSelect";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { api } from "@/lib/client";
@@ -65,6 +66,7 @@ interface Task {
   assignedTo: number | null;
   assigneeName: string | null;
   creditHours: number;
+  parentTaskId: number | null;
 }
 
 interface AllMember {
@@ -354,11 +356,14 @@ function AssignMemberModal({
 function TaskFormModal({
   projectId,
   task,
+  parentTask,
   onClose,
   onSaved,
 }: {
   projectId: number;
   task: Task | null;
+  /** When set, the modal creates a subtask under this parent. */
+  parentTask?: Task | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -369,10 +374,15 @@ function TaskFormModal({
     title: task?.title ?? "",
     description: task?.description ?? "",
     priority: task?.priority ?? "medium",
-    assignedTo: task?.assignedTo != null ? String(task.assignedTo) : "",
     dueDate: task?.dueDate ? task.dueDate.slice(0, 10) : "",
     creditHours: task && task.creditHours > 0 ? String(task.creditHours) : "",
   });
+  // Multi-assign: edit shows the current single assignee (if any) and lets the
+  // leader change it to one person. Create lets them pick N and auto-clones
+  // one task per assignee.
+  const [assigneeIds, setAssigneeIds] = useState<number[]>(
+    task?.assignedTo != null ? [task.assignedTo] : [],
+  );
   const [saving, setSaving] = useState(false);
   const { data: allMembers = [] } = useApi<AllMember[]>("/api/members");
 
@@ -385,23 +395,37 @@ function TaskFormModal({
     setSaving(true);
     try {
       if (isEdit && task) {
+        // Edit path: single assignee (first selected) or null.
         await api.patch(`/api/tasks/${task.taskId}`, {
           title: f.title,
           description: f.description || "",
           priority: f.priority,
-          assignedTo: f.assignedTo ? Number(f.assignedTo) : null,
+          assignedTo: assigneeIds[0] ?? null,
           dueDate: f.dueDate || null,
           creditHours: f.creditHours ? Number(f.creditHours) : 0,
         });
       } else {
-        await api.post(`/api/projects/${projectId}/tasks`, {
-          title: f.title,
-          description: f.description || undefined,
-          priority: f.priority,
-          assignedTo: f.assignedTo ? Number(f.assignedTo) : undefined,
-          dueDate: f.dueDate || undefined,
-          creditHours: f.creditHours ? Number(f.creditHours) : undefined,
-        });
+        // Create path: fan out one POST per selected assignee. If none are
+        // selected, create a single unassigned task.
+        const targets = assigneeIds.length > 0 ? assigneeIds : [null];
+        const results = await Promise.allSettled(
+          targets.map((memberId) =>
+            api.post(`/api/projects/${projectId}/tasks`, {
+              title: f.title,
+              description: f.description || undefined,
+              priority: f.priority,
+              assignedTo: memberId ?? undefined,
+              dueDate: f.dueDate || undefined,
+              creditHours: f.creditHours ? Number(f.creditHours) : undefined,
+              parentTaskId: parentTask?.taskId,
+            }),
+          ),
+        );
+        const failed = results.filter((r) => r.status === "rejected").length;
+        if (failed > 0 && failed === results.length) {
+          // Total failure — keep the form open so the leader can retry.
+          throw new Error("All assignments failed");
+        }
       }
       onSaved();
       onClose();
@@ -423,9 +447,20 @@ function TaskFormModal({
         className="w-full max-w-md glass-card p-6 relative"
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-foreground"><X size={18} /></button>
-        <h2 className="text-base font-bold text-foreground mb-4">
-          {isEdit ? tr("Edit Task", "تعديل المهمة") : tr("New Task", "مهمة جديدة")}
+        <h2 className="text-base font-bold text-foreground mb-1">
+          {isEdit
+            ? tr("Edit Task", "تعديل المهمة")
+            : parentTask
+              ? tr("New Subtask", "مهمة فرعية جديدة")
+              : tr("New Task", "مهمة جديدة")}
         </h2>
+        {parentTask ? (
+          <p className="text-[11px] text-muted mb-4">
+            {tr("Subtask of:", "مهمة فرعية لـ:")} <span className="text-foreground">{parentTask.title}</span>
+          </p>
+        ) : (
+          <div className="mb-4" />
+        )}
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <label className={labelCls}>{tr("Title *", "العنوان *")}</label>
@@ -456,21 +491,30 @@ function TaskFormModal({
               <input type="number" min="0" step="0.5" value={f.creditHours} onChange={set("creditHours")} placeholder="0" className={inputCls} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>{tr("Assign To", "تعيين إلى")}</label>
-              <select value={f.assignedTo} onChange={set("assignedTo")} className={inputCls}>
-                <option value="">{tr("Club-wide / unassigned", "للنادي / غير مخصص")}</option>
-                {allMembers.map((m) => (
-                  <option key={m.memberId} value={m.memberId}>{m.fullName} · {m.departmentName}</option>
-                ))}
-              </select>
-              <p className="mt-1 text-[11px] text-muted">{tr("Any club member can be assigned, not only current project members.", "يمكن تعيين أي عضو في النادي، ليس فقط أعضاء المشروع الحاليين.")}</p>
-            </div>
-            <div>
-              <label className={labelCls}>{tr("Due Date", "تاريخ الاستحقاق")}</label>
-              <input type="date" value={f.dueDate} onChange={set("dueDate")} className={inputCls} />
-            </div>
+          <div>
+            <label className={labelCls}>
+              {isEdit
+                ? tr("Assign To", "تعيين إلى")
+                : tr("Assign To (multiple — one task per person)", "تعيين إلى (متعدد — مهمة لكل شخص)")}
+            </label>
+            <MemberMultiSelect
+              members={allMembers.map((m) => ({ memberId: m.memberId, fullName: m.fullName, meta: m.departmentName }))}
+              value={isEdit ? assigneeIds.slice(0, 1) : assigneeIds}
+              onChange={(next) => {
+                // Edit mode is single-assignee — keep the latest pick only.
+                setAssigneeIds(isEdit ? next.slice(-1) : next);
+              }}
+              lang={lang as "en" | "ar"}
+              placeholder={tr("Search members…", "ابحث عن الأعضاء…")}
+              emptyHint={["No one assigned yet (task will be club-wide)", "لا يوجد مكلَّف بعد (ستكون مهمة عامة للنادي)"]}
+            />
+            <p className="mt-1 text-[11px] text-muted">
+              {tr("Any club member can be assigned, not only current project members.", "يمكن تعيين أي عضو في النادي، ليس فقط أعضاء المشروع الحاليين.")}
+            </p>
+          </div>
+          <div>
+            <label className={labelCls}>{tr("Due Date", "تاريخ الاستحقاق")}</label>
+            <input type="date" value={f.dueDate} onChange={set("dueDate")} className={inputCls} />
           </div>
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose} className="btn-secondary px-4 py-2 text-sm flex-1">{tr("Cancel", "إلغاء")}</button>
@@ -490,7 +534,7 @@ function TaskFormModal({
 export default function ProjectTrackPage() {
   const params = useParams();
   const router = useRouter();
-  const { canAccessDept, isClubLeader } = useAuth();
+  const { canAccessDept, isClubLeader, isAnyLeader } = useAuth();
   const { lang } = useLang();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const projectId = Number(params.id);
@@ -508,8 +552,24 @@ export default function ProjectTrackPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [newTaskOpen, setNewTaskOpen] = useState(false);
+  const [subtaskParent, setSubtaskParent] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null);
+
+  // Group tasks: top-level rows + a map of parent → subtasks. The API ordering
+  // is `created_at DESC`, so subtasks render newest-first under each parent.
+  const topLevelTasks = useMemo(() => tasks.filter((t) => t.parentTaskId == null), [tasks]);
+  const subtaskMap = useMemo(() => {
+    const map = new Map<number, Task[]>();
+    for (const t of tasks) {
+      if (t.parentTaskId != null) {
+        const list = map.get(t.parentTaskId) ?? [];
+        list.push(t);
+        map.set(t.parentTaskId, list);
+      }
+    }
+    return map;
+  }, [tasks]);
 
   async function deleteTask(t: Task) {
     if (!confirm(tr(`Delete task "${t.title}"? This cannot be undone.`, `هل تريد حذف المهمة "${t.title}"؟ لا يمكن التراجع.`))) return;
@@ -811,9 +871,11 @@ export default function ProjectTrackPage() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-muted">{completedTasks}/{tasks.length} {tr("tasks completed", "مهام منجزة")}</p>
-                <button onClick={() => setNewTaskOpen(true)} className="btn-primary px-3 py-1.5 text-xs flex items-center gap-1.5">
-                  <Plus size={12} /> {tr("New Task", "مهمة جديدة")}
-                </button>
+                {isAnyLeader && (
+                  <button onClick={() => setNewTaskOpen(true)} className="btn-primary px-3 py-1.5 text-xs flex items-center gap-1.5">
+                    <Plus size={12} /> {tr("New Task", "مهمة جديدة")}
+                  </button>
+                )}
               </div>
 
               {tasks.length === 0 ? (
@@ -831,46 +893,88 @@ export default function ProjectTrackPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {tasks.map((t) => (
-                        <tr key={t.taskId} className="border-b border-border/50 hover:bg-surface-elevated/50 transition-colors">
-                          <td className="px-5 py-3 text-sm text-foreground">{t.title}</td>
-                          <td className="px-5 py-3 text-xs text-muted">{t.assigneeName ?? "—"}</td>
-                          <td className="px-5 py-3">
-                            <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full capitalize ${priorityCls[t.priority]}`}>{t.priority}</span>
-                          </td>
-                          <td className="px-5 py-3">
-                            <span className={taskStatusCls[t.status]}>{t.status.replace("_", " ")}</span>
-                          </td>
-                          <td className="px-5 py-3">
-                            <div className="flex items-center justify-end gap-1">
-                              <a
-                                href={`/dashboard/tasks/${t.taskId}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-1.5 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
-                                title={tr("Open in new tab", "فتح في نافذة جديدة")}
-                              >
-                                <ExternalLink size={12} />
-                              </a>
-                              <button
-                                onClick={() => setEditingTask(t)}
-                                className="p-1.5 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
-                                title={tr("Edit task", "تعديل المهمة")}
-                              >
-                                <Edit2 size={12} />
-                              </button>
-                              <button
-                                onClick={() => deleteTask(t)}
-                                disabled={deletingTaskId === t.taskId}
-                                className="p-1.5 rounded hover:bg-error/10 text-muted hover:text-error transition-colors disabled:opacity-50"
-                                title={tr("Delete task", "حذف المهمة")}
-                              >
-                                {deletingTaskId === t.taskId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {topLevelTasks.map((parent) => {
+                        const subs = subtaskMap.get(parent.taskId) ?? [];
+                        const renderRow = (t: Task, isSub: boolean, subCount = 0) => (
+                          <tr key={t.taskId} className={`border-b border-border/50 transition-colors ${isSub ? "bg-surface-elevated/30 hover:bg-surface-elevated/55" : "hover:bg-surface-elevated/50"}`}>
+                            <td className="px-5 py-3 text-sm text-foreground">
+                              {isSub ? (
+                                <span className="inline-flex items-center gap-2 pl-5 relative">
+                                  <span
+                                    aria-hidden
+                                    className="absolute left-0 top-1/2 h-px w-3 -translate-y-1/2 bg-border"
+                                  />
+                                  <span className="text-muted">{t.title}</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-2">
+                                  <span>{t.title}</span>
+                                  {subCount > 0 && (
+                                    <span
+                                      className="rounded-full border border-border bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-muted"
+                                      title={tr(`${subCount} subtask${subCount === 1 ? "" : "s"}`, `${subCount} مهام فرعية`)}
+                                    >
+                                      {subCount}
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-5 py-3 text-xs text-muted">{t.assigneeName ?? "—"}</td>
+                            <td className="px-5 py-3">
+                              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full capitalize ${priorityCls[t.priority]}`}>{t.priority}</span>
+                            </td>
+                            <td className="px-5 py-3">
+                              <span className={taskStatusCls[t.status]}>{t.status.replace("_", " ")}</span>
+                            </td>
+                            <td className="px-5 py-3">
+                              <div className="flex items-center justify-end gap-1">
+                                <a
+                                  href={`/dashboard/tasks/${t.taskId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-1.5 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
+                                  title={tr("Open in new tab", "فتح في نافذة جديدة")}
+                                >
+                                  <ExternalLink size={12} />
+                                </a>
+                                {isAnyLeader && !isSub && (
+                                  <button
+                                    onClick={() => setSubtaskParent(t)}
+                                    className="p-1.5 rounded hover:bg-surface-elevated text-muted hover:text-primary transition-colors"
+                                    title={tr("Add subtask", "إضافة مهمة فرعية")}
+                                  >
+                                    <Plus size={12} />
+                                  </button>
+                                )}
+                                {isAnyLeader && (
+                                  <>
+                                    <button
+                                      onClick={() => setEditingTask(t)}
+                                      className="p-1.5 rounded hover:bg-surface-elevated text-muted hover:text-foreground transition-colors"
+                                      title={tr("Edit task", "تعديل المهمة")}
+                                    >
+                                      <Edit2 size={12} />
+                                    </button>
+                                    <button
+                                      onClick={() => deleteTask(t)}
+                                      disabled={deletingTaskId === t.taskId}
+                                      className="p-1.5 rounded hover:bg-error/10 text-muted hover:text-error transition-colors disabled:opacity-50"
+                                      title={tr("Delete task", "حذف المهمة")}
+                                    >
+                                      {deletingTaskId === t.taskId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                        return [
+                          renderRow(parent, false, subs.length),
+                          ...subs.map((sub) => renderRow(sub, true)),
+                        ];
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -938,6 +1042,15 @@ export default function ProjectTrackPage() {
             projectId={projectId}
             task={null}
             onClose={() => setNewTaskOpen(false)}
+            onSaved={loadTasks}
+          />
+        )}
+        {subtaskParent && (
+          <TaskFormModal
+            projectId={projectId}
+            task={null}
+            parentTask={subtaskParent}
+            onClose={() => setSubtaskParent(null)}
             onSaved={loadTasks}
           />
         )}

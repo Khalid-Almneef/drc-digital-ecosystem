@@ -29,6 +29,15 @@ interface TaskDetail {
   departmentId: number | null;
   departmentName: string | null;
   departmentSlug: string | null;
+  parentTaskId: number | null;
+  parentTaskTitle: string | null;
+  subtasks: Array<{
+    taskId: number;
+    title: string;
+    status: "todo" | "in_progress" | "review" | "done";
+    priority: "low" | "medium" | "high" | "urgent";
+    assigneeName: string | null;
+  }>;
 }
 
 const STATUS_LABEL: Record<TaskDetail["status"], [string, string]> = {
@@ -126,6 +135,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       ) : (
         <div className="glass-card p-6 space-y-6">
           <div>
+            {task.parentTaskId && (
+              <Link
+                href={`/dashboard/tasks/${task.parentTaskId}`}
+                className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated/60 px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-primary/25 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/40"
+              >
+                <ArrowLeft size={11} />
+                <span className="uppercase tracking-wider">{tr("Subtask of", "مهمة فرعية لـ")}</span>
+                <span className="text-foreground">{task.parentTaskTitle ?? `#${task.parentTaskId}`}</span>
+              </Link>
+            )}
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg font-semibold text-foreground">{task.title}</h2>
               <span className={PRIORITY_CLASS[task.priority]}>{task.priority}</span>
@@ -188,6 +207,39 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 )}
                 {task.artifactNotes && <p className="whitespace-pre-line text-muted">{task.artifactNotes}</p>}
               </div>
+            </div>
+          )}
+
+          {task.subtasks && task.subtasks.length > 0 && (
+            <div>
+              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
+                {tr("Subtasks", "المهام الفرعية")}
+                <span className="rounded-full border border-border bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-muted">
+                  {task.subtasks.length}
+                </span>
+              </h3>
+              <ul className="mt-3 divide-y divide-border rounded-xl border border-border bg-surface-elevated/20 overflow-hidden">
+                {task.subtasks.map((st) => (
+                  <li key={st.taskId}>
+                    <Link
+                      href={`/dashboard/tasks/${st.taskId}`}
+                      className="group flex flex-wrap items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface-elevated/55 focus-visible:bg-surface-elevated/55 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary/40"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm text-foreground">{st.title}</p>
+                        <p className="mt-0.5 text-[11px] text-muted">
+                          {st.assigneeName ?? tr("Unassigned", "غير معيَّنة")}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={PRIORITY_CLASS[st.priority]}>{st.priority}</span>
+                        <span className="badge">{tr(...STATUS_LABEL[st.status])}</span>
+                        <ExternalLink size={12} className="text-muted/60 transition-colors group-hover:text-primary" />
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>

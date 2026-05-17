@@ -80,6 +80,9 @@ export interface MockTask {
   createdBy: number | null;
   projectId: number | null;
   departmentId: number | null;
+  // Optional in seed data — readers coalesce to null. Used by the project-tasks
+  // subtask feature (one level of nesting under project tasks).
+  parentTaskId?: number | null;
 }
 
 export interface MockProject {

@@ -205,22 +205,30 @@ function ArchiveCollection({
           description={description}
         />
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          {filters.map((filter) => (
-            <button
-              key={filter.key}
-              type="button"
-              className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
-                activeFilter === filter.key
-                  ? "border-primary/30 bg-primary/10 text-primary shadow-[0_10px_24px_color-mix(in_srgb,var(--primary)_12%,transparent)]"
-                  : "border-border bg-surface-elevated text-muted hover:border-primary/20 hover:text-foreground"
-              }`}
-              data-active={activeFilter === filter.key}
-              onClick={() => onFilterChange(filter.key)}
-            >
-              {filter.label}
-            </button>
-          ))}
+        <div
+          role="tablist"
+          aria-label={t("projects.filter.all")}
+          className="mt-8 inline-flex flex-wrap gap-2 rounded-full border border-border bg-surface-elevated/50 p-1"
+        >
+          {filters.map((filter) => {
+            const active = activeFilter === filter.key;
+            return (
+              <button
+                key={filter.key}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/40 ${
+                  active
+                    ? "bg-primary/15 text-primary shadow-[0_4px_16px_color-mix(in_srgb,var(--primary)_18%,transparent)]"
+                    : "text-muted hover:text-foreground"
+                }`}
+                onClick={() => onFilterChange(filter.key)}
+              >
+                {filter.label}
+              </button>
+            );
+          })}
         </div>
 
         {items.length === 0 ? (

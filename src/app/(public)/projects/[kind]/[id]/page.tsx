@@ -386,21 +386,38 @@ export default function ArchiveDetailPage() {
                   </div>
                   {project.contributors.length > 0 ? (
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      {project.contributors.map((member) => (
-                        <Link
-                          key={member.memberId}
-                          href={`/team/${member.memberId}`}
-                          className="group rounded-[1.2rem] border border-border bg-surface/50 p-4 text-left transition-colors hover:border-primary/20 hover:bg-surface-elevated"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground">{firstAndLastName(member.fullName)}</p>
-                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-primary/70">{member.role}</p>
+                      {project.contributors.map((member) => {
+                        const name = firstAndLastName(member.fullName);
+                        const initials = name
+                          .split(" ")
+                          .map((s) => s[0])
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase();
+                        return (
+                          <Link
+                            key={member.memberId}
+                            href={`/team/${member.memberId}`}
+                            className="group flex items-center gap-3 rounded-[1.2rem] border border-border bg-surface/50 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:bg-surface-elevated focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/40"
+                          >
+                            <span
+                              aria-hidden
+                              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface-elevated text-xs font-semibold text-primary"
+                            >
+                              {initials || "—"}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+                              <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-primary/70">{member.role}</p>
                             </div>
-                            <ArrowUpRight size={14} className="mt-0.5 shrink-0 text-muted transition-colors group-hover:text-primary" />
-                          </div>
-                        </Link>
-                      ))}
+                            <ArrowUpRight
+                              size={14}
+                              className="mt-0.5 shrink-0 text-muted transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
+                            />
+                          </Link>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="mt-4 text-sm text-muted">{t("projects.detail.noMembers")}</p>

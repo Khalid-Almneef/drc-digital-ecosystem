@@ -7,6 +7,7 @@ import Link from "next/link";
 import {
   Lightbulb, Wrench, Cpu, Box, Plus, Star, Trash2, Loader2, X, ExternalLink,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { useEscape } from "@/lib/hooks/useEscape";
 import { useApi } from "@/lib/hooks/useApi";
@@ -446,6 +447,7 @@ function ApplicationsInbox() {
 
 export default function InnovationDashboard() {
   const { lang } = useLang();
+  const { isAnyLeader } = useAuth();
   const [activeView, setActiveView] = useState<View>("projects");
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [archiveKey, setArchiveKey] = useState(0);
@@ -516,7 +518,7 @@ export default function InnovationDashboard() {
             </button>
           ))}
         </div>
-        {activeView === "projects" && (
+        {activeView === "projects" && isAnyLeader && (
           <button
             onClick={() => setShowCreateProject(true)}
             className="btn-primary px-4 py-2 text-sm flex items-center gap-2"

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { useEscape } from "@/lib/hooks/useEscape";
 import { MemberPerformancePanel } from "@/components/dashboard/MemberPerformancePanel";
@@ -140,6 +141,7 @@ const sourceTypeLabel: Record<HourRow["sourceType"], string> = {
 
 export default function HRDashboard() {
   const { lang } = useLang();
+  const { isAnyLeader } = useAuth();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "membership" | "alumni" | "endorsements">("members");
 
@@ -1278,6 +1280,7 @@ export default function HRDashboard() {
             </p>
           </div>
 
+          {isAnyLeader && (
           <div className="panel-soft mb-5 p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
@@ -1376,6 +1379,7 @@ export default function HRDashboard() {
               </button>
             </div>
           </div>
+          )}
 
           {hourTasksLoading ? (
             <div className="space-y-3">
@@ -1427,29 +1431,33 @@ export default function HRDashboard() {
                     >
                       <ExternalLink size={12} />
                     </Link>
-                    <button
-                      onClick={() => startEditHourTask(task)}
-                      className="btn-secondary inline-flex items-center justify-center px-2.5 py-2"
-                      title={tr("Edit task", "تعديل المهمة")}
-                    >
-                      <Pencil size={12} />
-                    </button>
-                    <button
-                      onClick={() => deleteHourTask(task)}
-                      disabled={deletingHourTaskId === task.opportunityId}
-                      className="btn-secondary inline-flex items-center justify-center px-2.5 py-2 text-red-500 hover:bg-red-500/10 disabled:opacity-50"
-                      title={tr("Delete task", "حذف المهمة")}
-                    >
-                      {deletingHourTaskId === task.opportunityId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                    </button>
-                    <button
-                      onClick={() => toggleHourTask(task.opportunityId, task.isActive)}
-                      disabled={togglingHourTaskId === task.opportunityId}
-                      className="btn-primary px-3 py-2 text-xs inline-flex items-center gap-1.5"
-                    >
-                      {togglingHourTaskId === task.opportunityId ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
-                      {task.isActive ? "Close Task" : "Reopen Task"}
-                    </button>
+                    {isAnyLeader && (
+                      <>
+                        <button
+                          onClick={() => startEditHourTask(task)}
+                          className="btn-secondary inline-flex items-center justify-center px-2.5 py-2"
+                          title={tr("Edit task", "تعديل المهمة")}
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          onClick={() => deleteHourTask(task)}
+                          disabled={deletingHourTaskId === task.opportunityId}
+                          className="btn-secondary inline-flex items-center justify-center px-2.5 py-2 text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+                          title={tr("Delete task", "حذف المهمة")}
+                        >
+                          {deletingHourTaskId === task.opportunityId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                        </button>
+                        <button
+                          onClick={() => toggleHourTask(task.opportunityId, task.isActive)}
+                          disabled={togglingHourTaskId === task.opportunityId}
+                          className="btn-primary px-3 py-2 text-xs inline-flex items-center gap-1.5"
+                        >
+                          {togglingHourTaskId === task.opportunityId ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
+                          {task.isActive ? "Close Task" : "Reopen Task"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               ))}

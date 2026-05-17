@@ -17,8 +17,10 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/hooks/useApi";
+import { MemberMultiSelect } from "@/components/dashboard/MemberMultiSelect";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ImageUrlInput } from "@/components/dashboard/ImageUrlInput";
@@ -113,7 +115,7 @@ const TASK_FORM = {
   title: "",
   description: "",
   departmentSlug: "hr" as "hr" | "pr" | "media",
-  assignedTo: "",
+  assigneeIds: [] as number[],
   dueDate: "",
   priority: "medium" as TaskPriority,
 };
@@ -438,6 +440,7 @@ function CreateSessionModal({
 
 export default function MadaratDashboard() {
   const { lang } = useLang();
+  const { isAnyLeader } = useAuth();
   const [activeView, setActiveView] = useState<View>("sessions");
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const { data: sessionsData, isLoading: sessionsLoading, mutate: loadSessions } = useApi<MadaratSessionRow[]>("/api/madarat/sessions");
@@ -593,21 +596,43 @@ export default function MadaratDashboard() {
     try {
       const departmentIdMap: Record<string, number> = { hr: 2, pr: 6, media: 5 };
       if (editingTaskId == null) {
-        await api.post("/api/madarat/tasks", {
-          title: taskForm.title,
-          description: taskForm.description || undefined,
-          departmentId: departmentIdMap[taskForm.departmentSlug],
-          assignedTo: taskForm.assignedTo ? Number(taskForm.assignedTo) : undefined,
-          dueDate: taskForm.dueDate || undefined,
-          priority: taskForm.priority,
-        });
-        toast.success(tr("Task created", "تم إنشاء المهمة"));
+        // Multi-assign on create: one task per assignee, fired in parallel.
+        // No assignees → single unassigned task.
+        const targets: Array<number | null> = taskForm.assigneeIds.length > 0
+          ? taskForm.assigneeIds
+          : [null];
+        const results = await Promise.allSettled(
+          targets.map((memberId) =>
+            api.post("/api/madarat/tasks", {
+              title: taskForm.title,
+              description: taskForm.description || undefined,
+              departmentId: departmentIdMap[taskForm.departmentSlug],
+              assignedTo: memberId ?? undefined,
+              dueDate: taskForm.dueDate || undefined,
+              priority: taskForm.priority,
+            }),
+          ),
+        );
+        const failed = results.filter((r) => r.status === "rejected").length;
+        const created = results.length - failed;
+        if (failed === 0) {
+          toast.success(
+            created === 1
+              ? tr("Task created", "تم إنشاء المهمة")
+              : tr(`${created} tasks created`, `تم إنشاء ${created} مهام`),
+          );
+        } else if (created > 0) {
+          toast.error(tr(`${created} created · ${failed} failed`, `${created} نجحت · ${failed} فشلت`));
+        } else {
+          throw new Error("All assignments failed");
+        }
       } else {
+        // Edit path keeps single assignee (first picked, or null).
         await api.patch(`/api/tasks/${editingTaskId}`, {
           title: taskForm.title,
           description: taskForm.description || "",
           departmentId: departmentIdMap[taskForm.departmentSlug],
-          assignedTo: taskForm.assignedTo ? Number(taskForm.assignedTo) : null,
+          assignedTo: taskForm.assigneeIds[0] ?? null,
           dueDate: taskForm.dueDate || null,
           priority: taskForm.priority,
         });
@@ -629,7 +654,7 @@ export default function MadaratDashboard() {
       title: task.title,
       description: task.description ?? "",
       departmentSlug: (task.departmentSlug ?? "hr") as "hr" | "pr" | "media",
-      assignedTo: task.assignedTo ? String(task.assignedTo) : "",
+      assigneeIds: task.assignedTo ? [task.assignedTo] : [],
       dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
       priority: task.priority,
     });
@@ -894,6 +919,7 @@ export default function MadaratDashboard() {
             <StatCard icon={Radio} label={tr("Media Tasks", "مهام الإعلام")} value={departmentCounts.media} color="text-purple-300" />
           </div>
 
+          {isAnyLeader && (
           <div className="glass-card p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -924,7 +950,7 @@ export default function MadaratDashboard() {
                 <label className={labelCls}>{tr("Department", "القسم")}</label>
                 <select
                   value={taskForm.departmentSlug}
-                  onChange={(event) => setTaskForm((current) => ({ ...current, departmentSlug: event.target.value as "hr" | "pr" | "media", assignedTo: "" }))}
+                  onChange={(event) => setTaskForm((current) => ({ ...current, departmentSlug: event.target.value as "hr" | "pr" | "media", assigneeIds: [] }))}
                   className={selectCls}
                 >
                   {DEPARTMENT_OPTIONS.map((option) => (
@@ -932,14 +958,23 @@ export default function MadaratDashboard() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label className={labelCls}>{tr("Assignee", "المسؤول")}</label>
-                <select value={taskForm.assignedTo} onChange={(event) => setTaskForm((current) => ({ ...current, assignedTo: event.target.value }))} className={selectCls}>
-                  <option value="">{tr("Unassigned", "غير معيَّن")}</option>
-                  {filteredAssignees.map((member) => (
-                    <option key={member.memberId} value={member.memberId}>{member.fullName}</option>
-                  ))}
-                </select>
+              <div className="md:col-span-2">
+                <label className={labelCls}>
+                  {editingTaskId == null
+                    ? tr("Assignees (one task per person)", "المكلَّفون (مهمة لكل شخص)")
+                    : tr("Assignee", "المسؤول")}
+                </label>
+                <MemberMultiSelect
+                  members={filteredAssignees.map((m) => ({ memberId: m.memberId, fullName: m.fullName }))}
+                  value={editingTaskId == null ? taskForm.assigneeIds : taskForm.assigneeIds.slice(0, 1)}
+                  onChange={(next) => setTaskForm((current) => ({
+                    ...current,
+                    assigneeIds: editingTaskId == null ? next : next.slice(-1),
+                  }))}
+                  lang={lang as "en" | "ar"}
+                  emptyHint={["Unassigned (task will be open to the department)", "غير معيَّن (مهمة عامة في القسم)"]}
+                  placeholder={tr("Search members in this department…", "ابحث عن الأعضاء في هذا القسم…")}
+                />
               </div>
               <div>
                 <label className={labelCls}>{tr("Due Date", "تاريخ الاستحقاق")}</label>
@@ -963,6 +998,7 @@ export default function MadaratDashboard() {
               </button>
             </div>
           </div>
+          )}
 
           <div className="glass-card p-5">
             <h3 className="text-sm font-semibold text-foreground">{tr("Distribution and Tracking", "التوزيع والتتبّع")}</h3>
@@ -1013,21 +1049,25 @@ export default function MadaratDashboard() {
                         >
                           <ExternalLink size={12} />
                         </Link>
-                        <button
-                          onClick={() => startEditTask(task)}
-                          className="btn-secondary inline-flex items-center justify-center px-2.5 py-1.5"
-                          title={tr("Edit task", "تعديل المهمة")}
-                        >
-                          <Pencil size={12} />
-                        </button>
-                        <button
-                          onClick={() => deleteTask(task)}
-                          disabled={deletingTaskId === task.taskId}
-                          className="btn-secondary inline-flex items-center justify-center px-2.5 py-1.5 text-red-500 hover:bg-red-500/10 disabled:opacity-50"
-                          title={tr("Delete task", "حذف المهمة")}
-                        >
-                          {deletingTaskId === task.taskId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                        </button>
+                        {isAnyLeader && (
+                          <>
+                            <button
+                              onClick={() => startEditTask(task)}
+                              className="btn-secondary inline-flex items-center justify-center px-2.5 py-1.5"
+                              title={tr("Edit task", "تعديل المهمة")}
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button
+                              onClick={() => deleteTask(task)}
+                              disabled={deletingTaskId === task.taskId}
+                              className="btn-secondary inline-flex items-center justify-center px-2.5 py-1.5 text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+                              title={tr("Delete task", "حذف المهمة")}
+                            >
+                              {deletingTaskId === task.taskId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

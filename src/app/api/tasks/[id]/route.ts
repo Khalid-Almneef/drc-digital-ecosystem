@@ -18,6 +18,16 @@ export const GET = handle(async (_req, ctx) => {
     const assignee = task.assignedTo ? findMockMember(task.assignedTo) : null;
     const creator = task.createdBy ? findMockMember(task.createdBy) : null;
     const project = task.projectId ? store.projects.find((p) => p.projectId === task.projectId) : null;
+    const parent = task.parentTaskId ? store.tasks.find((t) => t.taskId === task.parentTaskId) : null;
+    const subtasks = store.tasks
+      .filter((t) => t.parentTaskId === task.taskId)
+      .map((t) => ({
+        taskId: t.taskId,
+        title: t.title,
+        status: t.status,
+        priority: t.priority,
+        assigneeName: t.assignedTo ? findMockMember(t.assignedTo)?.fullName ?? null : null,
+      }));
     return ok({
       taskId: task.taskId,
       title: task.title,
@@ -41,6 +51,9 @@ export const GET = handle(async (_req, ctx) => {
       departmentId: task.departmentId,
       departmentSlug: departmentById(task.departmentId)?.slug ?? null,
       departmentName: departmentById(task.departmentId)?.name ?? null,
+      parentTaskId: task.parentTaskId ?? null,
+      parentTaskTitle: parent?.title ?? null,
+      subtasks,
     });
   }
 
@@ -66,17 +79,32 @@ export const GET = handle(async (_req, ctx) => {
             p.title AS "projectTitle",
             t.department_id AS "departmentId",
             d.slug::text AS "departmentSlug",
-            d.name AS "departmentName"
+            d.name AS "departmentName",
+            t.parent_task_id AS "parentTaskId",
+            pt.title AS "parentTaskTitle"
        FROM tasks t
        LEFT JOIN projects    p  ON p.project_id   = t.project_id
        LEFT JOIN departments d  ON d.department_id = t.department_id
        LEFT JOIN profiles    ap ON ap.member_id   = t.assigned_to
        LEFT JOIN profiles    cp ON cp.member_id   = t.created_by
+       LEFT JOIN tasks       pt ON pt.task_id     = t.parent_task_id
       WHERE t.task_id = $1`,
     [taskId],
   );
   if (!row) return err(404, "Task not found");
-  return ok(row);
+  const { rows: subtasks } = await query(
+    `SELECT t.task_id AS "taskId",
+            t.title,
+            t.status::text AS status,
+            t.priority::text AS priority,
+            p.full_name AS "assigneeName"
+       FROM tasks t
+       LEFT JOIN profiles p ON p.member_id = t.assigned_to
+      WHERE t.parent_task_id = $1
+      ORDER BY t.created_at ASC`,
+    [taskId],
+  );
+  return ok({ ...row, subtasks });
 });
 
 const Patch = z.object({
