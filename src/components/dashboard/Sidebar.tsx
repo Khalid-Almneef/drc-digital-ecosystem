@@ -30,6 +30,7 @@ import {
   FileText,
   GraduationCap,
   Inbox,
+  Trash2,
 } from "lucide-react";
 
 interface NavItem {
@@ -53,6 +54,7 @@ const navItems: NavItem[] = [
   { label: "Madarat", labelAr: "مدارات", href: "/dashboard/madarat", icon: GraduationCap, dept: "madarat" },
   { label: "Admin Panel", labelAr: "لوحة الإدارة", href: "/dashboard/leaders", icon: Shield, clubLeaderOnly: true },
   { label: "Roster Manager", labelAr: "إدارة الفريق", href: "/dashboard/roster", icon: Users, clubLeaderOnly: true },
+  { label: "Trash", labelAr: "سلة المحذوفات", href: "/dashboard/trash", icon: Trash2, clubLeaderOnly: true },
   { label: "Requests", labelAr: "الطلبات", href: "/dashboard/requests", icon: Inbox, anyLeader: true },
   { label: "Content", labelAr: "المحتوى", href: "/dashboard/content", icon: FileText, anyLeader: true },
   { label: "My Profile", labelAr: "ملفي", href: "/dashboard/profile", icon: UserCircle },
