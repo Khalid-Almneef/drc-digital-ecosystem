@@ -42,6 +42,7 @@ export const GET = handle(async (req) => {
       }
       return ok(
         store.volunteerHourTasks
+          .filter((task) => !task.isDeleted)
           .slice()
           .sort((a, b) => `${b.participationDate}${b.createdAt}`.localeCompare(`${a.participationDate}${a.createdAt}`))
           .map((task) => ({
@@ -65,7 +66,7 @@ export const GET = handle(async (req) => {
 
     return ok(
       store.volunteerHourTasks
-        .filter((task) => task.isActive)
+        .filter((task) => !task.isDeleted && task.isActive)
         .filter((task) =>
           task.assignedDepartmentId == null || task.assignedDepartmentId === session.departmentId,
         )
@@ -112,6 +113,7 @@ export const GET = handle(async (req) => {
            ON d.department_id = t.assigned_department_id
          LEFT JOIN volunteer_hours vh
            ON vh.source_type = 'hour_task' AND vh.source_id = t.opportunity_id
+        WHERE t.is_deleted = FALSE
         GROUP BY t.opportunity_id, p.full_name, d.slug, d.name
         ORDER BY t.participation_date DESC, t.created_at DESC`,
     );
@@ -152,6 +154,7 @@ export const GET = handle(async (req) => {
           LIMIT 1
        ) vh ON TRUE
       WHERE t.is_active = TRUE
+        AND t.is_deleted = FALSE
         AND (t.assigned_department_id IS NULL OR t.assigned_department_id = $2)
       ORDER BY (CASE WHEN t.assigned_department_id = $2 THEN 0 ELSE 1 END),
                t.participation_date DESC, t.created_at DESC`,

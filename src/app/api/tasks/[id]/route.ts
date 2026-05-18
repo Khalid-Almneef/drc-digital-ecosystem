@@ -14,13 +14,13 @@ export const GET = handle(async (_req, ctx) => {
   if (isMockMode()) {
     const store = getMockStore();
     const task = store.tasks.find((t) => t.taskId === taskId);
-    if (!task) return err(404, "Task not found");
+    if (!task || task.isDeleted) return err(404, "Task not found");
     const assignee = task.assignedTo ? findMockMember(task.assignedTo) : null;
     const creator = task.createdBy ? findMockMember(task.createdBy) : null;
     const project = task.projectId ? store.projects.find((p) => p.projectId === task.projectId) : null;
     const parent = task.parentTaskId ? store.tasks.find((t) => t.taskId === task.parentTaskId) : null;
     const subtasks = store.tasks
-      .filter((t) => t.parentTaskId === task.taskId)
+      .filter((t) => t.parentTaskId === task.taskId && !t.isDeleted)
       .map((t) => ({
         taskId: t.taskId,
         title: t.title,
@@ -88,7 +88,7 @@ export const GET = handle(async (_req, ctx) => {
        LEFT JOIN profiles    ap ON ap.member_id   = t.assigned_to
        LEFT JOIN profiles    cp ON cp.member_id   = t.created_by
        LEFT JOIN tasks       pt ON pt.task_id     = t.parent_task_id
-      WHERE t.task_id = $1`,
+      WHERE t.task_id = $1 AND t.is_deleted = FALSE`,
     [taskId],
   );
   if (!row) return err(404, "Task not found");
@@ -100,7 +100,7 @@ export const GET = handle(async (_req, ctx) => {
             p.full_name AS "assigneeName"
        FROM tasks t
        LEFT JOIN profiles p ON p.member_id = t.assigned_to
-      WHERE t.parent_task_id = $1
+      WHERE t.parent_task_id = $1 AND t.is_deleted = FALSE
       ORDER BY t.created_at ASC`,
     [taskId],
   );
@@ -145,7 +145,7 @@ export const PATCH = handle(async (req, ctx) => {
   if (isMockMode()) {
     const store = getMockStore();
     const task = store.tasks.find((t) => t.taskId === Number(id));
-    if (!task) return ok({ success: true });
+    if (!task || task.isDeleted) return ok({ success: true });
     const isManager = canManageTask(s, { departmentId: task.departmentId, createdBy: task.createdBy });
     const isAssignee = task.assignedTo === s.memberId;
     if (!isManager && !(isAssignee && isMemberSubmissionPatch(b))) {
@@ -224,7 +224,7 @@ export const PATCH = handle(async (req, ctx) => {
   }
   const existing = await queryOne<{ assignedTo: number | null; departmentId: number | null; createdBy: number | null }>(
     `SELECT assigned_to AS "assignedTo", department_id AS "departmentId", created_by AS "createdBy"
-       FROM tasks WHERE task_id = $1`,
+       FROM tasks WHERE task_id = $1 AND is_deleted = FALSE`,
     [id],
   );
   if (!existing) return ok({ success: true });
@@ -284,25 +284,40 @@ export const PATCH = handle(async (req, ctx) => {
   return ok({ success: true });
 });
 
+// Soft-delete. The row stays in the DB so volunteer-hour rows, MOTM
+// leaderboards, and other audit dependents don't blow up. List endpoints
+// filter is_deleted = false by default.
 export const DELETE = handle(async (_req, ctx) => {
   const s = await requireSession();
   const { id } = await ctx.params;
   if (isMockMode()) {
     const store = getMockStore();
     const task = store.tasks.find((t) => t.taskId === Number(id));
-    if (task && !canManageTask(s, { departmentId: task.departmentId, createdBy: task.createdBy })) {
+    if (!task) return ok({ success: true });
+    if (!canManageTask(s, { departmentId: task.departmentId, createdBy: task.createdBy })) {
       return err(403, "Only committee leaders can delete tasks");
     }
-    store.tasks = store.tasks.filter((t) => t.taskId !== Number(id));
+    task.isDeleted = true;
+    // Subtasks cascade-delete with the parent for visual consistency.
+    for (const sub of store.tasks) {
+      if (sub.parentTaskId === task.taskId) sub.isDeleted = true;
+    }
     return ok({ success: true });
   }
   const existing = await queryOne<{ departmentId: number | null; createdBy: number | null }>(
-    `SELECT department_id AS "departmentId", created_by AS "createdBy" FROM tasks WHERE task_id = $1`,
+    `SELECT department_id AS "departmentId", created_by AS "createdBy" FROM tasks WHERE task_id = $1 AND is_deleted = FALSE`,
     [id],
   );
   if (existing && !canManageTask(s, { departmentId: existing.departmentId, createdBy: existing.createdBy })) {
     return err(403, "Only committee leaders can delete tasks");
   }
-  await query(`DELETE FROM tasks WHERE task_id = $1`, [id]);
+  await query(
+    `UPDATE tasks
+        SET is_deleted = TRUE,
+            deleted_at = NOW(),
+            deleted_by = $2
+      WHERE task_id = $1 OR parent_task_id = $1`,
+    [id, s.memberId],
+  );
   return ok({ success: true });
 });

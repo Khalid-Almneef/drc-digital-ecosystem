@@ -5,7 +5,7 @@ import { findMockMember, getMockStore, isMockMode } from "@/lib/mock-store";
 export const GET = handle(async () => {
   if (isMockMode()) {
     const rows = getMockStore().projects
-      .filter((p) => p.isFeatured && p.isPublished)
+      .filter((p) => !p.isDeleted && p.isFeatured && p.isPublished)
       .map((p) => ({
         projectId: p.projectId,
         title: p.title,
@@ -25,7 +25,7 @@ export const GET = handle(async () => {
             lp.full_name AS "leadName", lp.avatar_url AS "leadAvatarUrl"
        FROM projects p
        LEFT JOIN profiles lp ON lp.member_id = p.lead_member_id
-      WHERE p.is_featured = TRUE AND p.is_published = TRUE
+      WHERE p.is_featured = TRUE AND p.is_published = TRUE AND p.is_deleted = FALSE
       ORDER BY p.updated_at DESC`,
   );
   return ok(rows);

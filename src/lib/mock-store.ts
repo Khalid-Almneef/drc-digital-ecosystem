@@ -83,6 +83,8 @@ export interface MockTask {
   // Optional in seed data — readers coalesce to null. Used by the project-tasks
   // subtask feature (one level of nesting under project tasks).
   parentTaskId?: number | null;
+  // Soft-delete flag. Optional so existing seed literals don't need touching.
+  isDeleted?: boolean;
 }
 
 export interface MockProject {
@@ -105,6 +107,7 @@ export interface MockProject {
   cost: number | null;
   applicationsEnabled: boolean;
   applicationRoles: string[];
+  isDeleted?: boolean;
 }
 
 export interface MockProjectMember {
@@ -162,6 +165,7 @@ export interface MockVolunteerHourTask {
   createdBy: number | null;
   createdAt: string;
   updatedAt: string;
+  isDeleted?: boolean;
 }
 
 export interface MockApplication {
@@ -237,6 +241,7 @@ export interface MockAnnouncement {
   createdAt: string;
   expiresAt: string | null;
   authorId: number | null;
+  isDeleted?: boolean;
 }
 
 export interface MockAnnouncementRequest {
@@ -252,6 +257,7 @@ export interface MockAnnouncementRequest {
   createdAt: string;
   resolvedAt: string | null;
   publishedAnnouncementId: number | null;
+  isDeleted?: boolean;
 }
 
 export interface MockMediaContent {
@@ -285,6 +291,7 @@ export interface MockEvent {
   seatsAvailable: number | null;
   isPublished: boolean;
   creditHours: number;
+  isDeleted?: boolean;
 }
 
 export interface MockWorkshop {
@@ -303,6 +310,7 @@ export interface MockWorkshop {
   isPublished: boolean;
   membersOnly?: boolean;
   sessions?: MockWorkshopSession[];
+  isDeleted?: boolean;
 }
 
 export interface MockWorkshopSession {
@@ -332,6 +340,7 @@ export interface MockLiveWorkshop {
   isPublished: boolean;
   membersOnly?: boolean;
   createdAt: string;
+  isDeleted?: boolean;
 }
 
 export type MockLiveWorkshopRegistrationStatus = "pending" | "accepted" | "rejected";
@@ -366,6 +375,7 @@ export interface MockMadaratSession {
   isPublished: boolean;
   createdBy: number | null;
   createdAt: string;
+  isDeleted?: boolean;
 }
 
 export interface MockMadaratRegistration {

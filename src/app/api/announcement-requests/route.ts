@@ -24,6 +24,7 @@ export const GET = handle(async (req) => {
   if (isMockMode()) {
     const store = getMockStore();
     const rows = store.announcementRequests
+      .filter((request) => !request.isDeleted)
       .filter((request) => scope === "all" || request.requestedBy === session.memberId || (isHr && request.requestedBy === session.memberId))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map((request) => ({
@@ -35,12 +36,12 @@ export const GET = handle(async (req) => {
   }
 
   const params: unknown[] = [];
-  const where: string[] = [];
+  const where: string[] = ["ar.is_deleted = FALSE"];
   if (scope !== "all") {
     params.push(session.memberId);
-    where.push(`requested_by = $${params.length}`);
+    where.push(`ar.requested_by = $${params.length}`);
   }
-  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const whereSql = `WHERE ${where.join(" AND ")}`;
   const { rows } = await query(
     `SELECT ar.request_id AS "requestId",
             ar.title,

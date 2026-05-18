@@ -106,17 +106,21 @@ export const DELETE = handle(async (_req, ctx) => {
   if (isMockMode()) {
     const store = getMockStore();
     const target = store.madaratSessions.find((item) => item.sessionId === sessionId);
-    if (!target) return err(404, "Session not found");
+    if (!target || target.isDeleted) return err(404, "Session not found");
     if (target.createdBy && departmentById(findMockMember(target.createdBy)?.departmentId ?? null)?.slug !== "madarat" && target.createdBy !== session.memberId) {
       return err(403, "Forbidden");
     }
-    store.madaratSessions = store.madaratSessions.filter((item) => item.sessionId !== sessionId);
-    store.madaratRegistrations = store.madaratRegistrations.filter((item) => item.sessionId !== sessionId);
+    target.isDeleted = true;
     return ok({ success: true });
   }
 
   const allowed = await assertAllowed(sessionId, session.memberId);
   if (!allowed) return err(404, "Session not found");
-  await query(`DELETE FROM madarat_sessions WHERE session_id = $1`, [sessionId]);
+  await query(
+    `UPDATE madarat_sessions
+        SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = $2
+      WHERE session_id = $1 AND is_deleted = FALSE`,
+    [sessionId, session.memberId],
+  );
   return ok({ success: true });
 });

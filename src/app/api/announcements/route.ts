@@ -10,6 +10,7 @@ export const GET = handle(async () => {
   const s = await requireSession();
   if (isMockMode()) {
     const rows = getMockStore().announcements
+      .filter((a) => !a.isDeleted)
       .filter((a) => !a.expiresAt || a.expiresAt > new Date().toISOString())
       .sort((a, b) => {
         if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
@@ -41,7 +42,8 @@ export const GET = handle(async () => {
             p.full_name AS "authorName"
        FROM announcements a
        LEFT JOIN profiles p ON p.member_id = a.created_by
-      WHERE (a.expires_at IS NULL OR a.expires_at > NOW())
+      WHERE a.is_deleted = FALSE
+        AND (a.expires_at IS NULL OR a.expires_at > NOW())
         AND (a.target_position IS NULL OR a.target_position = $1::user_position)
         AND (a.target_department_id IS NULL OR a.target_department_id = $2)
       ORDER BY a.is_pinned DESC, a.created_at DESC`,

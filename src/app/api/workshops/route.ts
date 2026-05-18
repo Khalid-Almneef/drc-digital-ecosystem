@@ -15,7 +15,7 @@ function sortSessions(workshop: MockWorkshop) {
 export const GET = handle(async () => {
   await requireSession();
   if (isMockMode()) {
-    return ok(getMockStore().workshops.map(sortSessions));
+    return ok(getMockStore().workshops.filter((w) => !w.isDeleted).map(sortSessions));
   }
   const { rows } = await query(
     `SELECT w.workshop_id AS "workshopId", w.title, w.title_ar AS "titleAr",
@@ -43,6 +43,7 @@ export const GET = handle(async () => {
             ) AS sessions
        FROM workshops w
        LEFT JOIN workshop_sessions ws ON ws.workshop_id = w.workshop_id
+      WHERE w.is_deleted = FALSE
       GROUP BY w.workshop_id
       ORDER BY w.recorded_date DESC NULLS LAST, w.created_at DESC`,
   );

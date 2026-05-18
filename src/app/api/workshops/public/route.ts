@@ -21,7 +21,7 @@ export const GET = handle(async () => {
   if (isMockMode()) {
     return ok(
       getMockStore().workshops
-        .filter((w) => w.isPublished)
+        .filter((w) => !w.isDeleted && w.isPublished)
         .filter((w) => isAuthenticated || !(w.membersOnly ?? false))
         .map(withSessionFallback),
     );
@@ -52,6 +52,7 @@ export const GET = handle(async () => {
        FROM workshops w
        LEFT JOIN workshop_sessions ws ON ws.workshop_id = w.workshop_id
       WHERE w.is_published = TRUE
+        AND w.is_deleted = FALSE
         AND ($1::boolean = TRUE OR w.members_only = FALSE)
       GROUP BY w.workshop_id
       ORDER BY w.recorded_date DESC NULLS LAST`,

@@ -12,7 +12,7 @@ export const GET = handle(async (_req, ctx) => {
   if (isMockMode()) {
     const store = getMockStore();
     const project = store.projects.find((p) => p.projectId === Number(id));
-    if (!project) return err(404, "Not found");
+    if (!project || project.isDeleted) return err(404, "Not found");
     const dept = departmentById(project.departmentId);
     const lead = project.leadMemberId ? findMockMember(project.leadMemberId) : null;
     const members = store.projectMembers
@@ -41,7 +41,7 @@ export const GET = handle(async (_req, ctx) => {
        FROM projects p
        LEFT JOIN departments d ON d.department_id = p.department_id
        LEFT JOIN profiles lp   ON lp.member_id    = p.lead_member_id
-      WHERE p.project_id = $1`,
+      WHERE p.project_id = $1 AND p.is_deleted = FALSE`,
     [id],
   );
   if (!project) return err(404, "Not found");
@@ -256,15 +256,32 @@ export const DELETE = handle(async (_req, ctx) => {
     return ok({ requestId, requiresApproval: true }, { status: 202 });
   }
 
+  // Soft-delete. We don't cascade to tasks/members/applications/deliverables —
+  // the row just disappears from the UI while the related history stays
+  // intact for the audit ledger (volunteer hours, MOTM, etc.).
   if (isMockMode()) {
     const store = getMockStore();
-    store.projects = store.projects.filter((p) => p.projectId !== projectId);
-    store.projectMembers = store.projectMembers.filter((pm) => pm.projectId !== projectId);
-    store.projectApplications = store.projectApplications.filter((application) => application.projectId !== projectId);
-    store.deliverables = store.deliverables.filter((d) => d.projectId !== projectId);
-    store.tasks = store.tasks.filter((t) => t.projectId !== projectId);
+    const target = store.projects.find((p) => p.projectId === projectId);
+    if (!target) return err(404, "Not found");
+    target.isDeleted = true;
+    // Hide subordinate tasks from the UI too, so the deleted project's
+    // tasks don't bleed into other views.
+    for (const t of store.tasks) {
+      if (t.projectId === projectId) t.isDeleted = true;
+    }
     return ok({ success: true });
   }
-  await query(`DELETE FROM projects WHERE project_id = $1`, [id]);
+  await query(
+    `UPDATE projects
+        SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = $2
+      WHERE project_id = $1 AND is_deleted = FALSE`,
+    [id, s.memberId],
+  );
+  await query(
+    `UPDATE tasks
+        SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = $2
+      WHERE project_id = $1 AND is_deleted = FALSE`,
+    [id, s.memberId],
+  );
   return ok({ success: true });
 });

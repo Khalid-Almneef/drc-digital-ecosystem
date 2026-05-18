@@ -30,7 +30,7 @@ export const GET = handle(async (_req, ctx) => {
 
   if (isMockMode()) {
     const task = getMockStore().volunteerHourTasks.find((entry) => entry.opportunityId === opportunityId);
-    if (!task) return err(404, "Volunteer hour task not found");
+    if (!task || task.isDeleted) return err(404, "Volunteer hour task not found");
     const department = task.assignedDepartmentId ? departmentById(task.assignedDepartmentId) : null;
     return ok({
       ...task,
@@ -55,7 +55,7 @@ export const GET = handle(async (_req, ctx) => {
             t.updated_at AS "updatedAt"
        FROM volunteer_hour_tasks t
        LEFT JOIN departments d ON d.department_id = t.assigned_department_id
-      WHERE t.opportunity_id = $1`,
+      WHERE t.opportunity_id = $1 AND t.is_deleted = FALSE`,
     [opportunityId],
   );
   if (!row) return err(404, "Volunteer hour task not found");
@@ -72,7 +72,7 @@ export const PATCH = handle(async (req, ctx) => {
 
   if (isMockMode()) {
     const task = getMockStore().volunteerHourTasks.find((entry) => entry.opportunityId === opportunityId);
-    if (!task) return err(404, "Volunteer hour task not found");
+    if (!task || task.isDeleted) return err(404, "Volunteer hour task not found");
     if (body.title !== undefined) task.title = body.title;
     if (body.description !== undefined) task.description = body.description ?? null;
     if (body.hours !== undefined) task.hours = body.hours;
@@ -125,6 +125,9 @@ export const PATCH = handle(async (req, ctx) => {
   return ok({ success: true });
 });
 
+// Soft-delete (see docs/superpowers/specs/2026-05-15…design.md). The row stays
+// in the DB so volunteer-hour records and registrations tied to the
+// opportunity remain queryable for audit. List endpoints filter is_deleted.
 export const DELETE = handle(async (_req, ctx) => {
   const session = await requireSession();
   if (!canManage(session)) return err(403, "Forbidden");
@@ -135,14 +138,18 @@ export const DELETE = handle(async (_req, ctx) => {
   if (isMockMode()) {
     const store = getMockStore();
     const target = store.volunteerHourTasks.find((entry) => entry.opportunityId === opportunityId);
-    if (!target) return err(404, "Volunteer hour task not found");
-    store.volunteerHourTasks = store.volunteerHourTasks.filter((entry) => entry.opportunityId !== opportunityId);
+    if (!target || target.isDeleted) return err(404, "Volunteer hour task not found");
+    target.isDeleted = true;
     return ok({ success: true });
   }
 
   const result = await query(
-    `DELETE FROM volunteer_hour_tasks WHERE opportunity_id = $1`,
-    [opportunityId],
+    `UPDATE volunteer_hour_tasks
+        SET is_deleted = TRUE,
+            deleted_at = NOW(),
+            deleted_by = $2
+      WHERE opportunity_id = $1 AND is_deleted = FALSE`,
+    [opportunityId, session.memberId],
   );
   if (result.rowCount === 0) return err(404, "Volunteer hour task not found");
   return ok({ success: true });

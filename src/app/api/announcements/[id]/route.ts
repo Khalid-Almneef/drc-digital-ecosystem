@@ -71,11 +71,17 @@ export const DELETE = handle(async (_req, ctx) => {
   const { id } = await ctx.params;
   if (isMockMode()) {
     const store = getMockStore();
-    store.announcements = store.announcements.filter((a) => a.announcementId !== Number(id));
+    const target = store.announcements.find((a) => a.announcementId === Number(id));
+    if (target) target.isDeleted = true;
     return ok({ success: true });
   }
   const gate = await gateAnnouncement(s, id);
   if (gate) return gate;
-  await query(`DELETE FROM announcements WHERE announcement_id = $1`, [id]);
+  await query(
+    `UPDATE announcements
+        SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = $2
+      WHERE announcement_id = $1 AND is_deleted = FALSE`,
+    [id, s.memberId],
+  );
   return ok({ success: true });
 });

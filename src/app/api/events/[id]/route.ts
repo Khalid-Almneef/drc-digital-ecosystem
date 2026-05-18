@@ -121,10 +121,15 @@ export const DELETE = handle(async (_req, ctx) => {
   if (isMockMode()) {
     const store = getMockStore();
     const eventId = Number(id);
-    store.events = store.events.filter((item) => item.eventId !== eventId);
-    store.volunteerHours = store.volunteerHours.filter((hour) => !(hour.sourceType === "event_credit" && hour.sourceId === eventId));
+    const target = store.events.find((item) => item.eventId === eventId);
+    if (target) target.isDeleted = true;
     return ok({ success: true });
   }
-  await query(`DELETE FROM events WHERE event_id = $1`, [id]);
+  await query(
+    `UPDATE events
+        SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = $2
+      WHERE event_id = $1 AND is_deleted = FALSE`,
+    [id, s.memberId],
+  );
   return ok({ success: true });
 });

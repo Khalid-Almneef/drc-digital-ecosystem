@@ -9,6 +9,7 @@ export const GET = handle(async () => {
   if (isMockMode()) {
     return ok(
       getMockStore().events
+        .filter((event) => !event.isDeleted)
         .slice()
         .sort((a, b) => b.startTime.localeCompare(a.startTime))
         .map((event) => ({
@@ -22,7 +23,7 @@ export const GET = handle(async () => {
             location, seats_available AS "seatsAvailable", max_team_size AS "maxTeamSize",
             requirements, is_published AS "isPublished", credit_hours AS "creditHours",
             created_by AS "createdBy", created_at AS "createdAt"
-       FROM events ORDER BY start_time DESC`,
+       FROM events WHERE is_deleted = FALSE ORDER BY start_time DESC`,
   );
   return ok(rows);
 });

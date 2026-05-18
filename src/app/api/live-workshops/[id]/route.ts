@@ -109,16 +109,22 @@ export const PATCH = handle(async (req, ctx) => {
 });
 
 // DELETE /api/live-workshops/[id] — dev leaders
+// Soft-delete: keeps registration history queryable.
 export const DELETE = handle(async (_req, ctx) => {
   const s = await requireSession();
   if (!canManage(s)) return err(403, "Forbidden");
   const { id } = await ctx.params;
   if (isMockMode()) {
     const store = getMockStore();
-    store.liveWorkshops = store.liveWorkshops.filter((w) => w.liveWorkshopId !== Number(id));
-    store.liveWorkshopRegistrations = store.liveWorkshopRegistrations.filter((r) => r.liveWorkshopId !== Number(id));
+    const target = store.liveWorkshops.find((w) => w.liveWorkshopId === Number(id));
+    if (target) target.isDeleted = true;
     return ok({ success: true });
   }
-  await query(`DELETE FROM live_workshops WHERE live_workshop_id = $1`, [id]);
+  await query(
+    `UPDATE live_workshops
+        SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = $2
+      WHERE live_workshop_id = $1 AND is_deleted = FALSE`,
+    [id, s.memberId],
+  );
   return ok({ success: true });
 });

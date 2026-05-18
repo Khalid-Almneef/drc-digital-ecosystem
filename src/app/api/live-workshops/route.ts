@@ -18,7 +18,7 @@ export const GET = handle(async () => {
   if (!canManage(s)) return err(403, "Only development leaders can view all live workshops");
   if (isMockMode()) {
     const store = getMockStore();
-    const rows = store.liveWorkshops.map((w) => ({
+    const rows = store.liveWorkshops.filter((w) => !w.isDeleted).map((w) => ({
       liveWorkshopId: w.liveWorkshopId,
       title: w.title,
       titleAr: w.titleAr,
@@ -59,6 +59,7 @@ export const GET = handle(async () => {
       COUNT(r.registration_id)::int AS "registrationCount"
     FROM live_workshops lw
     LEFT JOIN live_workshop_registrations r ON r.live_workshop_id = lw.live_workshop_id
+    WHERE lw.is_deleted = FALSE
     GROUP BY lw.live_workshop_id
     ORDER BY lw.scheduled_at ASC
   `);

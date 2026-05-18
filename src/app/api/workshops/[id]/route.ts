@@ -123,9 +123,15 @@ export const DELETE = handle(async (_req, ctx) => {
   const { id } = await ctx.params;
   if (isMockMode()) {
     const store = getMockStore();
-    store.workshops = store.workshops.filter((workshop) => workshop.workshopId !== Number(id));
+    const target = store.workshops.find((workshop) => workshop.workshopId === Number(id));
+    if (target) target.isDeleted = true;
     return ok({ success: true });
   }
-  await query(`DELETE FROM workshops WHERE workshop_id = $1`, [id]);
+  await query(
+    `UPDATE workshops
+        SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = $2
+      WHERE workshop_id = $1 AND is_deleted = FALSE`,
+    [id, s.memberId],
+  );
   return ok({ success: true });
 });

@@ -21,6 +21,7 @@ import Link from "next/link";
 import { api } from "@/lib/client";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { MotmLeaderboardPanel } from "@/components/dashboard/MotmLeaderboardPanel";
+import { EditMemberModal, type EditableMember } from "@/components/dashboard/EditMemberModal";
 import { FormsManager } from "@/components/dashboard/FormsManager";
 import { AlumniManager } from "@/components/dashboard/AlumniManager";
 import { EndorsementsLeaderboard } from "@/components/dashboard/EndorsementsLeaderboard";
@@ -151,6 +152,21 @@ export default function HRDashboard() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [registerOpen, setRegisterOpen] = useState(false);
   useEscape(registerOpen, () => setRegisterOpen(false));
+  // Member edit modal: lazily fetch full profile when opening so the list
+  // endpoint doesn't have to carry every field.
+  const [editingMember, setEditingMember] = useState<EditableMember | null>(null);
+  const [openingMemberId, setOpeningMemberId] = useState<number | null>(null);
+  async function openMemberEdit(memberId: number) {
+    setOpeningMemberId(memberId);
+    try {
+      const full = await api.get<EditableMember>(`/api/members/${memberId}`);
+      setEditingMember(full);
+    } catch {
+      toast.error(tr("Failed to load member. Please try again.", "تعذّر تحميل بيانات العضو. حاول مرة أخرى."));
+    } finally {
+      setOpeningMemberId(null);
+    }
+  }
 
   // ── Applications ──
   const { data: applications = [], isLoading: appsLoading, mutate: loadApplications } = useApi<Application[]>("/api/applications");
@@ -743,6 +759,7 @@ export default function HRDashboard() {
                       <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Gender", "الجنس")}</th>
                       <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Public On Team", "ظاهر في الفريق")}</th>
                       <th className="text-left text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Status", "الحالة")}</th>
+                      <th className="text-right text-[11px] font-medium text-muted uppercase tracking-wider px-5 py-3">{tr("Actions", "إجراءات")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -782,11 +799,26 @@ export default function HRDashboard() {
                             {member.isActive ? "Active" : "Inactive"}
                           </span>
                         </td>
+                        <td className="px-5 py-3.5 text-right">
+                          <button
+                            onClick={() => openMemberEdit(member.memberId)}
+                            disabled={openingMemberId === member.memberId}
+                            className="btn-secondary inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] disabled:opacity-50"
+                            title={tr("Edit member", "تعديل العضو")}
+                          >
+                            {openingMemberId === member.memberId ? (
+                              <Loader2 size={11} className="animate-spin" />
+                            ) : (
+                              <Pencil size={11} />
+                            )}
+                            {tr("Edit", "تعديل")}
+                          </button>
+                        </td>
                       </motion.tr>
                     ))}
                     {filteredMembers.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-5 py-10 text-center text-sm text-muted">
+                        <td colSpan={7} className="px-5 py-10 text-center text-sm text-muted">
                           No members found.
                         </td>
                       </tr>
@@ -1679,6 +1711,14 @@ export default function HRDashboard() {
           <RegisterMemberModal
             onClose={() => setRegisterOpen(false)}
             onCreated={() => { setRegisterOpen(false); void loadMembers(); }}
+          />
+        )}
+        {editingMember && (
+          <EditMemberModal
+            member={editingMember}
+            departments={departmentOptions.map((d) => ({ departmentId: d.id, slug: d.slug, name: d.name }))}
+            onClose={() => setEditingMember(null)}
+            onSaved={() => { setEditingMember(null); void loadMembers(); }}
           />
         )}
       </AnimatePresence>

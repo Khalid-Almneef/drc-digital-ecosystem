@@ -23,10 +23,10 @@ export const GET = handle(async () => {
     const now = new Date();
     const store = getMockStore();
     const upcoming = store.events
-      .filter((e) => e.isPublished && new Date(e.startTime) >= now)
+      .filter((e) => !e.isDeleted && e.isPublished && new Date(e.startTime) >= now)
       .sort((a, b) => +new Date(a.startTime) - +new Date(b.startTime));
     const past = store.events
-      .filter((e) => e.isPublished && new Date(e.startTime) < now)
+      .filter((e) => !e.isDeleted && e.isPublished && new Date(e.startTime) < now)
       .sort((a, b) => +new Date(b.startTime) - +new Date(a.startTime))
       .slice(0, 50)
       .map(({ ...rest }) => rest);
@@ -63,7 +63,7 @@ export const GET = handle(async () => {
               type::text AS type, category, start_time AS "startTime", end_time AS "endTime",
               location, seats_available AS "seatsAvailable"
          FROM events
-        WHERE is_published = TRUE AND start_time >= NOW()
+        WHERE is_published = TRUE AND is_deleted = FALSE AND start_time >= NOW()
         ORDER BY start_time ASC`,
     ),
     query<PublicEventRow>(
@@ -71,7 +71,7 @@ export const GET = handle(async () => {
               type::text AS type, category, start_time AS "startTime", end_time AS "endTime",
               location, NULL::int AS "seatsAvailable"
          FROM events
-        WHERE is_published = TRUE AND start_time < NOW()
+        WHERE is_published = TRUE AND is_deleted = FALSE AND start_time < NOW()
         ORDER BY start_time DESC
         LIMIT 50`,
     ),
@@ -92,7 +92,7 @@ export const GET = handle(async () => {
               ms.registration_open AS "registrationOpen",
               ms.visibility
          FROM madarat_sessions ms
-        WHERE ms.is_published = TRUE AND ms.scheduled_at >= NOW()
+        WHERE ms.is_published = TRUE AND ms.is_deleted = FALSE AND ms.scheduled_at >= NOW()
         ORDER BY ms.scheduled_at ASC`,
     ),
     query<PublicEventRow>(
@@ -107,7 +107,7 @@ export const GET = handle(async () => {
               ms.location,
               NULL::int AS "seatsAvailable"
          FROM madarat_sessions ms
-        WHERE ms.is_published = TRUE AND ms.scheduled_at < NOW()
+        WHERE ms.is_published = TRUE AND ms.is_deleted = FALSE AND ms.scheduled_at < NOW()
         ORDER BY ms.scheduled_at DESC
         LIMIT 50`,
     ),

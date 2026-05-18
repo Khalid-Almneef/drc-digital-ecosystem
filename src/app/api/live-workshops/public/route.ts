@@ -87,6 +87,7 @@ export const GET = handle(async () => {
     FROM live_workshops lw
     LEFT JOIN live_workshop_registrations r ON r.live_workshop_id = lw.live_workshop_id
     WHERE lw.is_published = TRUE
+      AND lw.is_deleted = FALSE
       AND ($1::boolean = TRUE OR lw.members_only = FALSE)
     GROUP BY lw.live_workshop_id
     ORDER BY lw.scheduled_at ASC

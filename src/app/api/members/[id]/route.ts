@@ -77,6 +77,7 @@ const Patch = z.object({
   status: z.enum(["active", "inactive", "alumni", "suspended"]).optional(),
   isActive: z.boolean().optional(),
   departmentId: z.number().int().nullable().optional(),
+  position: z.enum(["president", "vice_president", "dept_leader", "dept_vice_leader", "sub_leader", "member"]).optional(),
   // Admin-set role label shown on the public team page (e.g. "Quality &
   // Assurance Lead", "Media Advisor"). Falls back to the position-derived
   // label when blank.
@@ -105,8 +106,13 @@ export const PATCH = handle(async (req, ctx) => {
       s.position === "dept_vice_leader" ||
       s.position === "sub_leader") &&
     s.departmentSlug === "hr";
+  // HR leadership can now edit any member's full profile (including names) —
+  // this is the canonical place for name corrections and member-data fixes.
+  // See docs/superpowers/specs/...-leader-only-tasks-and-subtasks-design.md
+  // and the corresponding HR member-edit modal in src/app/dashboard/hr.
   const canEditRoleLabel = isAdmin || isHrLead;
-  if (!isSelf && !isAdmin) return err(403, "Forbidden");
+  const canManageMember = isAdmin || isHrLead;
+  if (!isSelf && !canManageMember) return err(403, "Forbidden");
 
   const body = await parseBody(req, Patch);
   if (
@@ -136,8 +142,10 @@ export const PATCH = handle(async (req, ctx) => {
     if (body.isLinkedinPublic !== undefined) target.isLinkedinPublic = body.isLinkedinPublic;
     if (body.isPhonePublic !== undefined) target.isPhonePublic = body.isPhonePublic;
     if (body.isGithubPublic !== undefined) target.isGithubPublic = body.isGithubPublic;
-    if (isAdmin && body.isActive !== undefined) target.isActive = body.isActive;
-    if (isAdmin && body.departmentId !== undefined) {
+    if (canManageMember && body.isActive !== undefined) target.isActive = body.isActive;
+    // Position is admin-only to prevent HR from elevating themselves to VP.
+    if (isAdmin && body.position !== undefined) target.position = body.position;
+    if (canManageMember && body.departmentId !== undefined) {
       const dept = departmentById(body.departmentId ?? null);
       target.departmentId = dept?.id ?? null;
       target.departmentSlug = dept?.slug ?? null;
@@ -146,8 +154,8 @@ export const PATCH = handle(async (req, ctx) => {
     }
     return ok({ success: true });
   }
-  if (!isAdmin && (body.status || body.isActive !== undefined || body.departmentId !== undefined))
-    return err(403, "Only admins can change status/department");
+  if (!canManageMember && (body.status || body.isActive !== undefined || body.departmentId !== undefined))
+    return err(403, "Only admins or HR can change status/department");
 
   const profileFields: Record<string, unknown> = {};
   for (const k of [
@@ -177,11 +185,14 @@ export const PATCH = handle(async (req, ctx) => {
       [targetId, ...Object.values(profileFields)],
     );
   }
-  if (isAdmin) {
+  if (canManageMember) {
     if (body.isActive !== undefined)
       await query(`UPDATE users SET is_active = $1 WHERE member_id = $2`, [body.isActive, targetId]);
     if (body.departmentId !== undefined)
       await query(`UPDATE users SET department_id = $1 WHERE member_id = $2`, [body.departmentId, targetId]);
+  }
+  if (isAdmin && body.position !== undefined) {
+    await query(`UPDATE users SET position = $1::user_position WHERE member_id = $2`, [body.position, targetId]);
   }
   return ok({ success: true });
 });

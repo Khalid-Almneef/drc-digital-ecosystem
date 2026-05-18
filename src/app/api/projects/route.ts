@@ -9,7 +9,7 @@ export const GET = handle(async () => {
   await requireSession();
   if (isMockMode()) {
     const store = getMockStore();
-    return ok(store.projects.map((p) => {
+    return ok(store.projects.filter((p) => !p.isDeleted).map((p) => {
       const dept = departmentById(p.departmentId);
       const lead = p.leadMemberId ? findMockMember(p.leadMemberId) : null;
       return {
@@ -54,6 +54,7 @@ export const GET = handle(async () => {
        LEFT JOIN departments d ON d.department_id = p.department_id
        LEFT JOIN users u       ON u.member_id      = p.lead_member_id
        LEFT JOIN profiles lp   ON lp.member_id    = u.member_id
+      WHERE p.is_deleted = FALSE
       ORDER BY p.created_at DESC`,
   );
   return ok(rows);

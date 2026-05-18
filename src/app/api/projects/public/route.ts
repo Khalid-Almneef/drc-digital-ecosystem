@@ -8,7 +8,7 @@ export const GET = handle(async () => {
   if (isMockMode()) {
     const store = getMockStore();
     const rows = store.projects
-      .filter((p) => p.isPublished && p.status !== "archived" && (
+      .filter((p) => !p.isDeleted && p.isPublished && p.status !== "archived" && (
         p.status === "in_progress" ||
         p.status === "completed" ||
         p.status === "testing" ||
@@ -126,6 +126,7 @@ export const GET = handle(async () => {
      LEFT JOIN users          mu ON mu.member_id    = pm.member_id
      LEFT JOIN profiles       mp ON mp.member_id    = pm.member_id
     WHERE p.is_published = TRUE
+      AND p.is_deleted = FALSE
       AND p.status <> 'archived'
       AND (p.status IN ('in_progress','completed','testing') OR p.applications_enabled = TRUE)
     GROUP BY p.project_id, d.slug, d.name, lp.full_name, lp.avatar_url

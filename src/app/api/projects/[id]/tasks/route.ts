@@ -33,7 +33,7 @@ export const GET = handle(async (_req, ctx) => {
   const { id } = await ctx.params;
   if (isMockMode()) {
     const rows = getMockStore().tasks
-      .filter((t) => t.projectId === Number(id))
+      .filter((t) => t.projectId === Number(id) && !t.isDeleted)
       .map((t) => ({
         taskId: t.taskId,
         title: t.title,
@@ -56,7 +56,7 @@ export const GET = handle(async (_req, ctx) => {
             t.parent_task_id AS "parentTaskId"
        FROM tasks t
        LEFT JOIN profiles p ON p.member_id = t.assigned_to
-      WHERE t.project_id = $1 ORDER BY t.created_at DESC`,
+      WHERE t.project_id = $1 AND t.is_deleted = FALSE ORDER BY t.created_at DESC`,
     [id],
   );
   return ok(rows);

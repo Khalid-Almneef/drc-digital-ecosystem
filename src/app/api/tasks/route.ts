@@ -22,6 +22,7 @@ export const GET = handle(async (req) => {
   if (isMockMode()) {
     const store = getMockStore();
     const rows = store.tasks
+      .filter((t) => !t.isDeleted)
       .filter((t) => (q.mine === "1" ? t.assignedTo === s.memberId : true))
       .filter((t) => (!q.mine && q.assignedTo ? t.assignedTo === Number(q.assignedTo) : true))
       .filter((t) => (!q.status ? true : t.status === q.status))
@@ -57,7 +58,7 @@ export const GET = handle(async (req) => {
     return ok(rows);
   }
 
-  const conditions: string[] = [];
+  const conditions: string[] = ["t.is_deleted = FALSE"];
   const params: unknown[] = [];
 
   if (q.mine === "1") {

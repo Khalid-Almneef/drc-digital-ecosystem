@@ -32,6 +32,7 @@ export const GET = handle(async () => {
     const store = getMockStore();
     return ok(
       store.madaratSessions
+        .filter((session) => !session.isDeleted)
         .slice()
         .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))
         .map((session) => ({
@@ -79,6 +80,7 @@ export const GET = handle(async () => {
        LEFT JOIN madarat_session_registrations r ON r.session_id = ms.session_id
        LEFT JOIN users ureg ON LOWER(ureg.email) = LOWER(r.email)
        LEFT JOIN profiles preg ON preg.member_id = ureg.member_id
+      WHERE ms.is_deleted = FALSE
       GROUP BY ms.session_id, p.full_name
       ORDER BY ms.scheduled_at ASC`,
   );
