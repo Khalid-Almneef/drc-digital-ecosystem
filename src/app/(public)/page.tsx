@@ -85,11 +85,11 @@ function Hero({ lang, t }: { lang: string; t: (k: string) => string }) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-auto max-w-4xl text-5xl font-extrabold tracking-[-0.045em] text-foreground sm:text-6xl lg:text-7xl xl:leading-[0.98]"
+          className="mx-auto max-w-4xl text-5xl font-extrabold tracking-[-0.045em] text-foreground sm:text-6xl lg:text-7xl"
         >
-          <span className="gradient-text leading-[1.02]">{t("home.hero1")}</span>
+          <span className="gradient-text leading-[1.18] pb-1 inline-block">{t("home.hero1")}</span>
           <br />
-          <span className="gradient-text-accent leading-[1.02]">{t("home.hero2")}</span>
+          <span className="gradient-text-accent leading-[1.18] pb-1 inline-block">{t("home.hero2")}</span>
         </motion.h1>
 
         <motion.p

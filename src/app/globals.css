@@ -153,6 +153,7 @@ h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
   word-break: normal;
   overflow-wrap: break-word;
+  hyphens: manual;
 }
 
 h1 {
@@ -810,6 +811,7 @@ html[data-theme="light"] .btn-secondary:hover {
 
 [dir="rtl"] {
   direction: rtl;
+  hyphens: manual;
 }
 
 /* ── Image treatment ── */

@@ -155,7 +155,7 @@ function RegistrationModal({ workshop, onClose }: RegModalProps) {
         ) : (
           <>
             <div className="mb-6">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 mb-3">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-primary/10 text-primary border border-primary/20 mb-3">
                 <Radio size={10} className="animate-pulse" /> {t("workshops.modal.live")}
               </span>
               <h2 className="text-lg font-bold text-foreground leading-snug">{workshop.title}</h2>
@@ -270,27 +270,27 @@ function LiveCard({ workshop, onRegister, index }: { workshop: LiveWorkshop; onR
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex flex-wrap gap-2">
             {past ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-elevated text-muted border border-border">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-surface-elevated text-muted border border-border">
                 {t("workshops.badge.completed")}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-primary/10 text-primary border border-primary/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping inline-block" />
                 {t("workshops.badge.upcoming")}
               </span>
             )}
             {!past && workshop.registrationOpen && !full && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-green-400/10 text-green-400 border border-green-400/20">
                 {t("workshops.badge.open")}
               </span>
             )}
             {!past && !workshop.registrationOpen && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-elevated text-muted border border-border">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-surface-elevated text-muted border border-border">
                 {t("workshops.badge.closed")}
               </span>
             )}
             {full && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-amber-400/10 text-amber-400 border border-amber-400/20">
                 {t("workshops.badge.full")}
               </span>
             )}
@@ -335,19 +335,19 @@ function LiveCard({ workshop, onRegister, index }: { workshop: LiveWorkshop; onR
         {!past && workshop.myRegistrationStatus && (
           <div className="mb-3">
             {workshop.myRegistrationStatus === "pending" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-amber-400/10 text-amber-400 border border-amber-400/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
                 {lang === "ar" ? "بانتظار المراجعة" : "Awaiting review"}
               </span>
             )}
             {workshop.myRegistrationStatus === "accepted" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-green-400/10 text-green-400 border border-green-400/20">
                 <CheckCircle size={11} />
                 {lang === "ar" ? "مقبول" : "Accepted"}
               </span>
             )}
             {workshop.myRegistrationStatus === "rejected" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-400/10 text-red-400 border border-red-400/20">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap bg-red-400/10 text-red-400 border border-red-400/20">
                 <AlertCircle size={11} />
                 {lang === "ar" ? "غير موافق عليه" : "Not approved"}
               </span>
