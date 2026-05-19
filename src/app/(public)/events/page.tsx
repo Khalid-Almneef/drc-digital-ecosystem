@@ -22,6 +22,7 @@ interface UpcomingEvent {
   startTime: string;
   endTime: string | null;
   location: string | null;
+  locationUrl: string | null;
   seatsAvailable: number | null;
   imageUrl: string | null;
   registrationKind?: "madarat" | null;
@@ -200,11 +201,24 @@ export default function EventsPage() {
                           <Clock size={13} className="text-primary/60" />
                           {formatEventTime(event.startTime, event.endTime, lang)}
                         </span>
-                        {event.location && (
-                          <span className="flex items-center gap-1.5">
-                            <MapPin size={13} className="text-primary/60" />
-                            {event.location}
-                          </span>
+                        {(event.location || event.locationUrl) && (
+                          event.locationUrl ? (
+                            <a
+                              href={event.locationUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-1.5 text-primary hover:underline"
+                            >
+                              <MapPin size={13} className="text-primary/60" />
+                              {event.location || (lang === "ar" ? "افتح الخريطة" : "Open map")}
+                            </a>
+                          ) : (
+                            <span className="flex items-center gap-1.5">
+                              <MapPin size={13} className="text-primary/60" />
+                              {event.location}
+                            </span>
+                          )
                         )}
                         {typeof event.seatsAvailable === "number" && (
                           <span className="flex items-center gap-1.5">
@@ -308,10 +322,22 @@ export default function EventsPage() {
                         {event.description}
                       </p>
                     )}
-                    {event.location && (
-                      <p className="text-xs text-muted flex items-center gap-1 mt-auto">
-                        <MapPin size={11} /> {event.location}
-                      </p>
+                    {(event.location || event.locationUrl) && (
+                      event.locationUrl ? (
+                        <a
+                          href={event.locationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-xs text-primary hover:underline flex items-center gap-1 mt-auto"
+                        >
+                          <MapPin size={11} /> {event.location || (lang === "ar" ? "افتح الخريطة" : "Open map")}
+                        </a>
+                      ) : (
+                        <p className="text-xs text-muted flex items-center gap-1 mt-auto">
+                          <MapPin size={11} /> {event.location}
+                        </p>
+                      )
                     )}
                   </motion.div>
                 ))}
@@ -474,11 +500,23 @@ function EventDetailsModal({ event, onClose, onExpandImage, onRegister, t, lang 
               <Clock size={14} className="text-primary/70" />
               {formatEventTime(event.startTime, event.endTime, lang)}
             </span>
-            {event.location && (
-              <span className="flex items-center gap-1.5">
-                <MapPin size={14} className="text-primary/70" />
-                {event.location}
-              </span>
+            {(event.location || event.locationUrl) && (
+              event.locationUrl ? (
+                <a
+                  href={event.locationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-primary hover:underline"
+                >
+                  <MapPin size={14} className="text-primary/70" />
+                  {event.location || (lang === "ar" ? "افتح الخريطة" : "Open map")}
+                </a>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <MapPin size={14} className="text-primary/70" />
+                  {event.location}
+                </span>
+              )
             )}
             {upcoming && typeof event.seatsAvailable === "number" && (
               <span className="flex items-center gap-1.5">

@@ -12,6 +12,7 @@ interface PublicEventRow {
   startTime: string;
   endTime: string | null;
   location: string | null;
+  locationUrl: string | null;
   seatsAvailable: number | null;
   registrationKind?: "madarat" | null;
   registrationOpen?: boolean | null;
@@ -41,6 +42,7 @@ export const GET = handle(async () => {
         startTime: event.startTime,
         endTime: event.endTime,
         location: event.location,
+        locationUrl: null,
         seatsAvailable: event.seatsAvailable,
       })),
       past: past.map((event) => ({
@@ -53,6 +55,7 @@ export const GET = handle(async () => {
         startTime: event.startTime,
         endTime: event.endTime,
         location: event.location,
+        locationUrl: null,
       })),
     });
   }
@@ -61,7 +64,7 @@ export const GET = handle(async () => {
     query<PublicEventRow>(
       `SELECT event_id AS "eventId", title, description, image_url AS "imageUrl",
               type::text AS type, category, start_time AS "startTime", end_time AS "endTime",
-              location, seats_available AS "seatsAvailable"
+              location, NULL::text AS "locationUrl", seats_available AS "seatsAvailable"
          FROM events
         WHERE is_published = TRUE AND is_deleted = FALSE AND start_time >= NOW()
         ORDER BY start_time ASC`,
@@ -69,7 +72,7 @@ export const GET = handle(async () => {
     query<PublicEventRow>(
       `SELECT event_id AS "eventId", title, description, image_url AS "imageUrl",
               type::text AS type, category, start_time AS "startTime", end_time AS "endTime",
-              location, NULL::int AS "seatsAvailable"
+              location, NULL::text AS "locationUrl", NULL::int AS "seatsAvailable"
          FROM events
         WHERE is_published = TRUE AND is_deleted = FALSE AND start_time < NOW()
         ORDER BY start_time DESC
@@ -85,6 +88,7 @@ export const GET = handle(async () => {
               ms.scheduled_at AS "startTime",
               CASE WHEN ms.duration_min IS NOT NULL THEN ms.scheduled_at + (ms.duration_min || ' minutes')::interval ELSE NULL END AS "endTime",
               ms.location,
+              ms.location_url AS "locationUrl",
               CASE WHEN ms.max_registrants IS NULL THEN NULL
                    ELSE GREATEST(ms.max_registrants - COALESCE((SELECT COUNT(*)::int FROM madarat_session_registrations r WHERE r.session_id = ms.session_id), 0), 0)
               END AS "seatsAvailable",
@@ -105,6 +109,7 @@ export const GET = handle(async () => {
               ms.scheduled_at AS "startTime",
               CASE WHEN ms.duration_min IS NOT NULL THEN ms.scheduled_at + (ms.duration_min || ' minutes')::interval ELSE NULL END AS "endTime",
               ms.location,
+              ms.location_url AS "locationUrl",
               NULL::int AS "seatsAvailable"
          FROM madarat_sessions ms
         WHERE ms.is_published = TRUE AND ms.is_deleted = FALSE AND ms.scheduled_at < NOW()

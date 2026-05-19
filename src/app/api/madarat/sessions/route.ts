@@ -4,6 +4,10 @@ import { requireDeptLeaderOf } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { findMockMember, getMockStore, isMockMode, nextMockId } from "@/lib/mock-store";
 
+// URL fields accept either a valid URL or an empty string (which the route
+// normalizes to NULL). max(2048) caps absurd paste-bombs before .url() runs.
+const urlOrEmpty = z.union([z.string().url().max(2048), z.literal("")]).optional();
+
 const Body = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
@@ -16,12 +20,13 @@ const Body = z.object({
   scheduledAt: z.string().datetime().optional(),
   durationMin: z.number().int().positive().optional(),
   location: z.string().optional(),
-  meetingUrl: z.string().max(2048).optional().or(z.literal("")),
+  locationUrl: urlOrEmpty,
+  meetingUrl: urlOrEmpty,
   maxRegistrants: z.number().int().positive().optional(),
   registrationOpen: z.boolean().default(false),
   isPublished: z.boolean().default(false),
   visibility: z.enum(["public", "club_only"]).default("public"),
-  imageUrl: z.string().max(2048).optional().or(z.literal("")),
+  imageUrl: urlOrEmpty,
   attendanceCount: z.number().int().min(0).nullable().optional(),
 });
 
@@ -61,6 +66,7 @@ export const GET = handle(async () => {
             ms.scheduled_at AS "scheduledAt",
             ms.duration_min AS "durationMin",
             ms.location,
+            ms.location_url AS "locationUrl",
             ms.meeting_url AS "meetingUrl",
             ms.max_registrants AS "maxRegistrants",
             ms.image_url AS "imageUrl",
@@ -104,6 +110,7 @@ export const POST = handle(async (req) => {
       scheduledAt: body.scheduledAt ?? new Date().toISOString(),
       durationMin: body.durationMin ?? null,
       location: body.location ?? null,
+      locationUrl: body.locationUrl || null,
       meetingUrl: body.meetingUrl || null,
       maxRegistrants: body.maxRegistrants ?? null,
       registrationOpen: body.registrationOpen,
@@ -117,9 +124,9 @@ export const POST = handle(async (req) => {
   const { rows } = await query<{ session_id: number }>(
     `INSERT INTO madarat_sessions
        (title, description, interviewee_name, interviewer_name, interviewee_role, program_type, scheduled_at,
-        duration_min, location, meeting_url, max_registrants, registration_open, is_published, visibility,
+        duration_min, location, location_url, meeting_url, max_registrants, registration_open, is_published, visibility,
         image_url, attendance_count, created_by)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
      RETURNING session_id`,
     [
       body.title,
@@ -131,6 +138,7 @@ export const POST = handle(async (req) => {
       body.scheduledAt ?? new Date().toISOString(),
       body.durationMin ?? null,
       body.location ?? null,
+      body.locationUrl || null,
       body.meetingUrl || null,
       body.maxRegistrants ?? null,
       body.registrationOpen,

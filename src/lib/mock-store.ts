@@ -369,6 +369,7 @@ export interface MockMadaratSession {
   scheduledAt: string;
   durationMin: number | null;
   location: string | null;
+  locationUrl?: string | null;
   meetingUrl: string | null;
   maxRegistrants: number | null;
   registrationOpen: boolean;

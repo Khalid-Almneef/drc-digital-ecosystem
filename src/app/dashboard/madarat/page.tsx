@@ -43,6 +43,8 @@ interface MadaratSessionRow {
   scheduledAt: string;
   durationMin: number | null;
   location: string | null;
+  locationUrl: string | null;
+  meetingUrl: string | null;
   maxRegistrants: number | null;
   registrationOpen: boolean;
   isPublished: boolean;
@@ -104,6 +106,8 @@ const SESSION_FORM = {
   scheduledAt: "",
   durationMin: "",
   location: "",
+  locationUrl: "",
+  meetingUrl: "",
   maxRegistrants: "",
   imageUrl: "",
   registrationOpen: false,
@@ -352,7 +356,7 @@ function CreateSessionModal({
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           <div>
             <label className={labelCls}>{tr("Session Title", "عنوان الجلسة")}</label>
-            <input value={form.title} onChange={(event) => onChange({ title: event.target.value })} className={inputCls} placeholder={tr("Career conversation with…", "حوار مهني مع…")} />
+            <input type="text" required maxLength={255} value={form.title} onChange={(event) => onChange({ title: event.target.value })} className={inputCls} placeholder={tr("Career conversation with…", "حوار مهني مع…")} />
           </div>
           <div>
             <label className={labelCls}>{tr("Program Type", "نوع البرنامج")}</label>
@@ -364,15 +368,15 @@ function CreateSessionModal({
           </div>
           <div>
             <label className={labelCls}>{tr("Interviewee", "الضيف")}</label>
-            <input value={form.intervieweeName} onChange={(event) => onChange({ intervieweeName: event.target.value })} className={inputCls} placeholder={tr("Guest name", "اسم الضيف")} />
+            <input type="text" maxLength={255} value={form.intervieweeName} onChange={(event) => onChange({ intervieweeName: event.target.value })} className={inputCls} placeholder={tr("Guest name", "اسم الضيف")} />
           </div>
           <div>
             <label className={labelCls}>{tr("Interviewer", "المُحاوِر")}</label>
-            <input value={form.interviewerName} onChange={(event) => onChange({ interviewerName: event.target.value })} className={inputCls} placeholder={tr("Host or interviewer name", "اسم المُقدِّم أو المُحاوِر")} />
+            <input type="text" maxLength={255} value={form.interviewerName} onChange={(event) => onChange({ interviewerName: event.target.value })} className={inputCls} placeholder={tr("Host or interviewer name", "اسم المُقدِّم أو المُحاوِر")} />
           </div>
           <div>
             <label className={labelCls}>{tr("Interviewee Role", "دور الضيف")}</label>
-            <input value={form.intervieweeRole} onChange={(event) => onChange({ intervieweeRole: event.target.value })} className={inputCls} placeholder={tr("Role, company, or alumni context", "المنصب، الشركة، أو خلفية الخريج")} />
+            <input type="text" maxLength={255} value={form.intervieweeRole} onChange={(event) => onChange({ intervieweeRole: event.target.value })} className={inputCls} placeholder={tr("Role, company, or alumni context", "المنصب، الشركة، أو خلفية الخريج")} />
           </div>
           <div>
             <label className={labelCls}>{tr("Date & Time", "التاريخ والوقت")}</label>
@@ -380,15 +384,23 @@ function CreateSessionModal({
           </div>
           <div>
             <label className={labelCls}>{tr("Duration (minutes)", "المدة (بالدقائق)")}</label>
-            <input type="number" min="1" value={form.durationMin} onChange={(event) => onChange({ durationMin: event.target.value })} className={inputCls} placeholder="60" />
+            <input type="number" min={1} max={1440} step={5} value={form.durationMin} onChange={(event) => onChange({ durationMin: event.target.value })} className={inputCls} placeholder="60" />
           </div>
           <div>
             <label className={labelCls}>{tr("Location", "المكان")}</label>
-            <input value={form.location} onChange={(event) => onChange({ location: event.target.value })} className={inputCls} placeholder={tr("Hall or room (in-person only)", "القاعة أو الغرفة (حضوري فقط)")} />
+            <input type="text" maxLength={255} value={form.location} onChange={(event) => onChange({ location: event.target.value })} className={inputCls} placeholder={tr("Hall or room (in-person only)", "القاعة أو الغرفة (حضوري فقط)")} />
+          </div>
+          <div>
+            <label className={labelCls}>{tr("Location URL (map / directions)", "رابط المكان (خرائط / إرشادات)")}</label>
+            <input type="url" inputMode="url" maxLength={2048} value={form.locationUrl} onChange={(event) => onChange({ locationUrl: event.target.value })} className={inputCls} placeholder="https://maps.google.com/…" />
+          </div>
+          <div>
+            <label className={labelCls}>{tr("Meeting URL (Zoom / Meet)", "رابط الاجتماع (زووم / Meet)")}</label>
+            <input type="url" inputMode="url" maxLength={2048} value={form.meetingUrl} onChange={(event) => onChange({ meetingUrl: event.target.value })} className={inputCls} placeholder="https://meet.google.com/…" />
           </div>
           <div>
             <label className={labelCls}>{tr("Max Registrants", "الحد الأقصى للمسجّلين")}</label>
-            <input type="number" min="1" value={form.maxRegistrants} onChange={(event) => onChange({ maxRegistrants: event.target.value })} className={inputCls} placeholder={tr("Leave empty for unlimited", "اتركه فارغاً للسعة المفتوحة")} />
+            <input type="number" min={1} max={10000} value={form.maxRegistrants} onChange={(event) => onChange({ maxRegistrants: event.target.value })} className={inputCls} placeholder={tr("Leave empty for unlimited", "اتركه فارغاً للسعة المفتوحة")} />
           </div>
           <div>
             <label className={labelCls}>{tr("Who Can Register?", "من يمكنه التسجيل؟")}</label>
@@ -513,6 +525,8 @@ export default function MadaratDashboard() {
         scheduledAt: new Date(sessionForm.scheduledAt).toISOString(),
         durationMin: sessionForm.durationMin ? Number(sessionForm.durationMin) : undefined,
         location: sessionForm.location || undefined,
+        locationUrl: sessionForm.locationUrl.trim() || undefined,
+        meetingUrl: sessionForm.meetingUrl.trim() || undefined,
         maxRegistrants: sessionForm.maxRegistrants ? Number(sessionForm.maxRegistrants) : undefined,
         registrationOpen: sessionForm.registrationOpen,
         isPublished: sessionForm.isPublished,
@@ -550,6 +564,8 @@ export default function MadaratDashboard() {
       scheduledAt: session.scheduledAt ? new Date(session.scheduledAt).toISOString().slice(0, 16) : "",
       durationMin: session.durationMin != null ? String(session.durationMin) : "",
       location: session.location ?? "",
+      locationUrl: session.locationUrl ?? "",
+      meetingUrl: session.meetingUrl ?? "",
       maxRegistrants: session.maxRegistrants != null ? String(session.maxRegistrants) : "",
       imageUrl: session.imageUrl ?? "",
       registrationOpen: session.registrationOpen,
@@ -815,7 +831,30 @@ export default function MadaratDashboard() {
                             {session.interviewerName ? <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("Interviewer", "المُحاوِر")}:</dt><dd className="text-foreground">{session.interviewerName}</dd></div> : null}
                             {session.intervieweeRole ? <div className="flex gap-2 sm:col-span-2"><dt className="shrink-0 text-muted/70">{tr("Role", "الدور")}:</dt><dd>{session.intervieweeRole}</dd></div> : null}
                             <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("When", "الموعد")}:</dt><dd>{fmtDateTime(session.scheduledAt)}</dd></div>
-                            {session.location ? <div className="flex gap-2"><dt className="shrink-0 text-muted/70">{tr("Where", "المكان")}:</dt><dd>{session.location}</dd></div> : null}
+                            {(session.location || session.locationUrl) ? (
+                              <div className="flex gap-2">
+                                <dt className="shrink-0 text-muted/70">{tr("Where", "المكان")}:</dt>
+                                <dd>
+                                  {session.locationUrl ? (
+                                    <a href={session.locationUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
+                                      {session.location || tr("Open map", "افتح الخريطة")}
+                                      <ExternalLink size={11} />
+                                    </a>
+                                  ) : session.location}
+                                </dd>
+                              </div>
+                            ) : null}
+                            {session.meetingUrl ? (
+                              <div className="flex gap-2">
+                                <dt className="shrink-0 text-muted/70">{tr("Meeting", "الاجتماع")}:</dt>
+                                <dd>
+                                  <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
+                                    {tr("Join link", "رابط الانضمام")}
+                                    <ExternalLink size={11} />
+                                  </a>
+                                </dd>
+                              </div>
+                            ) : null}
                           </dl>
                           {session.description ? <p className="mt-3 text-sm leading-6 text-muted">{session.description}</p> : null}
 
@@ -1113,6 +1152,8 @@ function LogPastSessionModal({ onClose, onCreated }: { onClose: () => void; onCr
     intervieweeRole: "",
     scheduledAt: "",
     location: "",
+    locationUrl: "",
+    meetingUrl: "",
     description: "",
     attendanceCount: "",
     imageUrl: "",
@@ -1136,6 +1177,8 @@ function LogPastSessionModal({ onClose, onCreated }: { onClose: () => void; onCr
         intervieweeRole: form.intervieweeRole.trim() || undefined,
         scheduledAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : undefined,
         location: form.location.trim() || undefined,
+        locationUrl: form.locationUrl.trim() || undefined,
+        meetingUrl: form.meetingUrl.trim() || undefined,
         description: form.description.trim() || undefined,
         attendanceCount: form.attendanceCount.trim() === "" ? undefined : Number(form.attendanceCount),
         imageUrl: form.imageUrl.trim() || undefined,
@@ -1180,7 +1223,7 @@ function LogPastSessionModal({ onClose, onCreated }: { onClose: () => void; onCr
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto px-5 py-4 sm:grid-cols-2">
           <label className="text-xs text-muted sm:col-span-2">
             <span className="block">{tr("Session title", "عنوان الجلسة")} <span className="text-primary">*</span></span>
-            <input className={fieldCls} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder={tr("e.g. Career conversation with …", "مثال: حوار مهني مع …")} />
+            <input type="text" required maxLength={255} className={fieldCls} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder={tr("e.g. Career conversation with …", "مثال: حوار مهني مع …")} />
           </label>
           <label className="text-xs text-muted">
             <span className="block">{tr("Program type", "نوع البرنامج")} <span className="text-primary">*</span></span>
@@ -1196,25 +1239,34 @@ function LogPastSessionModal({ onClose, onCreated }: { onClose: () => void; onCr
           </label>
           <label className="text-xs text-muted">
             <span className="block">{tr("Interviewee (optional)", "الضيف (اختياري)")}</span>
-            <input className={fieldCls} value={form.intervieweeName} onChange={(event) => setForm({ ...form, intervieweeName: event.target.value })} placeholder={tr("Guest name", "اسم الضيف")} />
+            <input type="text" maxLength={255} className={fieldCls} value={form.intervieweeName} onChange={(event) => setForm({ ...form, intervieweeName: event.target.value })} placeholder={tr("Guest name", "اسم الضيف")} />
           </label>
           <label className="text-xs text-muted">
             <span className="block">{tr("Interviewer (optional)", "المُحاوِر (اختياري)")}</span>
-            <input className={fieldCls} value={form.interviewerName} onChange={(event) => setForm({ ...form, interviewerName: event.target.value })} placeholder={tr("Host or interviewer", "اسم المُقدِّم")} />
+            <input type="text" maxLength={255} className={fieldCls} value={form.interviewerName} onChange={(event) => setForm({ ...form, interviewerName: event.target.value })} placeholder={tr("Host or interviewer", "اسم المُقدِّم")} />
           </label>
           <label className="text-xs text-muted">
             <span className="block">{tr("Interviewee role (optional)", "دور الضيف (اختياري)")}</span>
-            <input className={fieldCls} value={form.intervieweeRole} onChange={(event) => setForm({ ...form, intervieweeRole: event.target.value })} placeholder={tr("Role / company / alumni context", "المنصب / الشركة / خلفية الخريج")} />
+            <input type="text" maxLength={255} className={fieldCls} value={form.intervieweeRole} onChange={(event) => setForm({ ...form, intervieweeRole: event.target.value })} placeholder={tr("Role / company / alumni context", "المنصب / الشركة / خلفية الخريج")} />
           </label>
           <label className="text-xs text-muted">
             <span className="block">{tr("Location (optional)", "المكان (اختياري)")}</span>
-            <input className={fieldCls} value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} placeholder={tr("Hall or room", "القاعة أو الغرفة")} />
+            <input type="text" maxLength={255} className={fieldCls} value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} placeholder={tr("Hall or room", "القاعة أو الغرفة")} />
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Location URL (optional)", "رابط المكان (اختياري)")}</span>
+            <input type="url" inputMode="url" maxLength={2048} className={fieldCls} value={form.locationUrl} onChange={(event) => setForm({ ...form, locationUrl: event.target.value })} placeholder="https://maps.google.com/…" />
+          </label>
+          <label className="text-xs text-muted">
+            <span className="block">{tr("Meeting URL (optional)", "رابط الاجتماع (اختياري)")}</span>
+            <input type="url" inputMode="url" maxLength={2048} className={fieldCls} value={form.meetingUrl} onChange={(event) => setForm({ ...form, meetingUrl: event.target.value })} placeholder="https://meet.google.com/…" />
           </label>
           <label className="text-xs text-muted">
             <span className="block">{tr("Audience attended (optional)", "عدد الحضور (اختياري)")}</span>
             <input
               type="number"
-              min="0"
+              min={0}
+              max={10000}
               className={fieldCls}
               value={form.attendanceCount}
               onChange={(event) => setForm({ ...form, attendanceCount: event.target.value })}

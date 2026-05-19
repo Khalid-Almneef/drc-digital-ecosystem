@@ -4,6 +4,11 @@ import { requireDeptLeaderOf } from "@/lib/auth";
 import { query, queryOne } from "@/lib/db";
 import { departmentById, findMockMember, getMockStore, isMockMode } from "@/lib/mock-store";
 
+// URL fields accept either a valid URL or an empty string. Empty becomes NULL
+// in the SET loop below (params.push(value === "" ? null : value)), which lets
+// users clear a previously-set URL via the form.
+const urlOrEmpty = z.union([z.string().url().max(2048), z.literal("")]).optional();
+
 const Body = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
@@ -14,12 +19,13 @@ const Body = z.object({
   scheduledAt: z.string().datetime().optional(),
   durationMin: z.number().int().positive().nullable().optional(),
   location: z.string().optional(),
-  meetingUrl: z.string().max(2048).optional().or(z.literal("")),
+  locationUrl: urlOrEmpty,
+  meetingUrl: urlOrEmpty,
   maxRegistrants: z.number().int().positive().nullable().optional(),
   registrationOpen: z.boolean().optional(),
   isPublished: z.boolean().optional(),
   visibility: z.enum(["public", "club_only"]).optional(),
-  imageUrl: z.string().max(2048).nullable().optional(),
+  imageUrl: urlOrEmpty,
   attendanceCount: z.number().int().min(0).nullable().optional(),
 }).refine((value) => Object.values(value).some((entry) => entry !== undefined), {
   message: "At least one field is required.",
@@ -59,6 +65,7 @@ export const PATCH = handle(async (req, ctx) => {
     if (body.scheduledAt !== undefined) target.scheduledAt = body.scheduledAt;
     if (body.durationMin !== undefined) target.durationMin = body.durationMin ?? null;
     if (body.location !== undefined) target.location = body.location ?? null;
+    if (body.locationUrl !== undefined) target.locationUrl = body.locationUrl || null;
     if (body.meetingUrl !== undefined) target.meetingUrl = body.meetingUrl || null;
     if (body.maxRegistrants !== undefined) target.maxRegistrants = body.maxRegistrants ?? null;
     if (body.registrationOpen !== undefined) target.registrationOpen = body.registrationOpen;
@@ -79,6 +86,7 @@ export const PATCH = handle(async (req, ctx) => {
     scheduledAt: "scheduled_at",
     durationMin: "duration_min",
     location: "location",
+    locationUrl: "location_url",
     meetingUrl: "meeting_url",
     maxRegistrants: "max_registrants",
     registrationOpen: "registration_open",
