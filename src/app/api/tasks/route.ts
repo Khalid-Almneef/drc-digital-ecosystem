@@ -117,8 +117,20 @@ const Post = z.object({
   creditHours: z.number().nonnegative().optional(),
 });
 
-function canManageDepartmentTasks(session: { position: string; departmentId: number | null }, departmentId: number | null) {
+function canManageDepartmentTasks(
+  session: { position: string; departmentId: number | null; departmentSlug?: string | null },
+  departmentId: number | null,
+) {
   if (session.position === "president" || session.position === "vice_president") return true;
+  // HR leadership can assign work to any department (request #1 of the
+  // 2026-05-19 HR sweep). Other dept leaders are still scoped to their own
+  // committee.
+  const isHrLead =
+    (session.position === "dept_leader" ||
+      session.position === "dept_vice_leader" ||
+      session.position === "sub_leader") &&
+    session.departmentSlug === "hr";
+  if (isHrLead) return true;
   if (!departmentId || session.departmentId !== departmentId) return false;
   return ["dept_leader", "dept_vice_leader", "sub_leader"].includes(session.position);
 }

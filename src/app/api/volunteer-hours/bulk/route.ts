@@ -77,8 +77,11 @@ const RowSchema = z.object({
   email: z.string().email().optional(),
   memberId: z.number().int().positive().optional(),
   hours: z.number().positive().max(1000),
-  title: z.string().min(1).max(255),
-  participationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD"),
+  // title / participationDate / description are optional now — the simplified
+  // template only asks for full_name + total_hours. The legacy template
+  // (hours / title / participation_date / description per row) still works.
+  title: z.string().min(1).max(255).optional(),
+  participationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD").optional(),
   description: z.string().max(2000).nullable().optional(),
 });
 
@@ -112,13 +115,14 @@ export const POST = handle(async (req) => {
   const idx = (name: string) => rawHeader.indexOf(name);
   const idxEmail = idx("email");
   const idxMemberId = idx("member_id");
-  const idxHours = idx("hours");
+  // Simplified template uses `total_hours`; legacy template uses `hours`.
+  const idxHours = idx("hours") !== -1 ? idx("hours") : idx("total_hours");
   const idxTitle = idx("title");
   const idxDate = idx("participation_date");
   const idxDesc = idx("description");
 
-  if (idxHours === -1 || idxTitle === -1 || idxDate === -1) {
-    return err(400, "Missing required columns: hours, title, participation_date");
+  if (idxHours === -1) {
+    return err(400, "Missing required column: hours (or total_hours)");
   }
   if (idxEmail === -1 && idxMemberId === -1) {
     return err(400, "CSV needs either an email or member_id column");
@@ -128,6 +132,7 @@ export const POST = handle(async (req) => {
   type Pending = { result: RowResult; data: z.infer<typeof RowSchema> | null };
   const pending: Pending[] = [];
 
+  const todayDate = new Date().toISOString().slice(0, 10);
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
     const rowNumber = r + 1;
@@ -140,13 +145,18 @@ export const POST = handle(async (req) => {
     const descRaw = get(idxDesc);
 
     if (!hoursRaw && !titleRaw && !dateRaw) continue; // blank line: skip silently
+    // Simplified template: rows with no hours entered are intentional blanks
+    // (members the HR didn't credit this round). Skip them silently.
+    if (!hoursRaw) continue;
 
     const parsed = RowSchema.safeParse({
       email: emailRaw ? emailRaw.toLowerCase() : undefined,
       memberId: memberIdRaw ? Number(memberIdRaw) : undefined,
       hours: hoursRaw ? Number(hoursRaw) : NaN,
-      title: titleRaw,
-      participationDate: dateRaw,
+      // Default title / date when the simplified template is used so the row
+      // still records something meaningful.
+      title: titleRaw || "Credit hours adjustment",
+      participationDate: dateRaw || todayDate,
       description: descRaw || null,
     });
     if (!parsed.success) {
@@ -184,8 +194,8 @@ export const POST = handle(async (req) => {
         continue;
       }
       const dupe = store.volunteerHours.some(
-        (h) => h.memberId === memberId && h.participationDate === p.data!.participationDate &&
-               h.title === p.data!.title && h.sourceType === "bulk_import",
+        (h) => h.memberId === memberId && h.participationDate === (p.data!.participationDate ?? todayDate) &&
+               h.title === (p.data!.title ?? "Credit hours adjustment") && h.sourceType === "bulk_import",
       );
       if (dupe) {
         p.result.status = "skipped";
@@ -197,9 +207,9 @@ export const POST = handle(async (req) => {
         id: nextMockId("volunteerHour"),
         memberId,
         hours: p.data.hours,
-        title: p.data.title,
+        title: p.data.title ?? "Credit hours adjustment",
         description: p.data.description ?? null,
-        participationDate: p.data.participationDate,
+        participationDate: p.data.participationDate ?? todayDate,
         approvalStatus: "approved",
         approvedAt: new Date().toISOString(),
         approvedBy: s.memberId,
@@ -227,10 +237,12 @@ export const POST = handle(async (req) => {
       }
 
       // Idempotency: skip if a bulk_import row with same member + date + title already exists.
+      const rowTitle = p.data.title ?? "Credit hours adjustment";
+      const rowDate = p.data.participationDate ?? todayDate;
       const dupe = await c.query<{ volunthr_id: number }>(
         `SELECT volunthr_id FROM volunteer_hours
           WHERE member_id = $1 AND participation_date = $2::date AND title = $3 AND source_type = 'bulk_import'`,
-        [memberId, p.data.participationDate, p.data.title],
+        [memberId, rowDate, rowTitle],
       );
       if (dupe.rows.length > 0) {
         p.result.status = "skipped";
@@ -244,7 +256,7 @@ export const POST = handle(async (req) => {
             (member_id, hours, title, description, participation_date,
              approval_status, approved_by, approved_at, source_type)
          VALUES ($1, $2, $3, $4, $5::date, 'approved', $6, NOW(), 'bulk_import')`,
-        [memberId, p.data.hours, p.data.title, p.data.description ?? null, p.data.participationDate, s.memberId],
+        [memberId, p.data.hours, rowTitle, p.data.description ?? null, rowDate, s.memberId],
       );
       inserted++;
     }

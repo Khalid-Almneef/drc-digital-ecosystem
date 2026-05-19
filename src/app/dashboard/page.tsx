@@ -715,48 +715,85 @@ export default function DashboardOverview() {
 
               <div className="mb-5 rounded-[1.1rem] border border-border bg-surface/40 p-4">
                 <h3 className="text-sm font-semibold text-foreground">{tr("Available Hour Tasks", "مهام الساعات المتاحة")}</h3>
-                <div className="mt-3 space-y-3">
-                  {hourTasks.length === 0 ? (
-                    <p className="text-sm text-muted">{tr("No open hour tasks right now.", "ما فيه مهام ساعات مفتوحة حاليًا.")}</p>
-                  ) : hourTasks.slice(0, 4).map((task) => {
-                    // Repetitive tasks stay registrable even after prior logs.
-                    const blockedByPrior = !task.isRepetitive && Boolean(task.myRegistrationStatus);
-                    return (
-                    <div key={task.opportunityId} className="rounded-xl border border-border bg-background/35 p-3">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-sm font-medium text-foreground">{task.title}</p>
-                            <span className="badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20">{task.hours}h</span>
-                            {task.isRepetitive && (
-                              <span className="badge bg-amber-500/10 text-amber-300 border-amber-500/20">
-                                {tr("Repetitive", "متكررة")}
-                              </span>
-                            )}
-                            {task.assignedDepartmentId && (
-                              <span className="badge bg-primary/10 text-primary border-primary/20">
-                                {task.assignedDepartmentName ?? task.assignedDepartmentSlug}
-                              </span>
-                            )}
-                            {task.myRegistrationStatus && !task.isRepetitive ? <span className={hourStatusClass[task.myRegistrationStatus]}>{hourStatusLabel(task.myRegistrationStatus, lang)}</span> : null}
-                            {task.isRepetitive && task.myRegistrationCount > 0 ? (
-                              <span className="badge bg-surface-elevated text-muted border-border">
-                                {tr(`Logged ${task.myRegistrationCount}×`, `سُجِّلت ${task.myRegistrationCount}×`)}
-                              </span>
-                            ) : null}
-                          </div>
-                          <p className="mt-1 text-xs text-muted">{formatDate(task.participationDate, lang)}</p>
-                          {task.description ? <p className="mt-2 text-xs leading-5 text-muted">{task.description}</p> : null}
+                {(() => {
+                  // Repetitive tasks dominate the list in practice — render them
+                  // as compact 1-line rows separately from full one-off cards so
+                  // the panel feels less cluttered for the common case.
+                  const repetitive = hourTasks.filter((t) => t.isRepetitive);
+                  const oneOff = hourTasks.filter((t) => !t.isRepetitive);
+                  const oneOffVisible = oneOff.slice(0, 4);
+                  return (
+                    <div className="mt-3 space-y-4">
+                      {hourTasks.length === 0 && (
+                        <p className="text-sm text-muted">{tr("No open hour tasks right now.", "ما فيه مهام ساعات مفتوحة حاليًا.")}</p>
+                      )}
+                      {repetitive.length > 0 && (
+                        <div className="rounded-[1rem] border border-amber-400/15 bg-amber-400/5 p-1.5">
+                          <p className="px-2 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300/85">
+                            {tr("Recurring · log anytime", "متكررة · سجّل في أي وقت")}
+                          </p>
+                          <ul className="mt-1 divide-y divide-amber-400/10">
+                            {repetitive.slice(0, 6).map((task) => (
+                              <li key={task.opportunityId} className="flex items-center gap-3 px-2 py-2">
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium text-foreground">{task.title}</p>
+                                  <p className="mt-0.5 text-[11px] text-muted">
+                                    {task.hours}h
+                                    {task.myRegistrationCount > 0 ? ` · ${tr(`logged ${task.myRegistrationCount}×`, `سُجِّلت ${task.myRegistrationCount}×`)}` : ""}
+                                    {task.assignedDepartmentId ? ` · ${task.assignedDepartmentName ?? task.assignedDepartmentSlug}` : ""}
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => handleRegisterHourTask(task)}
+                                  disabled={registeringHourTaskId === task.opportunityId}
+                                  className="btn-primary inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] disabled:opacity-50"
+                                >
+                                  {registeringHourTaskId === task.opportunityId ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+                                  {tr("Log", "سجّل")}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <button onClick={() => handleRegisterHourTask(task)} disabled={blockedByPrior || registeringHourTaskId === task.opportunityId} className="btn-primary inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 text-xs disabled:opacity-50">
-                          {registeringHourTaskId === task.opportunityId ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-                          {blockedByPrior ? hourStatusLabel(task.myRegistrationStatus!, lang) : tr("Register", "تسجيل")}
-                        </button>
-                      </div>
+                      )}
+                      {oneOffVisible.length > 0 && (
+                        <div className="space-y-3">
+                          {oneOffVisible.map((task) => {
+                            const blockedByPrior = Boolean(task.myRegistrationStatus);
+                            return (
+                              <div key={task.opportunityId} className="rounded-xl border border-border bg-background/35 p-3">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                  <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <p className="text-sm font-medium text-foreground">{task.title}</p>
+                                      <span className="badge bg-cyan-500/10 text-cyan-300 border-cyan-500/20">{task.hours}h</span>
+                                      {task.assignedDepartmentId && (
+                                        <span className="badge bg-primary/10 text-primary border-primary/20">
+                                          {task.assignedDepartmentName ?? task.assignedDepartmentSlug}
+                                        </span>
+                                      )}
+                                      {task.myRegistrationStatus ? <span className={hourStatusClass[task.myRegistrationStatus]}>{hourStatusLabel(task.myRegistrationStatus, lang)}</span> : null}
+                                    </div>
+                                    <p className="mt-1 text-xs text-muted">{formatDate(task.participationDate, lang)}</p>
+                                    {task.description ? <p className="mt-2 text-xs leading-5 text-muted">{task.description}</p> : null}
+                                  </div>
+                                  <button
+                                    onClick={() => handleRegisterHourTask(task)}
+                                    disabled={blockedByPrior || registeringHourTaskId === task.opportunityId}
+                                    className="btn-primary inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 text-xs disabled:opacity-50"
+                                  >
+                                    {registeringHourTaskId === task.opportunityId ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                                    {blockedByPrior ? hourStatusLabel(task.myRegistrationStatus!, lang) : tr("Register", "تسجيل")}
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                    );
-                  })}
-                </div>
+                  );
+                })()}
               </div>
 
               <div className="space-y-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -15,13 +15,15 @@ import {
   ChevronDown, ChevronUp, Check, X, Save, ExternalLink,
   ThumbsUp, ThumbsDown, Shield, CalendarDays, Megaphone,
   Mail, Plus, Download, Upload, FileSpreadsheet, AlertTriangle,
-  Pencil, Trash2,
+  Pencil, Trash2, Send,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/client";
 import { MemberLink } from "@/components/dashboard/MemberLink";
 import { MotmLeaderboardPanel } from "@/components/dashboard/MotmLeaderboardPanel";
 import { EditMemberModal, type EditableMember } from "@/components/dashboard/EditMemberModal";
+import { AssignWorkPanel } from "@/components/dashboard/AssignWorkPanel";
+import { MemberMultiSelect } from "@/components/dashboard/MemberMultiSelect";
 import { FormsManager } from "@/components/dashboard/FormsManager";
 import { AlumniManager } from "@/components/dashboard/AlumniManager";
 import { EndorsementsLeaderboard } from "@/components/dashboard/EndorsementsLeaderboard";
@@ -144,7 +146,7 @@ export default function HRDashboard() {
   const { lang } = useLang();
   const { isAnyLeader } = useAuth();
   const tr = (en: string, ar: string) => (lang === "ar" ? ar : en);
-  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "performance" | "announcements" | "membership" | "alumni" | "endorsements">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "applications" | "forms" | "motm" | "hours" | "hourTasks" | "assignWork" | "performance" | "announcements" | "membership" | "alumni" | "endorsements">("members");
 
   // ── Members ──
   const { data: members = [], isLoading: membersLoading, mutate: loadMembers } = useApi<Member[]>("/api/members");
@@ -177,6 +179,44 @@ export default function HRDashboard() {
   const [motmSaving, setMotmSaving] = useState(false);
   const [motmOpen, setMotmOpen] = useState(false);
   const [motmQuery, setMotmQuery] = useState("");
+  // MOTM scheduling: HR can pick a target month (past, current, or future)
+  // to view or edit. Default is the current calendar month.
+  const motmNow = useMemo(() => new Date(), []);
+  const motmCurrentYear = motmNow.getUTCFullYear();
+  const motmCurrentMonth = motmNow.getUTCMonth() + 1;
+  const [motmTargetYear, setMotmTargetYear] = useState(motmCurrentYear);
+  const [motmTargetMonth, setMotmTargetMonth] = useState(motmCurrentMonth);
+  const motmIsCurrentMonth = motmTargetYear === motmCurrentYear && motmTargetMonth === motmCurrentMonth;
+  // Schedule list: all past + scheduled months. Used in the "Schedule" panel
+  // and to populate the per-month picks when the target month isn't current.
+  const { data: motmSchedule = [], mutate: loadMotmSchedule } = useApi<Array<{
+    year: number;
+    month: number;
+    members: Array<{ memberId: number; fullName: string | null; departmentName: string | null }>;
+  }>>("/api/members/month/schedule");
+  // Local editable buffer for non-current months (we can't reuse the SWR cache
+  // for `/api/members/month` because that always returns the current month).
+  const [motmDraft, setMotmDraft] = useState<MonthMember[] | null>(null);
+  // Whenever the target month switches, hydrate the draft from the schedule.
+  useEffect(() => {
+    if (motmIsCurrentMonth) {
+      setMotmDraft(null); // use the live `motm` query
+      return;
+    }
+    const found = motmSchedule.find((s) => s.year === motmTargetYear && s.month === motmTargetMonth);
+    setMotmDraft(
+      found
+        ? found.members
+            .filter((m) => m.fullName != null)
+            .map((m) => ({
+              memberId: m.memberId,
+              fullName: m.fullName ?? "Unknown",
+              departmentName: m.departmentName ?? "",
+            }))
+        : [],
+    );
+  }, [motmIsCurrentMonth, motmTargetYear, motmTargetMonth, motmSchedule]);
+  const activeMotm: MonthMember[] = motmIsCurrentMonth ? motm : motmDraft ?? [];
 
   // ── Hours ──
   const [hoursFilter, setHoursFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
@@ -253,6 +293,38 @@ export default function HRDashboard() {
   });
   const [editingHourTaskId, setEditingHourTaskId] = useState<number | null>(null);
   const [deletingHourTaskId, setDeletingHourTaskId] = useState<number | null>(null);
+  // Assign-to-member modal: holds the task we're assigning + the picked
+  // member ids. Used by the "Assign" button on each hour-task row.
+  const [assignHourTaskFor, setAssignHourTaskFor] = useState<VolunteerHourTaskRow | null>(null);
+  const [assignHourTaskMembers, setAssignHourTaskMembers] = useState<number[]>([]);
+  const [assigningHourTask, setAssigningHourTask] = useState(false);
+  async function submitHourTaskAssignment() {
+    if (!assignHourTaskFor || assignHourTaskMembers.length === 0) return;
+    setAssigningHourTask(true);
+    try {
+      const res = await api.post<{ assigned: number; skipped: number }>(
+        `/api/volunteer-hour-tasks/${assignHourTaskFor.opportunityId}/assign`,
+        { memberIds: assignHourTaskMembers },
+      );
+      const assigned = res?.assigned ?? 0;
+      const skipped = res?.skipped ?? 0;
+      if (assigned > 0) {
+        toast.success(
+          skipped > 0
+            ? tr(`${assigned} assigned · ${skipped} skipped`, `${assigned} مُسندة · ${skipped} متجاهَلة`)
+            : tr(`${assigned} member${assigned === 1 ? "" : "s"} assigned`, `تم إسناد ${assigned} عضو`),
+        );
+      } else {
+        toast.error(tr("Nothing was assigned (members may already be registered)", "لم يُسند أي شيء (قد يكون الأعضاء مسجَّلين سلفًا)"));
+      }
+      setAssignHourTaskFor(null);
+      setAssignHourTaskMembers([]);
+    } catch {
+      toast.error(tr("Assignment failed. Please try again.", "فشل الإسناد. حاول مرة أخرى."));
+    } finally {
+      setAssigningHourTask(false);
+    }
+  }
   const { data: departmentOptions = [] } = useApi<DepartmentOption[]>("/api/departments");
 
   // Hours review — accept-with-adjustment modal
@@ -327,11 +399,16 @@ export default function HRDashboard() {
 
   // MOTM is a draft-then-save flow: edit locally via SWR optimistic mutate, save POSTs the list.
   function toggleMotm(member: Member) {
-    void loadMotm((prev = []) => {
+    const apply = (prev: MonthMember[]) => {
       const already = prev.find((m) => m.memberId === member.memberId);
       if (already) return prev.filter((m) => m.memberId !== member.memberId);
       return [...prev, { memberId: member.memberId, fullName: member.fullName, departmentName: member.departmentName }];
-    }, false);
+    };
+    if (motmIsCurrentMonth) {
+      void loadMotm((prev = []) => apply(prev), false);
+    } else {
+      setMotmDraft((prev) => apply(prev ?? []));
+    }
   }
 
   function removeFromMotm(member: MonthMember) {
@@ -339,15 +416,28 @@ export default function HRDashboard() {
       ? `إزالة "${member.fullName}" من قائمة عضو الشهر؟`
       : `Remove "${member.fullName}" from Members of the Month?`;
     if (!window.confirm(confirmMsg)) return;
-    void loadMotm((prev = []) => prev.filter((m) => m.memberId !== member.memberId), false);
+    if (motmIsCurrentMonth) {
+      void loadMotm((prev = []) => prev.filter((m) => m.memberId !== member.memberId), false);
+    } else {
+      setMotmDraft((prev) => (prev ?? []).filter((m) => m.memberId !== member.memberId));
+    }
   }
 
   async function saveMotm() {
     setMotmSaving(true);
     try {
-      await api.patch("/api/members/month", { memberIds: motm.map((m) => m.memberId) });
-      toast.success(tr("Members of the Month saved", "تم حفظ أعضاء الشهر"));
+      const ids = activeMotm.map((m) => m.memberId);
+      await api.patch("/api/members/month", motmIsCurrentMonth
+        ? { memberIds: ids }
+        : { memberIds: ids, year: motmTargetYear, month: motmTargetMonth },
+      );
+      toast.success(
+        motmIsCurrentMonth
+          ? tr("Members of the Month saved", "تم حفظ أعضاء الشهر")
+          : tr("Schedule saved — auto-promotes when the month arrives", "تم حفظ الجدول — سيُفعَّل عند بدء الشهر"),
+      );
       void loadMotm();
+      void loadMotmSchedule();
     } catch {
       toast.error(tr("Save failed. Please try again.", "فشل الحفظ. حاول مرة أخرى."));
     } finally {
@@ -463,14 +553,20 @@ export default function HRDashboard() {
   }
 
   async function submitHourTask() {
-    if (!hourTaskForm.title.trim() || !hourTaskForm.hours || !hourTaskForm.participationDate) return;
+    if (!hourTaskForm.title.trim() || !hourTaskForm.hours) return;
+    // Repetitive tasks recur — the participation date is meaningless, so we
+    // hide it from the form and stamp today on submit (per HR sweep req #4).
+    const effectiveDate = hourTaskForm.isRepetitive
+      ? new Date().toISOString().slice(0, 10)
+      : hourTaskForm.participationDate;
+    if (!effectiveDate) return;
     setHourTaskSaving(true);
     try {
       const payload = {
         title: hourTaskForm.title.trim(),
         description: hourTaskForm.description.trim() || undefined,
         hours: Number(hourTaskForm.hours),
-        participationDate: hourTaskForm.participationDate,
+        participationDate: effectiveDate,
         isRepetitive: hourTaskForm.isRepetitive,
         assignedDepartmentId: hourTaskForm.assignedDepartmentId
           ? Number(hourTaskForm.assignedDepartmentId)
@@ -627,6 +723,7 @@ export default function HRDashboard() {
     motm: tr("MOTM", "MOTM"),
     hours: tr("Hours", "الساعات"),
     hourTasks: tr("Hour Tasks", "مهام الساعات"),
+    assignWork: tr("Assign Work", "إسناد عمل"),
     performance: tr("Performance", "الأداء"),
     announcements: tr("Announcements", "الإعلانات"),
     membership: tr("Membership", "العضوية"),
@@ -649,17 +746,35 @@ export default function HRDashboard() {
         description={tr("Manage club membership, applications, volunteer hours, and member records.", "أدر العضوية والطلبات والساعات التطوعية وبيانات الأعضاء.")}
       />
 
-      {/* Stats (focused: 3 north-star KPIs only — male/female/active surface inside Members) */}
-      <div className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+      {/* Stats + one quick-action so HR can launch the assignment flow from
+          any tab without hunting for the sub-tab. */}
+      <div className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <StatCard icon={Users}     label={tr("Total Members", "إجمالي الأعضاء")}        value={membersLoading ? "…" : totalMembers}   onClick={() => setActiveTab("members")} />
         <StatCard icon={UserPlus}  label={tr("Pending Applications", "الطلبات المعلقة")} value={appsLoading ? "…" : pendingApps}      onClick={() => setActiveTab("applications")} tone={pendingApps > 0 ? "warning" : "neutral"} />
         <StatCard icon={Shield}    label={tr("Join Status", "حالة الانضمام")}           value={accepting ? tr("Open", "مفتوح") : tr("Closed", "مغلق")} onClick={() => setActiveTab("membership")} tone={accepting ? "success" : "neutral"} />
+        <button
+          onClick={() => setActiveTab("assignWork")}
+          className="group flex items-center justify-between gap-3 rounded-2xl border border-primary/25 bg-primary/8 px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/12 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/40"
+        >
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/85">
+              {tr("Quick action", "إجراء سريع")}
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {tr("Assign work", "إسناد عمل")}
+            </p>
+            <p className="mt-0.5 text-[11px] text-muted truncate">
+              {tr("Send a task to anyone", "أرسل مهمة لأي شخص")}
+            </p>
+          </div>
+          <Send size={16} className="shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+        </button>
       </div>
 
       {/* Two-tier tabs: 4 primary groups → in-group sub-tabs */}
       {(() => {
         const GROUPS = {
-          people: { label: tr("People", "الأشخاص"), tabs: ["members", "applications", "alumni", "performance"] as const },
+          people: { label: tr("People", "الأشخاص"), tabs: ["members", "applications", "alumni", "performance", "assignWork"] as const },
           recognition: { label: tr("Recognition", "التقدير"), tabs: ["motm", "endorsements", "hours", "hourTasks"] as const },
           comms: { label: tr("Communications", "التواصل"), tabs: ["announcements", "forms"] as const },
           settings: { label: tr("Settings", "الإعدادات"), tabs: ["membership"] as const },
@@ -922,7 +1037,9 @@ export default function HRDashboard() {
                   Members of the Month
                 </h3>
                 <p className="mt-2 max-w-lg text-sm leading-6 text-muted">
-                  Curate the featured members shown this month. Keep the list selective and easy to update.
+                  {motmIsCurrentMonth
+                    ? tr("Curate this month's featured members. Saving auto-publishes to the homepage.", "اختر أعضاء الشهر الحالي. الحفظ ينشرهم على الصفحة الرئيسية مباشرة.")
+                    : tr("Scheduling a future month — picks auto-promote on the 1st of that month.", "تجهز شهرًا قادمًا — يُعلن تلقائيًا في أول يوم من الشهر.")}
                 </p>
               </div>
               <button
@@ -931,13 +1048,55 @@ export default function HRDashboard() {
                 className="btn-primary inline-flex items-center justify-center gap-1.5 self-start px-3 py-2 text-xs"
               >
                 {motmSaving ? <Loader2 size={11} className="animate-spin" /> : null}
-                Save Changes
+                {motmIsCurrentMonth ? tr("Save changes", "حفظ التغييرات") : tr("Schedule", "جدولة")}
               </button>
             </div>
 
-            {motm.length > 0 && (
+            {/* Month picker — defaults to current. Past months become a history
+                view; future months are nominations that auto-promote. */}
+            <div className="mb-5 flex flex-wrap items-center gap-2 rounded-[1rem] border border-border bg-surface-elevated/50 p-2">
+              <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                {tr("Target month", "الشهر المستهدف")}
+              </span>
+              <select
+                value={motmTargetMonth}
+                onChange={(e) => setMotmTargetMonth(Number(e.target.value))}
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>
+                    {new Date(2000, m - 1, 1).toLocaleString(lang === "ar" ? "ar-SA" : "en-US", { month: "long" })}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={motmTargetYear}
+                onChange={(e) => setMotmTargetYear(Number(e.target.value))}
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs"
+              >
+                {[motmCurrentYear - 1, motmCurrentYear, motmCurrentYear + 1].map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => { setMotmTargetYear(motmCurrentYear); setMotmTargetMonth(motmCurrentMonth); }}
+                className="btn-secondary inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px]"
+              >
+                {tr("This month", "هذا الشهر")}
+              </button>
+              {!motmIsCurrentMonth && (
+                <span className="rounded-full border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-[10px] font-medium text-amber-300">
+                  {motmTargetYear * 100 + motmTargetMonth > motmCurrentYear * 100 + motmCurrentMonth
+                    ? tr("Scheduled (future)", "مجدول (مستقبلي)")
+                    : tr("Past month", "شهر سابق")}
+                </span>
+              )}
+            </div>
+
+            {activeMotm.length > 0 && (
               <div className="mb-4 flex flex-wrap gap-2">
-                {motm.map((m) => (
+                {activeMotm.map((m) => (
                   <button
                     key={m.memberId}
                     type="button"
@@ -962,8 +1121,8 @@ export default function HRDashboard() {
                 className="flex w-full items-center justify-between px-4 py-3 text-sm text-foreground"
               >
                 <div className="flex min-w-0 flex-col items-start text-left">
-                  <span className="font-medium">{motm.length > 0 ? `${motm.length} selected` : "Select members"}</span>
-                  <span className="mt-0.5 text-xs text-muted">Search by member or department</span>
+                  <span className="font-medium">{activeMotm.length > 0 ? `${activeMotm.length} selected` : tr("Select members", "اختر الأعضاء")}</span>
+                  <span className="mt-0.5 text-xs text-muted">{tr("Search by member or department", "ابحث بالاسم أو القسم")}</span>
                 </div>
                 {motmOpen ? <ChevronUp size={14} className="shrink-0 text-muted" /> : <ChevronDown size={14} className="shrink-0 text-muted" />}
               </button>
@@ -990,7 +1149,7 @@ export default function HRDashboard() {
                     </div>
                     <div className="max-h-64 overflow-y-auto p-2">
                       {filteredMotmMembers.map((m) => {
-                        const selected = motm.some((x) => x.memberId === m.memberId);
+                        const selected = activeMotm.some((x) => x.memberId === m.memberId);
                         return (
                           <button
                             key={m.memberId}
@@ -1021,6 +1180,61 @@ export default function HRDashboard() {
               </AnimatePresence>
             </div>
           </div>
+
+          {motmSchedule.length > 0 && (
+            <div className="panel-soft mt-5 max-w-2xl p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <CalendarDays size={14} className="text-primary" />
+                <h4 className="text-sm font-semibold text-foreground">
+                  {tr("Schedule & history", "الجدول والسجل")}
+                </h4>
+              </div>
+              <ul className="divide-y divide-border rounded-xl border border-border bg-surface/40 overflow-hidden">
+                {motmSchedule.map((entry) => {
+                  const key = `${entry.year}-${entry.month}`;
+                  const isFuture = entry.year * 100 + entry.month > motmCurrentYear * 100 + motmCurrentMonth;
+                  const isCurrent = entry.year === motmCurrentYear && entry.month === motmCurrentMonth;
+                  const label = new Date(entry.year, entry.month - 1, 1).toLocaleString(lang === "ar" ? "ar-SA" : "en-US", { month: "long", year: "numeric" });
+                  return (
+                    <li key={key} className="flex flex-wrap items-center gap-3 px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => { setMotmTargetYear(entry.year); setMotmTargetMonth(entry.month); }}
+                        className="text-left"
+                      >
+                        <p className="text-sm font-medium text-foreground">{label}</p>
+                        <p className="mt-0.5 text-[11px] text-muted">
+                          {entry.members.length} {tr(entry.members.length === 1 ? "pick" : "picks", "")}
+                          {" · "}
+                          {entry.members.slice(0, 3).map((m) => m.fullName ?? "?").join(", ")}
+                          {entry.members.length > 3 ? ` +${entry.members.length - 3}` : ""}
+                        </p>
+                      </button>
+                      <div className="ms-auto flex items-center gap-2">
+                        {isCurrent && (
+                          <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                            {tr("Live", "حالي")}
+                          </span>
+                        )}
+                        {isFuture && (
+                          <span className="rounded-full border border-amber-400/25 bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-300">
+                            {tr("Scheduled", "مجدول")}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => { setMotmTargetYear(entry.year); setMotmTargetMonth(entry.month); }}
+                          className="btn-secondary px-2.5 py-1 text-[11px]"
+                        >
+                          {tr("Edit", "تعديل")}
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
 
           <MotmLeaderboardPanel tr={tr} />
         </motion.div>
@@ -1358,15 +1572,17 @@ export default function HRDashboard() {
                   className="surface-input px-3 py-2 text-sm"
                 />
               </div>
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Participation Date", "تاريخ المشاركة")}</label>
-                <input
-                  type="date"
-                  value={hourTaskForm.participationDate}
-                  onChange={(e) => setHourTaskForm((prev) => ({ ...prev, participationDate: e.target.value }))}
-                  className="surface-input px-3 py-2 text-sm"
-                />
-              </div>
+              {!hourTaskForm.isRepetitive && (
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{tr("Participation Date", "تاريخ المشاركة")}</label>
+                  <input
+                    type="date"
+                    value={hourTaskForm.participationDate}
+                    onChange={(e) => setHourTaskForm((prev) => ({ ...prev, participationDate: e.target.value }))}
+                    className="surface-input px-3 py-2 text-sm"
+                  />
+                </div>
+              )}
               <div className="md:col-span-2">
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
                   {tr("Assign to Department", "إسناد إلى لجنة")}
@@ -1448,7 +1664,9 @@ export default function HRDashboard() {
                       )}
                     </div>
                     <p className="mt-1 text-xs text-muted">
-                      {new Date(task.participationDate).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {task.isRepetitive
+                        ? tr("Ongoing", "متكررة")
+                        : new Date(task.participationDate).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { month: "short", day: "numeric", year: "numeric" })}
                       {typeof task.registrationsCount === "number" ? ` · ${task.registrationsCount} ${tr("registrations", "تسجيل")}` : ""}
                     </p>
                     {task.description && <p className="mt-2 text-sm text-muted max-w-2xl">{task.description}</p>}
@@ -1465,6 +1683,15 @@ export default function HRDashboard() {
                     </Link>
                     {isAnyLeader && (
                       <>
+                        <button
+                          onClick={() => { setAssignHourTaskFor(task); setAssignHourTaskMembers([]); }}
+                          className="btn-secondary inline-flex items-center justify-center gap-1.5 px-2.5 py-2 text-[11px]"
+                          title={tr("Assign to specific members", "إسناد لأعضاء محددين")}
+                          disabled={!task.isActive}
+                        >
+                          <UserPlus size={12} />
+                          {tr("Assign", "إسناد")}
+                        </button>
                         <button
                           onClick={() => startEditHourTask(task)}
                           className="btn-secondary inline-flex items-center justify-center px-2.5 py-2"
@@ -1502,6 +1729,13 @@ export default function HRDashboard() {
       {activeTab === "performance" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           <MemberPerformancePanel />
+        </motion.div>
+      )}
+
+      {/* ── Assign Work Tab ── */}
+      {activeTab === "assignWork" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+          <AssignWorkPanel />
         </motion.div>
       )}
 
@@ -1720,6 +1954,64 @@ export default function HRDashboard() {
             onClose={() => setEditingMember(null)}
             onSaved={() => { setEditingMember(null); void loadMembers(); }}
           />
+        )}
+        {assignHourTaskFor && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            onClick={(e) => { if (e.target === e.currentTarget) setAssignHourTaskFor(null); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 16 }}
+              className="w-full max-w-lg rounded-[1.4rem] border border-border bg-surface p-6 shadow-[0_24px_80px_rgba(0,0,0,0.38)]"
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/70">
+                {tr("Assign hour task", "إسناد مهمة ساعات")}
+              </p>
+              <h3 className="mt-2 text-base font-semibold text-foreground">{assignHourTaskFor.title}</h3>
+              <p className="mt-0.5 text-[11px] text-muted">
+                {tr(
+                  `${assignHourTaskFor.hours}h credit per person · creates a pending hours entry for each picked member.`,
+                  `${assignHourTaskFor.hours} ساعة لكل شخص · ينشئ سجل ساعات معلق لكل عضو مختار.`,
+                )}
+              </p>
+              <div className="mt-4">
+                <MemberMultiSelect
+                  members={members.map((m) => ({ memberId: m.memberId, fullName: m.fullName, meta: m.departmentName }))}
+                  value={assignHourTaskMembers}
+                  onChange={setAssignHourTaskMembers}
+                  lang={lang as "en" | "ar"}
+                  placeholder={tr("Search any member or leader…", "ابحث عن أي عضو أو قائد…")}
+                  emptyHint={["Pick at least one person", "اختر شخصًا واحدًا على الأقل"]}
+                />
+              </div>
+              <div className="mt-5 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAssignHourTaskFor(null)}
+                  className="btn-secondary flex-1 px-4 py-2 text-sm"
+                  disabled={assigningHourTask}
+                >
+                  {tr("Cancel", "إلغاء")}
+                </button>
+                <button
+                  type="button"
+                  onClick={submitHourTaskAssignment}
+                  disabled={assigningHourTask || assignHourTaskMembers.length === 0}
+                  className="btn-primary flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm disabled:opacity-60"
+                >
+                  {assigningHourTask ? <Loader2 size={13} className="animate-spin" /> : <UserPlus size={13} />}
+                  {assignHourTaskMembers.length > 1
+                    ? tr(`Assign to ${assignHourTaskMembers.length}`, `إسناد إلى ${assignHourTaskMembers.length}`)
+                    : tr("Assign", "إسناد")}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 

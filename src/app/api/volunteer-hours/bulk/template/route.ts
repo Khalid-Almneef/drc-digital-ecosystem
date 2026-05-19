@@ -12,8 +12,14 @@ function csvCell(v: string | number | null | undefined): string {
 }
 
 // GET /api/volunteer-hours/bulk/template
-//   → text/csv stream pre-populated with one row per active member.
-//   HR fills `hours` / `title` / `participation_date` columns and re-uploads.
+//   → text/csv with one row per active member: full_name + total_hours.
+//   HR fills the `total_hours` column with the member's total credit hours
+//   for the period and re-uploads. The import endpoint records that total as
+//   a single approved entry per member.
+//
+//   The previous template asked for hours / title / date / description per
+//   row, which was overkill for the way HR actually batches credit hours.
+//   See the 2026-05-19 HR sweep (request #5).
 export const GET = handle(async () => {
   const s = await requireSession();
   const isAdmin = s.position === "president" || s.position === "vice_president";
@@ -21,85 +27,47 @@ export const GET = handle(async () => {
   if (!isAdmin && !isHr) return err(403, "Forbidden");
 
   const today = new Date().toISOString().slice(0, 10);
-  const headers = [
-    "member_id",
-    "email",
-    "full_name",
-    "department",
-    "hours",
-    "title",
-    "participation_date",
-    "description",
-  ];
+  const headers = ["member_id", "full_name", "total_hours"];
 
-  let rows: Array<{
-    memberId: number;
-    email: string;
-    fullName: string;
-    department: string | null;
-  }> = [];
+  let rows: Array<{ memberId: number; fullName: string }> = [];
 
   if (isMockMode()) {
     const store = getMockStore();
     rows = store.members
       .filter((m) => m.isActive)
-      .map((m) => ({
-        memberId: m.memberId,
-        email: m.email,
-        fullName: m.fullName,
-        department: m.departmentSlug ?? null,
-      }))
+      .map((m) => ({ memberId: m.memberId, fullName: m.fullName }))
       .sort((a, b) => a.fullName.localeCompare(b.fullName));
   } else {
     const result = await query<{
-      memberId: number;
-      email: string;
-      fullName: string | null;
-      fullNameAr: string | null;
-      department: string | null;
+      memberId: number; fullName: string | null; fullNameAr: string | null; email: string;
     }>(
       `SELECT u.member_id      AS "memberId",
               u.email,
               p.full_name      AS "fullName",
-              p.full_name_ar   AS "fullNameAr",
-              d.slug::text     AS "department"
+              p.full_name_ar   AS "fullNameAr"
          FROM users u
-         LEFT JOIN profiles p     ON p.member_id = u.member_id
-         LEFT JOIN departments d  ON d.department_id = u.department_id
+         LEFT JOIN profiles p ON p.member_id = u.member_id
         WHERE u.is_active = TRUE
           AND COALESCE(p.status, 'active') <> 'alumni'
         ORDER BY p.full_name ASC NULLS LAST, u.email ASC`,
     );
     rows = result.rows.map((r) => ({
       memberId: r.memberId,
-      email: r.email,
       fullName: r.fullName ?? r.fullNameAr ?? r.email,
-      department: r.department,
     }));
   }
 
   const lines = [headers.join(",")];
   for (const m of rows) {
-    lines.push(
-      [
-        csvCell(m.memberId),
-        csvCell(m.email),
-        csvCell(m.fullName),
-        csvCell(m.department),
-        "", // hours — to fill
-        "", // title — to fill
-        csvCell(today), // default date
-        "", // description — to fill
-      ].join(","),
-    );
+    lines.push([csvCell(m.memberId), csvCell(m.fullName), ""].join(","));
   }
-  // Add a UTF-8 BOM so Excel opens Arabic names correctly.
+  // UTF-8 BOM so Excel renders Arabic names correctly.
   const body = "﻿" + lines.join("\r\n");
   return new Response(body, {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="drc-credit-hours-template-${today}.csv"`,
+      "Content-Disposition": `attachment; filename="drc-credit-hours-${today}.csv"`,
       "Cache-Control": "no-store",
     },
   });
