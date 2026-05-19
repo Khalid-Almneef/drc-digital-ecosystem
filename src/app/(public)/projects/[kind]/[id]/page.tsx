@@ -146,7 +146,7 @@ function ProjectApplicationPanel({
               type="button"
               onClick={() => setSelectedRole(role)}
               disabled={applied}
-              className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+              className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors whitespace-nowrap ${
                 applied
                   ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
                   : selectedRole === role
@@ -318,7 +318,7 @@ export default function ArchiveDetailPage() {
             </div>
 
             <div className="p-6 sm:p-8">
-              <span className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${stateClass(detail.state)}`}>
+              <span className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] whitespace-nowrap ${stateClass(detail.state)}`}>
                 <span className={`h-2 w-2 rounded-full ${stateDot(detail.state)}`} />
                 {t(`projects.state.${detail.state}`)}
               </span>
@@ -369,7 +369,7 @@ export default function ArchiveDetailPage() {
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {project.techStack.map((item) => (
-                        <span key={item} className="rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs text-muted">
+                        <span key={item} className="rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs text-muted whitespace-nowrap">
                           {item}
                         </span>
                       ))}
@@ -492,7 +492,7 @@ export default function ArchiveDetailPage() {
                     href={toExternalUrl(project.githubUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm text-primary transition-colors hover:border-primary/35 hover:text-primary-bright"
+                    className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm text-primary transition-colors hover:border-primary/35 hover:text-primary-bright whitespace-nowrap"
                   >
                     <GitBranch size={14} />
                     {t("projects.detail.github")}

@@ -145,7 +145,7 @@ function ArchiveCard({
             <Icon size={17} />
           </div>
           <div className="absolute right-4 top-4">
-            <span className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${cardStateClass(item.state)}`}>
+            <span className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] whitespace-nowrap ${cardStateClass(item.state)}`}>
               <span className={`h-1.5 w-1.5 rounded-full ${statusDotClass(item.state)}`} />
               {t(`projects.state.${item.state}`)}
             </span>
@@ -218,7 +218,7 @@ function ArchiveCollection({
                 type="button"
                 role="tab"
                 aria-selected={active}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/40 ${
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-all whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/40 ${
                   active
                     ? "bg-primary/15 text-primary shadow-[0_4px_16px_color-mix(in_srgb,var(--primary)_18%,transparent)]"
                     : "text-muted hover:text-foreground"

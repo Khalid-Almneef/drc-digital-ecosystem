@@ -402,7 +402,7 @@ export default function TeamPage() {
                         {t(`dept.${cfg.dept}.name`)}
                       </h3>
                     </div>
-                    <span className="rounded-full border border-border bg-surface/50 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted">
+                    <span className="rounded-full border border-border bg-surface/50 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted whitespace-nowrap">
                       {headEntries.filter((e) => e.member).length + subs.length}{" "}
                       {(lang as string) === "ar" ? "قائد" : headEntries.filter((e) => e.member).length + subs.length === 1 ? "lead" : "leads"}
                     </span>
@@ -480,7 +480,7 @@ export default function TeamPage() {
                   <h3 className="text-sm font-semibold uppercase tracking-widest text-foreground">
                     {lang === "ar" ? "قيادات إضافية" : "Other leadership"}
                   </h3>
-                  <span className="rounded-full border border-border bg-surface/50 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted">
+                  <span className="rounded-full border border-border bg-surface/50 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted whitespace-nowrap">
                     {extraLeaders.length}
                   </span>
                 </div>

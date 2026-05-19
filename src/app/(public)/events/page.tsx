@@ -185,7 +185,7 @@ export default function EventsPage() {
                           )}
                         </div>
                         <span
-                          className={`shrink-0 text-xs font-medium px-3 py-1 rounded-full border ${eventTypeBadgeClass(event.type)}`}
+                          className={`shrink-0 text-xs font-medium px-3 py-1 rounded-full border whitespace-nowrap ${eventTypeBadgeClass(event.type)}`}
                         >
                           {t(eventTypeKey(event.type))}
                         </span>
@@ -297,7 +297,7 @@ export default function EventsPage() {
                         {formatEventDate(event.startTime, lang)}
                       </span>
                       <span
-                        className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ms-auto ${eventTypeBadgeClass(event.type)}`}
+                        className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ms-auto whitespace-nowrap ${eventTypeBadgeClass(event.type)}`}
                       >
                         {t(eventTypeKey(event.type))}
                       </span>
@@ -447,7 +447,7 @@ function EventDetailsModal({ event, onClose, onExpandImage, onRegister, t, lang 
               className="h-64 w-full object-cover sm:h-80"
             />
             <div className="pointer-events-none absolute inset-0 flex items-end justify-end p-4 opacity-0 transition-opacity group-hover/img:opacity-100">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/65 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/65 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm whitespace-nowrap">
                 <ZoomIn size={13} />
                 {expandLabel}
               </span>
@@ -459,7 +459,7 @@ function EventDetailsModal({ event, onClose, onExpandImage, onRegister, t, lang 
           <div className="mb-4 flex items-start justify-between gap-3">
             <h2 className="text-2xl font-bold leading-snug text-foreground">{event.title}</h2>
             <span
-              className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${eventTypeBadgeClass(event.type)}`}
+              className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium whitespace-nowrap ${eventTypeBadgeClass(event.type)}`}
             >
               {t(eventTypeKey(event.type))}
             </span>

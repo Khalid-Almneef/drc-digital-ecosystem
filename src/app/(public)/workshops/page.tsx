@@ -483,7 +483,7 @@ export default function WorkshopsPage() {
               <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
             </span>
             <h2 className="text-xl font-bold text-foreground">{t("workshops.live.title")}</h2>
-            <span className="text-xs text-muted bg-surface-elevated border border-border px-2 py-0.5 rounded-full">
+            <span className="text-xs text-muted bg-surface-elevated border border-border px-2 py-0.5 rounded-full whitespace-nowrap">
               {upcomingLive.length} {t("workshops.live.sessions")}
             </span>
           </div>
@@ -580,12 +580,12 @@ export default function WorkshopsPage() {
                       </div>
                     </div>
                     <div className="absolute bottom-3 left-3">
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full border" style={{ color: accent, background: `${accent}18`, borderColor: `${accent}40` }}>
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap" style={{ color: accent, background: `${accent}18`, borderColor: `${accent}40` }}>
                         {workshop.category ?? t("workshops.category.default")}
                       </span>
                     </div>
                     <div className="absolute bottom-3 right-3">
-                      <span className="text-xs text-muted bg-surface/80 border border-border px-2 py-1 rounded-full font-mono">
+                      <span className="text-xs text-muted bg-surface/80 border border-border px-2 py-1 rounded-full font-mono whitespace-nowrap">
                         {workshop.durationMin ?? sessions.reduce((sum, session) => sum + (session.durationMin ?? 0), 0)}{t("workshop.duration")}
                       </span>
                     </div>
@@ -608,7 +608,7 @@ export default function WorkshopsPage() {
                           {sessions.length} {sessions.length === 1 ? t("workshops.sessions.one") : t("workshops.sessions.many")}
                         </span>
                         {workshop.googleDriveFolderUrl && (
-                          <a href={toExternalUrl(workshop.googleDriveFolderUrl)} target="_blank" rel="noreferrer" className="inline-flex min-h-8 items-center gap-1 rounded-full border border-border px-2.5 text-[11px] text-muted hover:text-foreground">
+                          <a href={toExternalUrl(workshop.googleDriveFolderUrl)} target="_blank" rel="noreferrer" className="inline-flex min-h-8 items-center gap-1 rounded-full border border-border px-2.5 text-[11px] text-muted hover:text-foreground whitespace-nowrap">
                             <FolderOpen size={11} />
                             {t("workshops.drive.label")}
                           </a>
@@ -676,7 +676,7 @@ export default function WorkshopsPage() {
                             durationSec: sessions[0].durationMin ? sessions[0].durationMin * 60 : undefined,
                           })
                         : window.open(primaryLink, "_blank")}
-                      className="inline-flex min-h-9 items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:opacity-90"
+                      className="inline-flex min-h-9 items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:opacity-90 whitespace-nowrap"
                       style={{ color: accent, borderColor: `${accent}40`, background: `${accent}10` }}
                     >
                       <Play size={10} fill="currentColor" />

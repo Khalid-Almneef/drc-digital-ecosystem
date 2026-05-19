@@ -191,7 +191,7 @@ export default function JoinPage() {
           <div className="w-14 h-14 rounded-full bg-surface-elevated border border-border flex items-center justify-center mx-auto">
             <Lock size={22} className="text-muted" />
           </div>
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 whitespace-nowrap">
             {t("join.closed.badge")}
           </span>
           <p className="text-sm text-muted leading-relaxed">
