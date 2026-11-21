@@ -2,7 +2,7 @@
 
 Internal platform for the **Drones & Robotics Club** at King Saud University — public site, member dashboards, committee tooling, attendance, projects, events, sponsors, finance, alumni, and more.
 
-> **Taking over this project?** Read [`HANDOFF.md`](./HANDOFF.md) first — it covers every external service (GitHub, Vercel, Neon, Resend) and what needs to transfer to you.
+> **Picking this project up?** Read [`AGENTS.md`](./AGENTS.md) first — it covers current scope, architecture, and known open items.
 
 ## Stack
 

@@ -2,9 +2,9 @@
 
 This is the manual checklist you run **once** before going live, plus the commands you re-run for each redeploy.
 
-> New to this project because it was just handed off to you? Read
-> [`HANDOFF.md`](./HANDOFF.md) first — this file assumes you already know
-> which services you're using.
+> New to this project? Read [`AGENTS.md`](./AGENTS.md) first for scope and
+> architecture — this file assumes you already know which services you're
+> using.
 
 ---
 
