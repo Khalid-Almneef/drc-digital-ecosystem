@@ -56,3 +56,8 @@ next-env.d.ts
 # Local security audit (do not commit)
 SECURITY-REVIEW.md
 .security/
+
+# AI agent scratch dirs / run logs (never project docs)
+.superpowers/
+.planning/
+*.log

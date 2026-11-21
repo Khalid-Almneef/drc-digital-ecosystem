@@ -2,6 +2,10 @@
 
 This is the manual checklist you run **once** before going live, plus the commands you re-run for each redeploy.
 
+> New to this project because it was just handed off to you? Read
+> [`HANDOFF.md`](./HANDOFF.md) first — this file assumes you already know
+> which services you're using.
+
 ---
 
 ## 1. Provision PostgreSQL (one-time)
