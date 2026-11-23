@@ -35,9 +35,11 @@ const departments = [
   { icon: Camera,       slug: "media"       },
   { icon: Megaphone,    slug: "pr"          },
   { icon: DollarSign,   slug: "finance"     },
-  { icon: Truck,        slug: "logistics"   },
-   { icon: ClipboardList, slug: "project_management" },
+    { icon: Truck,        slug: "logistics"   },
+  { icon: GraduationCap, slug: "madarat"   },
+  { icon: ClipboardList, slug: "project_management" },
 ];
+
 
 export default function AboutPage() {
   const { t, lang } = useLang();
