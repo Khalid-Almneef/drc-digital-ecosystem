@@ -85,6 +85,7 @@ const DEPT_CONFIGS: DeptConfig[] = [
   { dept: "finance",     leaderRole: "team.role.leader",    viceRole: null                  },
   { dept: "logistics",   leaderRole: "team.role.leader",    viceRole: null                  },
   { dept: "madarat",     leaderRole: "team.role.co_leader", viceRole: "team.role.co_leader", coLeader: true },
+    { dept: "project_management", leaderRole: "team.role.leader", viceRole: "team.role.vice" },
 ];
 
 // ─── Dept gradient colours ────────────────────────────────────────────────────
@@ -99,6 +100,7 @@ const DEPT_COLORS: Record<string, string> = {
   finance:     "from-amber-400/20 to-yellow-400/20",
   logistics:   "from-blue-400/20 to-indigo-400/20",
   madarat:     "from-indigo-400/20 to-violet-400/20",
+    project_management: "from-sky-400/20 to-emerald-400/20",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

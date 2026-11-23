@@ -9,8 +9,8 @@ import { useLang } from "@/contexts/LanguageContext";
 import { api } from "@/lib/client";
 import {
   Eye, Target, Lightbulb, Users, Camera, DollarSign, Truck,
-  Shield, UserCheck, Code2, Megaphone, GraduationCap,
-} from "lucide-react";
+  Shield, UserCheck, Code2, Megaphone, GraduationCap, ClipboardList,
+} from "lucide-react"; from "lucide-react";
 import {
   AboutTimelineItem,
   AboutValueItem,
@@ -36,7 +36,7 @@ const departments = [
   { icon: Megaphone,    slug: "pr"          },
   { icon: DollarSign,   slug: "finance"     },
   { icon: Truck,        slug: "logistics"   },
-  { icon: GraduationCap, slug: "madarat"   },
+   { icon: ClipboardList, slug: "project_management" },
 ];
 
 export default function AboutPage() {
