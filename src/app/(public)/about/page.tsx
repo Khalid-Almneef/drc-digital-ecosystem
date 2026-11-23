@@ -10,7 +10,7 @@ import { api } from "@/lib/client";
 import {
   Eye, Target, Lightbulb, Users, Camera, DollarSign, Truck,
   Shield, UserCheck, Code2, Megaphone, GraduationCap, ClipboardList,
-} from "lucide-react"; from "lucide-react";
+} from "lucide-react"; 
 import {
   AboutTimelineItem,
   AboutValueItem,
